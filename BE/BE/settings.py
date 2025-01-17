@@ -125,3 +125,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+#GOOGLE KEYS
+
+GOOGLE_APPLICATION_CREDENTIALS = '/Users/jainamdoshi/Desktop/Slotify/Slotify/decent-surf-448118-e5-3a45c35c5902.json'
+GOOGLE_CLOUD_BUCKET_NAME = 'slotifydocuments'
+

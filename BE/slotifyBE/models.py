@@ -7,3 +7,4 @@ class OwnerProfile(models.Model):
     password = models.CharField(max_length=255, null=False)
     contactNumber = models.CharField(max_length=10, unique=True, null=False)
     idProof = models.URLField(max_length=500, blank=True, null=True)
+    verified = models.BooleanField(default=False)
