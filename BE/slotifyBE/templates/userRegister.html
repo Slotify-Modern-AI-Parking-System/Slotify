@@ -11,7 +11,6 @@
 
 <body class="bg-gray-50 min-h-screen flex">
 
-  <!-- Left Section - Background Image with Welcome Message -->
   <div class="w-1/2 bg-cover bg-center relative" style="background-image: url('https://i.postimg.cc/W3w8HgpY/Parking.jpg');">
     <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div class="text-center text-white">
@@ -21,7 +20,6 @@
     </div>
   </div>
 
-  <!-- Right Section - Registration Form -->
   <div class="w-1/2 p-8 flex flex-col justify-center bg-white">
     <img src="https://i.postimg.cc/5tnjKtdq/Logo-BGRemoved.png" alt="Logo" class="w-32 mb-6 mx-auto">
 
@@ -53,7 +51,6 @@
         <input type="text" id="contactNumber" maxlength="10" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
       </div>
 
-      <!-- New Image Upload Field -->
       <div class="mb-4">
         <label for="profileImage" class="block text-gray-600 font-medium mb-2">Upload Profile Image</label>
         <input type="file" id="profileImage" accept="image/*" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
@@ -67,7 +64,6 @@
     </form>
   </div>
 
-  <!-- Success Popup -->
   <div id="successPopup" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
     <div class="bg-white p-6 rounded-lg shadow-lg text-center">
       <h3 class="text-xl font-bold text-green-600 mb-4">Registration Successful!</h3>
@@ -83,9 +79,8 @@
   const successPopup = document.getElementById('successPopup');
 
   form.addEventListener('submit', async function(event) {
-    event.preventDefault(); // Prevent form's default submission behavior
+    event.preventDefault(); 
 
-    // Get form data
     const formData = new FormData();
     formData.append('firstName', document.getElementById('firstName').value);
     formData.append('lastName', document.getElementById('lastName').value);
@@ -93,23 +88,20 @@
     formData.append('password', document.getElementById('password').value);
     formData.append('contactNumber', document.getElementById('contactNumber').value);
 
-    // Add the uploaded file to formData
     const profileImage = document.getElementById('profileImage').files[0];
     if (profileImage) {
       formData.append('idProof', profileImage);
     }
 
     try {
-      // Send POST request to the API
       const response = await fetch('/registerOwner/', {
         method: 'POST',
         body: formData,
       });
 
       if (response.ok) {
-        // Show success popup if the API call is successful
         successPopup.classList.remove('hidden');
-        form.reset(); // Reset form fields
+        form.reset(); 
       } else {
         const errorData = await response.json();
         alert(`Error: ${errorData.error || 'Registration failed'}`);
@@ -121,7 +113,7 @@
   });
 
   function closePopup() {
-    successPopup.classList.add('hidden'); // Hide success popup
+    successPopup.classList.add('hidden');
   }
   </script>
 </body>
