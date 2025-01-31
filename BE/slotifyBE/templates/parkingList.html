@@ -1,0 +1,16 @@
+"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Parking Lots</title>
+</head>
+<body>
+    <h1>Registered Parking Lots</h1>
+    <ul>
+        {% for lot in parking_lots %}
+            <li>{{ lot.name }} - {{ lot.location }} ({{ lot.available_spaces }}/{{ lot.total_spaces }} available)</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+"""

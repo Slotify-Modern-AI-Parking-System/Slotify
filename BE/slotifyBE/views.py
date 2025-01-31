@@ -21,6 +21,9 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
 
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
+def landing(request):
+    return render(request, "landing.html")
+
 @csrf_exempt
 def register_owner(request):
     if request.method == 'POST':

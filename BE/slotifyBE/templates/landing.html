@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- HTML Codes by Quackit.com -->
+<title>Slotify</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Landing Page for Slotify, a web application that allows its users to find easy and affordable parking spaces quickly and efficiently ">
+<style>
+/* Background Image */
+body {
+    background-image:url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsweetiq.com%2Fwp-content%2Fuploads%2F2017%2F06%2FiStock-513106144.jpg&f=1&nofb=1&ipt=6a7c00a11908f782801d77ff06449da800090e61ec5ae953bc20acbab2698076&ipo=images);
+    background-repeat:no-repeat;
+    background-position:left center;
+    background-attachment:fixed;
+    margin: 0;
+    height: 100vh;
+}
+
+/* Page Layout */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    padding: 0 20px;
+    flex-direction: row;
+}
+
+/* Text Styling */
+.text-content {
+    flex: 1;
+    color: white;
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    font-weight: bold;
+    animation: slideIn 2s ease-out;
+}
+
+h1 {
+    font-family: 'Verdana', sans-serif;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Button Styling */
+.button {
+    background-color: green;
+    color: black;
+    padding: 20px 40px;
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    margin-top: 30px;
+    display: block;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.button:hover {
+    background-color: darkgreen;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <!-- Text content on the left side -->
+    <div class="text-content">
+        <h1>Slotify</h1>
+        <p>Click the Button Below to Register yourself with Slotify!</p>
+        <p>An online app that allows you to find parking easily and quickly at a low price!</p>
+
+        <!-- Button to redirect to userRegister.html -->
+        <a href="{% url 'userRegister' %}" class="button">Register Now</a>
+    </div>
+</div>
+</body>
+</html>
