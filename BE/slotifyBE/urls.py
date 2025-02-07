@@ -5,5 +5,7 @@ urlpatterns = [
     path('', views.landing, name='landing'),
     path('userRegister/', views.userRegister, name='userRegister'),
     path('registerOwner/', views.register_owner, name='register_owner'),
+    path("registerParking/", views.register_parking_lot, name="register_parking_lot"),
+    path("getParkingLots/", views.get_parking_lots, name="get_parking_lots"),
     
 ]

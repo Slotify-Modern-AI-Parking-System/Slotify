@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Parking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex">
+
+  <!-- Left Side -->
+  <div class="w-1/2 bg-cover bg-center relative" style="background-image: url('https://images.pexels.com/photos/2612855/pexels-photo-2612855.jpeg?auto=compress&cs=tinysrgb&w=400');">
+    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <h1 class="text-4xl font-bold text-white">Register Your Parking</h1>
+    </div>
+  </div>
+
+  <!-- Right Side -->
+  <div class="w-1/2 p-8 flex flex-col justify-center bg-white">
+    <h2 class="text-3xl font-bold text-center text-gray-700 mb-6">Register Parking</h2>
+
+    <form id="parkingForm" class="space-y-6">
+      <div>
+        <label class="block text-gray-600 font-medium">Parking Lot Name</label>
+        <input type="text" id="name" class="w-full p-3 border rounded" required>
+      </div>
+
+      <div>
+        <label class="block text-gray-600 font-medium">Location</label>
+        <input type="text" id="location" class="w-full p-3 border rounded" required>
+      </div>
+
+      <div>
+        <label class="block text-gray-600 font-medium">Total Spaces</label>
+        <input type="number" id="total_spaces" class="w-full p-3 border rounded" required>
+      </div>
+
+      <div>
+        <label class="block text-gray-600 font-medium">Available Spaces</label>
+        <input type="number" id="available_spaces" class="w-full p-3 border rounded" required>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded">Register</button>
+    </form>
+
+    <!-- Parking Lots Table -->
+    <div class="mt-8">
+      <h3 class="text-xl font-bold text-gray-700 mb-4">Registered Parking Lots</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-300">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="border px-4 py-2">Name</th>
+              <th class="border px-4 py-2">Location</th>
+              <th class="border px-4 py-2">Total</th>
+              <th class="border px-4 py-2">Available</th>
+            </tr>
+          </thead>
+          <tbody id="parkingTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("parkingForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const data = {
+        name: document.getElementById("name").value,
+        location: document.getElementById("location").value,
+        total_spaces: document.getElementById("total_spaces").value,
+        available_spaces: document.getElementById("available_spaces").value,
+      };
+
+      const response = await fetch("/registerParking/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert("Parking lot registered successfully!");
+        document.getElementById("parkingForm").reset();
+        loadParkingLots();
+      } else {
+        alert("Error registering parking lot.");
+      }
+    });
+
+    async function loadParkingLots() {
+      const response = await fetch("/getParkingLots/");
+      const parkingLots = await response.json();
+
+      const tableBody = document.getElementById("parkingTable");
+      tableBody.innerHTML = "";
+
+      parkingLots.forEach(lot => {
+        const row = `<tr>
+          <td class="border px-4 py-2">${lot.name}</td>
+          <td class="border px-4 py-2">${lot.location}</td>
+          <td class="border px-4 py-2">${lot.total_spaces}</td>
+          <td class="border px-4 py-2">${lot.available_spaces}</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+      });
+    }
+
+    loadParkingLots();
+  </script>
+
+</body>
+</html>

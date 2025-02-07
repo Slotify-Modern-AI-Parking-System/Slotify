@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from google.cloud import storage
+from .models import ParkingLot
 import os
 import json
 from .models import *
@@ -23,6 +24,35 @@ credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDE
 
 def landing(request):
     return render(request, "landing.html")
+
+@csrf_exempt
+def register_parking_lot(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        name = data.get("name")
+        location = data.get("location")
+        total_spaces = data.get("total_spaces")
+        available_spaces = data.get("available_spaces")
+        registered_by = request.user  
+
+        if not all([name, location, total_spaces, available_spaces]):
+            return JsonResponse({"error": "All fields are required"}, status=400)
+
+        parking_lot = ParkingLot.objects.create(
+            name=name,
+            location=location,
+            total_spaces=total_spaces,
+            available_spaces=available_spaces,
+            registered_by=registered_by
+        )
+
+        return JsonResponse({"message": "Parking lot registered successfully!"})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+def get_parking_lots(request):
+    parking_lots = ParkingLot.objects.all().values("id", "name", "location", "total_spaces", "available_spaces")
+    return JsonResponse(list(parking_lots), safe=False)
 
 @csrf_exempt
 def register_owner(request):
