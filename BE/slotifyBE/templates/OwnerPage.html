@@ -1,0 +1,91 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slotify Owner Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #004d40;
+            padding: 20px;
+            height: 100vh;
+            color: white;
+        }
+        .sidebar h2 {
+            color: #00e676;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: white;
+        }
+        .card {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .statistics {
+            display: flex;
+            justify-content: space-between;
+        }
+        .chart {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Slotify Dashboard</h2>
+            <a href="#">Overview</a>
+            <a href="#">Revenue</a>
+            <a href="#">Expenses</a>
+            <a href="#">Bookings</a>
+            <a href="#">Profile</a>
+            <a href="#">Logout</a>
+        </div>
+        <div class="main-content">
+            <h1>Welcome, Owner</h1>
+            <div class="statistics">
+                <div class="card">
+                    <h3>Total Earnings</h3>
+                    <p>$106,720</p>
+                </div>
+                <div class="card">
+                    <h3>Total Bookings</h3>
+                    <p>250,615</p>
+                </div>
+                <div class="card">
+                    <h3>Occupancy Rate</h3>
+                    <p>87%</p>
+                </div>
+            </div>
+            <div class="chart">
+                <h3>Monthly Revenue vs Expenses</h3>
+                <p>[Insert Graph Here]</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

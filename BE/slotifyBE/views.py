@@ -2,17 +2,12 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from google.cloud import storage
-from .models import ParkingLot
+from .models import ParkingLot, OwnerProfile
 import os
 import json
-from .models import *
 from django.contrib.auth.hashers import make_password
 from google.oauth2 import service_account
 from datetime import timedelta
-from google.cloud import storage
-from django.contrib.auth.hashers import make_password
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 
 def userRegister(request):
     return render(request, "userRegister.html")
@@ -106,3 +101,32 @@ def register_owner(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
+def get_owner_dashboard(request):
+    """Fetches owner dashboard details including total registered parking lots and verification status."""
+    try:
+        # Retrieve the owner (assuming session/cookie-based authentication)
+        owner = request.user  
+
+        if not isinstance(owner, OwnerProfile):
+            return JsonResponse({'error': 'Unauthorized access. Please log in.'}, status=403)
+
+        # Get parking lots registered by this owner
+        parking_lots = ParkingLot.objects.filter(registered_by=owner)
+
+        total_lots = parking_lots.count()
+        total_available_spaces = sum(lot.available_spaces for lot in parking_lots)
+
+        dashboard_data = {
+            "firstName": owner.firstName,
+            "lastName": owner.lastName,
+            "emailId": owner.emailId,
+            "verified": owner.verified,
+            "totalParkingLots": total_lots,
+            "availableSpaces": total_available_spaces
+        }
+
+        return render(request, "ownerDashboard.html", {"dashboard_data": dashboard_data})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

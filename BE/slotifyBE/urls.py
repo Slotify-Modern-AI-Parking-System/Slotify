@@ -7,5 +7,5 @@ urlpatterns = [
     path('registerOwner/', views.register_owner, name='register_owner'),
     path("registerParking/", views.register_parking_lot, name="register_parking_lot"),
     path("getParkingLots/", views.get_parking_lots, name="get_parking_lots"),
-    
+    path("ownerDashboard/", views.get_owner_dashboard, name="get_owner_dashboard"),
 ]
