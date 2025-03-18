@@ -8,40 +8,45 @@ import json
 from django.contrib.auth.hashers import make_password
 from google.oauth2 import service_account
 from datetime import timedelta
+from django.contrib.auth.decorators import login_required
 
-def userRegister(request):
-    return render(request, "userRegister.html")
-
-GOOGLE_CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), '/Users/jainamdoshi/Desktop/Slotify/Slotify/decent-surf-448118-e5-3a45c35c5902.json')
+GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "/path/to/default.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
 
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
+def userRegister(request):
+    return render(request, "userRegister.html")
+
 def landing(request):
     return render(request, "landing.html")
 
+@login_required
 @csrf_exempt
 def register_parking_lot(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        name = data.get("name")
-        location = data.get("location")
-        total_spaces = data.get("total_spaces")
-        available_spaces = data.get("available_spaces")
-        registered_by = request.user  
+        try:
+            data = json.loads(request.body)
+            name = data.get("name")
+            location = data.get("location")
+            total_spaces = data.get("total_spaces")
+            available_spaces = data.get("available_spaces")
 
-        if not all([name, location, total_spaces, available_spaces]):
-            return JsonResponse({"error": "All fields are required"}, status=400)
+            if not all([name, location, total_spaces, available_spaces]):
+                return JsonResponse({"error": "All fields are required"}, status=400)
 
-        parking_lot = ParkingLot.objects.create(
-            name=name,
-            location=location,
-            total_spaces=total_spaces,
-            available_spaces=available_spaces,
-            registered_by=registered_by
-        )
+            parking_lot = ParkingLot.objects.create(
+                name=name,
+                location=location,
+                total_spaces=total_spaces,
+                available_spaces=available_spaces,
+                registered_by=request.user
+            )
 
-        return JsonResponse({"message": "Parking lot registered successfully!"})
+            return JsonResponse({"message": "Parking lot registered successfully!"}, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 
@@ -82,17 +87,15 @@ def register_owner(request):
             if id_proof_file:
                 bucket_name = "slotifydocuments"
 
-                storage_client = storage.Client()
+                storage_client = storage.Client(credentials=credentials)
                 bucket = storage_client.bucket(bucket_name)
 
                 new_file_name = f"{owner.id}_{first_name}_{last_name}".replace(" ", "_")
                 blob = bucket.blob(f"id_proofs/{new_file_name}")
 
                 blob.upload_from_file(id_proof_file.file, content_type=id_proof_file.content_type)
-                
-                url_expiration = timedelta(hours=1)  
-                id_proof_url = blob.generate_signed_url(expiration=url_expiration, version="v4")
-                owner.idProof = id_proof_url
+                blob.make_public()  # Make the file permanently accessible
+                owner.idProof = blob.public_url  # Store the public URL
                 owner.save()
                 
             return JsonResponse({'message': 'Registration successful!'}, status=201)
@@ -102,16 +105,12 @@ def register_owner(request):
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
+@login_required
 def get_owner_dashboard(request):
     """Fetches owner dashboard details including total registered parking lots and verification status."""
     try:
-        # Retrieve the owner (assuming session/cookie-based authentication)
-        owner = request.user  
+        owner = OwnerProfile.objects.get(emailId=request.user.email)
 
-        if not isinstance(owner, OwnerProfile):
-            return JsonResponse({'error': 'Unauthorized access. Please log in.'}, status=403)
-
-        # Get parking lots registered by this owner
         parking_lots = ParkingLot.objects.filter(registered_by=owner)
 
         total_lots = parking_lots.count()
@@ -128,5 +127,7 @@ def get_owner_dashboard(request):
 
         return render(request, "ownerDashboard.html", {"dashboard_data": dashboard_data})
 
+    except OwnerProfile.DoesNotExist:
+        return JsonResponse({'error': 'Owner profile not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
