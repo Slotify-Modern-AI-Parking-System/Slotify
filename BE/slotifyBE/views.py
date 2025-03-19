@@ -86,37 +86,31 @@ def register_owner(request):
             contact_number = request.POST.get('contactNumber')
             id_proof_file = request.FILES.get('idProof')  # The file uploaded
 
-            # Validate required fields
             if not all([first_name, last_name, email_id, password, contact_number]):
                 return JsonResponse({'error': 'All fields except idProof are required.'}, status=400)
 
-            # Check if the email or contact number already exists
             if User.objects.filter(username=email_id).exists():
                 return JsonResponse({'error': 'Email ID already exists.'}, status=400)
             if OwnerProfile.objects.filter(contactNumber=contact_number).exists():
                 return JsonResponse({'error': 'Contact Number already exists.'}, status=400)
 
-            # Create the User instance
             user = User.objects.create_user(
                 username=email_id,
                 password=password
             )
 
-            # Hash the password for the OwnerProfile (we'll store the plain password for user authentication)
             hashed_password = make_password(password)
 
-            # Create the OwnerProfile and link it to the User
             owner = OwnerProfile.objects.create(
-                user=user,  # Link the User to OwnerProfile
+                user=user, 
                 firstName=first_name,
                 lastName=last_name,
                 emailId=email_id,
-                password=hashed_password,  # This is the hashed password stored in the profile
+                password=hashed_password, 
                 contactNumber=contact_number,
                 verified=False
             )
 
-            # Handle ID proof file upload to Google Cloud Storage (optional)
             if id_proof_file:
                 storage_client = storage.Client()
                 bucket_name = "slotifydocuments"  # Your Google Cloud Storage bucket
@@ -125,23 +119,19 @@ def register_owner(request):
                 new_file_name = f"{owner.id}_{first_name}_{last_name}".replace(" ", "_")
                 blob = bucket.blob(f"id_proofs/{new_file_name}")
 
-                # Upload the file to the cloud
+
                 blob.upload_from_file(id_proof_file, content_type=id_proof_file.content_type)
 
-                # Generate a signed URL for accessing the uploaded file
                 signed_url = blob.generate_signed_url(
                     expiration=timedelta(hours=1),
                     method='GET'
                 )
 
-                # Save the signed URL in the idProof field of the OwnerProfile
                 owner.idProof = signed_url
                 owner.save()
 
-            # Log the owner in after registration
             login(request, user)
 
-            # Return a success message
             return JsonResponse({'message': 'Owner registered successfully!'}, status=201)
 
         except Exception as e:
@@ -158,13 +148,10 @@ def get_owner_dashboard(request):
         return redirect('userRegister')  # Redirect to registration page if not authenticated
 
     try:
-        # Fetch the owner's profile
         owner = OwnerProfile.objects.get(emailId=request.user.email)
 
-        # Fetch the parking lots registered by this owner (use request.user)
         parking_lots = ParkingLot.objects.filter(registered_by=request.user)
 
-        # Calculate total parking lots and available spaces
         total_lots = parking_lots.count()
         total_available_spaces = sum(lot.available_spaces for lot in parking_lots)
 
@@ -175,15 +162,13 @@ def get_owner_dashboard(request):
             "emailId": request.user.email,
             "totalParkingLots": total_lots,
             "availableSpaces": total_available_spaces,
-            "idProof": owner.idProof  # Pass the ID proof URL here
+            "idProof": owner.idProof 
         }
 
         return render(request, "ownerDashboard.html", {"dashboard_data": dashboard_data})
 
     except OwnerProfile.DoesNotExist:
-        # Handle the case where the owner profile doesn't exist
         return JsonResponse({'error': 'Owner profile not found'}, status=404)
     except Exception as e:
-        # Handle any other unexpected errors
         logger.error(f"Error fetching owner dashboard: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
