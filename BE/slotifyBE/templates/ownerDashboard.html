@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -30,6 +31,10 @@
             text-decoration: none;
             padding: 10px;
             margin: 5px 0;
+            cursor: pointer;
+        }
+        .sidebar a:hover {
+            background-color: #00796b;
         }
         .main-content {
             flex: 1;
@@ -64,52 +69,53 @@
             font-weight: bold;
         }
     </style>
+    <script>
+        function loadSection(section) {
+            const content = document.getElementById("content");
+            if (section === 'revenue') {
+                content.innerHTML = `<h1>Revenue Statistics</h1>
+                                    <div class="card"><h3>Total Earnings</h3><p>$106,720</p></div>
+                                    <div class="card"><h3>Total Bookings</h3><p>250,615</p></div>
+                                    <div class="card"><h3>Occupancy Rate</h3><p>87%</p></div>`;
+            } else if (section === 'profile') {
+                content.innerHTML = `<h1>Profile Information</h1>
+                                    <p><strong>Name:</strong> {{ dashboard_data.firstName }} {{ dashboard_data.lastName }}</p>
+                                    <p><strong>Email:</strong> {{ dashboard_data.emailId }}</p>
+                                    <p><strong>Total Parking Lots:</strong> {{ dashboard_data.totalParkingLots }}</p>
+                                    <p><strong>Available Spaces:</strong> {{ dashboard_data.availableSpaces }}</p>
+                                    <div class="id-proof-section">
+                                        <h3>Your ID Proof</h3>
+                                        <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
+                                        <a href="{{ dashboard_data.idProof.url }}" target="_blank">View ID Proof</a>
+                                    </div>`;
+            } else if (section === 'logout') {
+                alert("Logging out...");
+                window.location.href = "http://127.0.0.1:8000/";
+            } else {
+                content.innerHTML = `<h1>Welcome, {{ dashboard_data.firstName }}</h1>
+                                    <p>You have {{ dashboard_data.totalParkingLots }} parking lots registered.</p>
+                                    <p>Total available spaces: {{ dashboard_data.availableSpaces }}</p>`;
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
             <h2>Slotify Dashboard</h2>
-            <a href="#">Overview</a>
-            <a href="#">Revenue</a>
-            <a href="#">Expenses</a>
-            <a href="#">Bookings</a>
-            <a href="#">Profile</a>
-            <a href="#">Logout</a>
+            <a onclick="loadSection('home')">Overview</a>
+            <a onclick="loadSection('revenue')">Revenue</a>
+            <a onclick="loadSection('profile')">Profile</a>
+            <a onclick="loadSection('logout')">Logout</a>
         </div>
-        <div class="main-content">
-            <h1>Welcome, Owner</h1>
-            
-            <!-- Display Owner's ID Proof Section -->
-            {% if dashboard_data.idProof %}
-                <div class="id-proof-section">
-                    <h3>Your ID Proof</h3>
-                    <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
-                    <a href="{{ dashboard_data.idProof }}" target="_blank">View ID Proof</a>
-                </div>
-            {% else %}
-                <div class="id-proof-section">
-                    <h3>Your ID Proof</h3>
-                    <p>Your ID proof has not been uploaded yet. Please upload it in your profile settings.</p>
-                </div>
-            {% endif %}
-
-            <div class="statistics">
-                <div class="card">
-                    <h3>Total Earnings</h3>
-                    <p>$106,720</p>
-                </div>
-                <div class="card">
-                    <h3>Total Bookings</h3>
-                    <p>250,615</p>
-                </div>
-                <div class="card">
-                    <h3>Occupancy Rate</h3>
-                    <p>87%</p>
-                </div>
-            </div>
-            <div class="chart">
-                <h3>Monthly Revenue vs Expenses</h3>
-                <p>[Insert Graph Here]</p>
+        <div class="main-content" id="content">
+            <h1>Welcome, {{ dashboard_data.firstName }}</h1>
+            <p>You have {{ dashboard_data.totalParkingLots }} parking lots registered.</p>
+            <p>Total available spaces: {{ dashboard_data.availableSpaces }}</p>
+            <div class="id-proof-section">
+                <h3>Your ID Proof</h3>
+                <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
+                <a href="{{ dashboard_data.idProof.url }}" target="_blank">View ID Proof</a>
             </div>
         </div>
     </div>

@@ -148,7 +148,7 @@ def get_owner_dashboard(request):
         return redirect('userRegister')  # Redirect to registration page if not authenticated
 
     try:
-        owner = OwnerProfile.objects.get(emailId=request.user.email)
+        owner = OwnerProfile.objects.get(user=request.user)
 
         parking_lots = ParkingLot.objects.filter(registered_by=request.user)
 
@@ -157,9 +157,9 @@ def get_owner_dashboard(request):
 
         # Prepare the data to pass to the template
         dashboard_data = {
-            "firstName": request.user.first_name,
-            "lastName": request.user.last_name,
-            "emailId": request.user.email,
+            "firstName": owner.firstName,
+            "lastName": owner.lastName,
+            "emailId": owner.emailId,
             "totalParkingLots": total_lots,
             "availableSpaces": total_available_spaces,
             "idProof": owner.idProof 
