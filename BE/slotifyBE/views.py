@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from google.cloud import storage
@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 
-GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "/path/to/default.json")
+GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "C:/Users/Ryan_/Downloads/decent-surf-448118-e5-44d0948444db.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
 
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
@@ -54,7 +54,6 @@ def get_parking_lots(request):
     parking_lots = ParkingLot.objects.all().values("id", "name", "location", "total_spaces", "available_spaces")
     return JsonResponse(list(parking_lots), safe=False)
 
-@csrf_exempt
 def register_owner(request):
     if request.method == 'POST':
         try:
