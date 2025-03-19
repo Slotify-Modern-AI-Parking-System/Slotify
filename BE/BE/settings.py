@@ -27,6 +27,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Session Engine: Store session data in the database
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Session cookie configuration
+SESSION_COOKIE_NAME = 'sessionid'  # The default name for the session ID cookie
+SESSION_COOKIE_AGE = 60 * 60 * 24  # 1 day (Default: 300 seconds, or 5 minutes)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keeps the session active after the browser is closed
+
+# Ensure CSRF protection is working
+CSRF_COOKIE_NAME = "csrftoken"
 
 # Application definition
 
@@ -102,7 +112,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

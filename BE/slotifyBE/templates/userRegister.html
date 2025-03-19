@@ -79,42 +79,46 @@
   const successPopup = document.getElementById('successPopup');
 
   form.addEventListener('submit', async function(event) {
-    event.preventDefault(); 
+  event.preventDefault(); 
 
-    const formData = new FormData();
-    formData.append('firstName', document.getElementById('firstName').value);
-    formData.append('lastName', document.getElementById('lastName').value);
-    formData.append('emailId', document.getElementById('emailId').value);
-    formData.append('password', document.getElementById('password').value);
-    formData.append('contactNumber', document.getElementById('contactNumber').value);
+  const formData = new FormData();
+  formData.append('firstName', document.getElementById('firstName').value);
+  formData.append('lastName', document.getElementById('lastName').value);
+  formData.append('emailId', document.getElementById('emailId').value);
+  formData.append('password', document.getElementById('password').value);
+  formData.append('contactNumber', document.getElementById('contactNumber').value);
 
-    const profileImage = document.getElementById('profileImage').files[0];
-    if (profileImage) {
-      formData.append('idProof', profileImage);
-    }
-
-    try {
-      const response = await fetch('/registerOwner/', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        successPopup.classList.remove('hidden');
-        form.reset(); 
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Registration failed'}`);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again later.');
-    }
-  });
-
-  function closePopup() {
-    successPopup.classList.add('hidden');
+  const profileImage = document.getElementById('profileImage').files[0];
+  if (profileImage) {
+    formData.append('idProof', profileImage);
   }
+
+  try {
+    const response = await fetch('/registerOwner/', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      successPopup.classList.remove('hidden');
+      form.reset(); 
+
+      setTimeout(() => {
+        window.location.href = '/ownerDashboard';
+      }, 2000);  
+    } else {
+      const errorData = await response.json();
+      alert(`Error: ${errorData.error || 'Registration failed'}`);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred. Please try again later.');
+  }
+});
+
+function closePopup() {
+  successPopup.classList.add('hidden');
+}
   </script>
 </body>
 

@@ -52,6 +52,17 @@
             border-radius: 8px;
             margin: 10px 0;
         }
+        .id-proof-section {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .id-proof-section a {
+            color: #004d40;
+            text-decoration: none;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -67,6 +78,21 @@
         </div>
         <div class="main-content">
             <h1>Welcome, Owner</h1>
+            
+            <!-- Display Owner's ID Proof Section -->
+            {% if dashboard_data.idProof %}
+                <div class="id-proof-section">
+                    <h3>Your ID Proof</h3>
+                    <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
+                    <a href="{{ dashboard_data.idProof }}" target="_blank">View ID Proof</a>
+                </div>
+            {% else %}
+                <div class="id-proof-section">
+                    <h3>Your ID Proof</h3>
+                    <p>Your ID proof has not been uploaded yet. Please upload it in your profile settings.</p>
+                </div>
+            {% endif %}
+
             <div class="statistics">
                 <div class="card">
                     <h3>Total Earnings</h3>

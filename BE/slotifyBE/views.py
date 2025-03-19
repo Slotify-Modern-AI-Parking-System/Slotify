@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -9,6 +10,11 @@ from django.contrib.auth.hashers import make_password
 from google.oauth2 import service_account
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
+import logging
+from django.contrib.auth import login
+
+logger = logging.getLogger(__name__)
 
 GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "C:/Users/Ryan_/Downloads/decent-surf-448118-e5-44d0948444db.json")
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
@@ -21,7 +27,21 @@ def userRegister(request):
 def landing(request):
     return render(request, "landing.html")
 
-@login_required
+def login_owner(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('get_owner_dashboard')
+        else:
+            return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+    return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
 @csrf_exempt
 def register_parking_lot(request):
     if request.method == "POST":
@@ -54,79 +74,116 @@ def get_parking_lots(request):
     parking_lots = ParkingLot.objects.all().values("id", "name", "location", "total_spaces", "available_spaces")
     return JsonResponse(list(parking_lots), safe=False)
 
+@csrf_exempt
 def register_owner(request):
     if request.method == 'POST':
         try:
+            # Get data from the request
             first_name = request.POST.get('firstName')
             last_name = request.POST.get('lastName')
             email_id = request.POST.get('emailId')
             password = request.POST.get('password')
             contact_number = request.POST.get('contactNumber')
-            id_proof_file = request.FILES.get('idProof')
+            id_proof_file = request.FILES.get('idProof')  # The file uploaded
 
+            # Validate required fields
             if not all([first_name, last_name, email_id, password, contact_number]):
                 return JsonResponse({'error': 'All fields except idProof are required.'}, status=400)
 
-            if OwnerProfile.objects.filter(emailId=email_id).exists():
+            # Check if the email or contact number already exists
+            if User.objects.filter(username=email_id).exists():
                 return JsonResponse({'error': 'Email ID already exists.'}, status=400)
             if OwnerProfile.objects.filter(contactNumber=contact_number).exists():
                 return JsonResponse({'error': 'Contact Number already exists.'}, status=400)
 
+            # Create the User instance
+            user = User.objects.create_user(
+                username=email_id,
+                password=password
+            )
+
+            # Hash the password for the OwnerProfile (we'll store the plain password for user authentication)
             hashed_password = make_password(password)
 
+            # Create the OwnerProfile and link it to the User
             owner = OwnerProfile.objects.create(
+                user=user,  # Link the User to OwnerProfile
                 firstName=first_name,
                 lastName=last_name,
                 emailId=email_id,
-                password=hashed_password,
+                password=hashed_password,  # This is the hashed password stored in the profile
                 contactNumber=contact_number,
                 verified=False
             )
 
+            # Handle ID proof file upload to Google Cloud Storage (optional)
             if id_proof_file:
-                bucket_name = "slotifydocuments"
-
-                storage_client = storage.Client(credentials=credentials)
+                storage_client = storage.Client()
+                bucket_name = "slotifydocuments"  # Your Google Cloud Storage bucket
                 bucket = storage_client.bucket(bucket_name)
 
                 new_file_name = f"{owner.id}_{first_name}_{last_name}".replace(" ", "_")
                 blob = bucket.blob(f"id_proofs/{new_file_name}")
 
-                blob.upload_from_file(id_proof_file.file, content_type=id_proof_file.content_type)
-                blob.make_public()  # Make the file permanently accessible
-                owner.idProof = blob.public_url  # Store the public URL
+                # Upload the file to the cloud
+                blob.upload_from_file(id_proof_file, content_type=id_proof_file.content_type)
+
+                # Generate a signed URL for accessing the uploaded file
+                signed_url = blob.generate_signed_url(
+                    expiration=timedelta(hours=1),
+                    method='GET'
+                )
+
+                # Save the signed URL in the idProof field of the OwnerProfile
+                owner.idProof = signed_url
                 owner.save()
-                
-            return JsonResponse({'message': 'Registration successful!'}, status=201)
+
+            # Log the owner in after registration
+            login(request, user)
+
+            # Return a success message
+            return JsonResponse({'message': 'Owner registered successfully!'}, status=201)
 
         except Exception as e:
+            logger.error(f"Error during registration: {str(e)}")
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
-@login_required
 def get_owner_dashboard(request):
     """Fetches owner dashboard details including total registered parking lots and verification status."""
+
+    # Check if the user is authenticated (default Django User model check)
+    if not request.user.is_authenticated:
+        return redirect('userRegister')  # Redirect to registration page if not authenticated
+
     try:
+        # Fetch the owner's profile
         owner = OwnerProfile.objects.get(emailId=request.user.email)
 
-        parking_lots = ParkingLot.objects.filter(registered_by=owner)
+        # Fetch the parking lots registered by this owner (use request.user)
+        parking_lots = ParkingLot.objects.filter(registered_by=request.user)
 
+        # Calculate total parking lots and available spaces
         total_lots = parking_lots.count()
         total_available_spaces = sum(lot.available_spaces for lot in parking_lots)
 
+        # Prepare the data to pass to the template
         dashboard_data = {
-            "firstName": owner.firstName,
-            "lastName": owner.lastName,
-            "emailId": owner.emailId,
-            "verified": owner.verified,
+            "firstName": request.user.first_name,
+            "lastName": request.user.last_name,
+            "emailId": request.user.email,
             "totalParkingLots": total_lots,
-            "availableSpaces": total_available_spaces
+            "availableSpaces": total_available_spaces,
+            "idProof": owner.idProof  # Pass the ID proof URL here
         }
 
         return render(request, "ownerDashboard.html", {"dashboard_data": dashboard_data})
 
     except OwnerProfile.DoesNotExist:
+        # Handle the case where the owner profile doesn't exist
         return JsonResponse({'error': 'Owner profile not found'}, status=404)
     except Exception as e:
+        # Handle any other unexpected errors
+        logger.error(f"Error fetching owner dashboard: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
