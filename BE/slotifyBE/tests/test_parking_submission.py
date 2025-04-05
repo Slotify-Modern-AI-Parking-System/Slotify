@@ -1,8 +1,8 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from django.urls import reverse
 from slotifyBE.models import OwnerProfile
 from unittest.mock import patch
+import json
 
 class SubmitParkingTest(TestCase):
     def setUp(self):
@@ -21,6 +21,17 @@ class SubmitParkingTest(TestCase):
 
     @patch('slotifyBE.views.send_mail')
     def test_submit_parking_address_sends_email(self, mock_send_mail):
-        response = self.client.post('/submitParking/', content_type='application/json', data='{"location": "123 Fake St"}')
+        response = self.client.post('/submitParking/', 
+            content_type='application/json', 
+            data=json.dumps({'location': '123 Fake St'})
+        )
         self.assertEqual(response.status_code, 200)
         mock_send_mail.assert_called_once()
+
+    def test_missing_location_returns_400(self):
+        response = self.client.post('/submitParking/',
+            content_type='application/json',
+            data=json.dumps({})
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b'Location is required', response.content)
