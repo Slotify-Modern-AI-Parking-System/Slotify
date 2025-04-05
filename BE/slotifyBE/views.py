@@ -38,6 +38,9 @@ def landing(request):
 def options_page(request):
     return render(request, 'parkingOptions.html')
 
+def nearby_parking(request):
+    return render(request, "parkinglist.html")
+
 from django.views.decorators.csrf import csrf_exempt  # If you're using fetch, you'll likely need this
 
 def userSignIn(request):

@@ -18,12 +18,15 @@
         .sidebar {
             width: 250px;
             background-color: #004d40;
-            padding: 20px;
+            padding: 20px 20px 80px 20px;
             height: 100vh;
             color: white;
+            position: relative;
         }
         .sidebar h2 {
             color: #00e676;
+            margin: 120px 0 2rem 0;
+            text-align: center;
         }
         .sidebar a {
             display: block;
@@ -32,13 +35,25 @@
             padding: 10px;
             margin: 5px 0;
             cursor: pointer;
+            text-align: center;
         }
         .sidebar a:hover {
             background-color: #00796b;
         }
+        .profile-picture {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+        }
         .main-content {
             flex: 1;
-            padding: 20px;
+            padding: 40px;
             background-color: white;
         }
         .card {
@@ -86,11 +101,11 @@
                                     <div class="id-proof-section">
                                         <h3>Your ID Proof</h3>
                                         <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
-                                        <a href="{{ dashboard_data.idProof.url }}" target="_blank">View ID Proof</a>
+                                        <a href="{{ dashboard_data.idProof }}" target="_blank">View ID Proof</a>
                                     </div>`;
             } else if (section === 'logout') {
                 alert("Logging out...");
-                window.location.href = "http://127.0.0.1:8000/";
+                window.location.href = "/";
             } else {
                 content.innerHTML = `<h1>Welcome, {{ dashboard_data.firstName }}</h1>
                                     <p>You have {{ dashboard_data.totalParkingLots }} parking lots registered.</p>
@@ -102,6 +117,9 @@
 <body>
     <div class="container">
         <div class="sidebar">
+            {% if dashboard_data.idProof %}
+            <img src="{{ dashboard_data.idProof }}" alt="Profile Picture" class="profile-picture">
+            {% endif %}
             <h2>Slotify Dashboard</h2>
             <a onclick="loadSection('home')">Overview</a>
             <a onclick="loadSection('revenue')">Revenue</a>
@@ -115,7 +133,7 @@
             <div class="id-proof-section">
                 <h3>Your ID Proof</h3>
                 <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
-                <a href="{{ dashboard_data.idProof.url }}" target="_blank">View ID Proof</a>
+                <a href="{{ dashboard_data.idProof }}" target="_blank">View ID Proof</a>
             </div>
         </div>
     </div>
