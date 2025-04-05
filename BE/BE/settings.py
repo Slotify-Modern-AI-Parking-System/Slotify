@@ -38,6 +38,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keeps the session active after the br
 # Ensure CSRF protection is working
 CSRF_COOKIE_NAME = "csrftoken"
 
+# Email information for parking lot address confirmation
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'Slotifyaiparksystem@gmail.com'
+EMAIL_HOST_PASSWORD = 'slotifyAI123'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -129,6 +138,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / 'static', 
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

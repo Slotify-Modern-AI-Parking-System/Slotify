@@ -103,9 +103,9 @@
       successPopup.classList.remove('hidden');
       form.reset(); 
 
-      setTimeout(() => {
-        window.location.href = '/ownerDashboard';
-      }, 2000);  
+  setTimeout(() => {
+        window.location.href = '/options/';
+  }, 2000);  
     } else {
       const errorData = await response.json();
       alert(`Error: ${errorData.error || 'Registration failed'}`);

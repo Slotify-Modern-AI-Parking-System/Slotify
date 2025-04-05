@@ -22,26 +22,10 @@
 
     <form id="parkingForm" class="space-y-6">
       <div>
-        <label class="block text-gray-600 font-medium">Parking Lot Name</label>
-        <input type="text" id="name" class="w-full p-3 border rounded" required>
-      </div>
-
-      <div>
-        <label class="block text-gray-600 font-medium">Location</label>
+        <label class="block text-gray-600 font-medium">Parking Lot Address</label>
         <input type="text" id="location" class="w-full p-3 border rounded" required>
       </div>
-
-      <div>
-        <label class="block text-gray-600 font-medium">Total Spaces</label>
-        <input type="number" id="total_spaces" class="w-full p-3 border rounded" required>
-      </div>
-
-      <div>
-        <label class="block text-gray-600 font-medium">Available Spaces</label>
-        <input type="number" id="available_spaces" class="w-full p-3 border rounded" required>
-      </div>
-
-      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded">Register</button>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded">Submit for Confirmation</button>
     </form>
 
     <!-- Parking Lots Table -->
@@ -64,48 +48,26 @@
   </div>
 
   <script>
-    document.getElementById("parkingForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
+document.getElementById("parkingForm").addEventListener("submit", async function(event) {
+  event.preventDefault();
 
-      const data = {
-        name: document.getElementById("name").value,
-        location: document.getElementById("location").value,
-        total_spaces: document.getElementById("total_spaces").value,
-        available_spaces: document.getElementById("available_spaces").value,
-      };
+  const data = {
+    location: document.getElementById("location").value,
+  };
 
-      const response = await fetch("/registerParking/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+  const response = await fetch("/submitParking/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
 
-      if (response.ok) {
-        alert("Parking lot registered successfully!");
-        document.getElementById("parkingForm").reset();
-        loadParkingLots();
-      } else {
-        alert("Error registering parking lot.");
-      }
-    });
-
-    async function loadParkingLots() {
-      const response = await fetch("/getParkingLots/");
-      const parkingLots = await response.json();
-
-      const tableBody = document.getElementById("parkingTable");
-      tableBody.innerHTML = "";
-
-      parkingLots.forEach(lot => {
-        const row = `<tr>
-          <td class="border px-4 py-2">${lot.name}</td>
-          <td class="border px-4 py-2">${lot.location}</td>
-          <td class="border px-4 py-2">${lot.total_spaces}</td>
-          <td class="border px-4 py-2">${lot.available_spaces}</td>
-        </tr>`;
-        tableBody.innerHTML += row;
-      });
-    }
+  if (response.ok) {
+    alert("Address submitted. Awaiting confirmation.");
+    window.location.href = "/ownerDashboard/";
+  } else {
+    alert("There was an error. Please try again.");
+  }
+});
 
     loadParkingLots();
   </script>

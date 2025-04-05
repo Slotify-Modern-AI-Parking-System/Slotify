@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slotify Options</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4); /* Fade overlay */
+      z-index: -10;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+
+    .option-button {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .option-button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative">
+
+  <!-- 🔥 Animated GIF background -->
+  <img src="/static/images/caroptionsbackground.gif" 
+     class="absolute top-0 left-0 w-full h-full object-cover" /> 
+
+  <!-- Dark overlay for contrast -->
+  <div class="overlay"></div>
+
+  <!-- Main Options Panel -->
+  <div class="glass text-white text-center max-w-xl w-full z-10 shadow-lg">
+    <h1 class="text-4xl font-bold mb-6 text-green-300">Welcome to Slotify ✳️</h1>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <a href="/registerParking/" class="option-button bg-green-600 text-white py-4 rounded-lg hover:bg-green-700">🚘 Register Parking Lot</a>
+      <a href="/ownerDashboard/" class="option-button bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700">📊 Owner Dashboard</a>
+      <a href="/nearbyParking/" class="option-button bg-yellow-500 text-white py-4 rounded-lg hover:bg-yellow-600">📍 Nearby Lots</a>
+      <a href="/logout/" class="option-button bg-red-600 text-white py-4 rounded-lg hover:bg-red-700">🚪 Logout</a>
+    </div>
+  </div>
+
+</body>
+</html>

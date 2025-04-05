@@ -13,6 +13,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 import logging
 from django.contrib.auth import login
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 
 logger = logging.getLogger(__name__)
 
@@ -24,21 +29,49 @@ credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDE
 def userRegister(request):
     return render(request, "userRegister.html")
 
+def parking_register_page(request):
+    return render(request, 'parkingregister.html')
+
 def landing(request):
     return render(request, "landing.html")
 
+def options_page(request):
+    return render(request, 'parkingOptions.html')
+
+from django.views.decorators.csrf import csrf_exempt  # If you're using fetch, you'll likely need this
+
+def userSignIn(request):
+    return render(request, "userSignIn.html")
+
+def logout_view(request):
+    logout(request)  # Clears the session
+    return redirect('landing')  # Send user to landing page
+
+@csrf_exempt
 def login_owner(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        try:
+            # Load JSON data from request body
+            data = json.loads(request.body)
+            email = data.get('email')
+            password = data.get('password')
 
-        user = authenticate(request, username=email, password=password)
+            if not email or not password:
+                return JsonResponse({'error': 'Email and password are required'}, status=400)
 
-        if user is not None:
-            login(request, user)
-            return redirect('get_owner_dashboard')
-        else:
-            return JsonResponse({'error': 'Invalid credentials'}, status=400)
+            user = authenticate(request, username=email, password=password)
+
+            if user is not None:
+                login(request, user)
+                return JsonResponse({'message': 'Login successful'}, status=200)
+            else:
+                return JsonResponse({'error': 'Invalid email or password'}, status=401)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            logger.error(f"Error during login: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
@@ -47,26 +80,27 @@ def register_parking_lot(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            name = data.get("name")
             location = data.get("location")
-            total_spaces = data.get("total_spaces")
-            available_spaces = data.get("available_spaces")
 
-            if not all([name, location, total_spaces, available_spaces]):
-                return JsonResponse({"error": "All fields are required"}, status=400)
+            if not location:
+                return JsonResponse({"error": "Location is required"}, status=400)
 
-            parking_lot = ParkingLot.objects.create(
-                name=name,
-                location=location,
-                total_spaces=total_spaces,
-                available_spaces=available_spaces,
-                registered_by=request.user
+            owner_email = request.user.email if request.user.is_authenticated else "Unknown"
+
+            # Send confirmation email to devs
+            send_mail(
+                subject="New Parking Lot Address Submitted for Confirmation",
+                message=f"A new parking lot address was submitted:\n\nAddress: {location}\nSubmitted by: {owner_email}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=["Ryan_Wallace2019@outlook.com"],  # put your email address here you can add multiple emails a@gmail.com, b@gmail.com
+                fail_silently=False,
             )
 
-            return JsonResponse({"message": "Parking lot registered successfully!"}, status=201)
+            return JsonResponse({"message": "Address submitted successfully."}, status=200)
 
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            logger.error(f"Error during parking lot submission: {str(e)}")
+            return JsonResponse({"error": "Server error"}, status=500)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
 
