@@ -76,8 +76,6 @@ def detect_parking_slots_grid(image_path, visualize=True):
     print(f"Found {len(horizontal_lines)} horizontal lines and {len(vertical_lines)} vertical lines")
     
     # Alternative approach - let's use a grid-based detection
-    # Since we know there's a grid pattern of parking slots
-    
     # Crop the blue mask to the grid area
     grid_mask = blue_mask[y:y+h, x:x+w]
     
@@ -86,7 +84,6 @@ def detect_parking_slots_grid(image_path, visualize=True):
     col_projection = np.sum(grid_mask, axis=0)  # Sum each column
     
     # Find the rows and columns by looking for peaks in the projections
-    # We'll use a simple thresholding approach
     row_threshold = np.max(row_projection) * 0.3
     col_threshold = np.max(col_projection) * 0.3
     
