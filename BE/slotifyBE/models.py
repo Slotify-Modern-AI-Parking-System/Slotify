@@ -15,12 +15,12 @@ class OwnerProfile(models.Model):
         return f"{self.firstName} {self.lastName} ({self.emailId})"
 
 class ParkingLot(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=255)
-    total_spaces = models.PositiveIntegerField()
-    available_spaces = models.PositiveIntegerField()
+    total_spaces = models.PositiveIntegerField(default=0)
+    available_spaces = models.PositiveIntegerField(default=0)
     registered_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    confirmed = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return f"{self.location} ({'Confirmed' if self.confirmed else 'Pending'})"

@@ -96,7 +96,7 @@
                 content.innerHTML = `<h1>Profile Information</h1>
                                     <p><strong>Name:</strong> {{ dashboard_data.firstName }} {{ dashboard_data.lastName }}</p>
                                     <p><strong>Email:</strong> {{ dashboard_data.emailId }}</p>
-                                    <p><strong>Total Parking Lots:</strong> {{ dashboard_data.totalParkingLots }}</p>
+                                    <p><strong>Total Parking Lots:</strong> {{ dashboard_data.totalConfirmedLots }}</p>
                                     <p><strong>Available Spaces:</strong> {{ dashboard_data.availableSpaces }}</p>
                                     <div class="id-proof-section">
                                         <h3>Your ID Proof</h3>
@@ -130,6 +130,7 @@
             <h1>Welcome, {{ dashboard_data.firstName }}</h1>
             <p>You have {{ dashboard_data.totalParkingLots }} parking lots registered.</p>
             <p>Total available spaces: {{ dashboard_data.availableSpaces }}</p>
+            <p><strong>Confirmed Lots:</strong> {{ dashboard_data.totalConfirmedLots }}</p>
             <div class="id-proof-section">
                 <h3>Your ID Proof</h3>
                 <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>

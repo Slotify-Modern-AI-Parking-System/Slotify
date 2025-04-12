@@ -15,4 +15,5 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('submitParking/', views.register_parking_lot, name='submit_parking'),
     path('nearbyParking/', views.nearby_parking, name='nearby_parking'),
+    path('confirmParking/', views.confirm_parking, name='confirm_parking'),
 ]

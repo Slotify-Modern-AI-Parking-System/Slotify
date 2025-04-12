@@ -18,6 +18,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -88,14 +89,37 @@ def register_parking_lot(request):
             if not location:
                 return JsonResponse({"error": "Location is required"}, status=400)
 
-            owner_email = request.user.email if request.user.is_authenticated else "Unknown"
+            if request.user.is_authenticated:
+                try:
+                    owner_profile = OwnerProfile.objects.get(user=request.user)
+                    owner_email = owner_profile.emailId or request.user.username
+                except OwnerProfile.DoesNotExist:
+                    owner_email = request.user.username
+            else:
+                owner_email = "Unknown"
 
-            # Send confirmation email to devs
+            lot = ParkingLot.objects.create(
+                location=location,
+                name='',
+                total_spaces=0,
+                available_spaces=0,
+                registered_by=request.user,
+                confirmed=False
+)
+
+            confirmation_url = f"http://127.0.0.1:8000/confirmParking?id={lot.id}"
+
+
             send_mail(
                 subject="New Parking Lot Address Submitted for Confirmation",
-                message=f"A new parking lot address was submitted:\n\nAddress: {location}\nSubmitted by: {owner_email}",
+                message=(
+                    f"A new parking lot address was submitted:\n\n"
+                    f"Address: {location}\n"
+                    f"Submitted by: {owner_email}\n\n"
+                    f"Click here to confirm:\n{confirmation_url}"
+                ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=["Ryan_Wallace2019@outlook.com"],  # put your email address here you can add multiple emails a@gmail.com, b@gmail.com
+                recipient_list=["Ryan_Wallace2019@outlook.com"], # update list to send to multiple recipients
                 fail_silently=False,
             )
 
@@ -106,6 +130,17 @@ def register_parking_lot(request):
             return JsonResponse({"error": "Server error"}, status=500)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+def confirm_parking(request):
+    lot_id = request.GET.get('id')
+
+    try:
+        lot = ParkingLot.objects.get(id=lot_id)
+        lot.confirmed = True
+        lot.save()
+        return HttpResponse(f"✅ Parking lot at {lot.location} has been confirmed.")
+    except ParkingLot.DoesNotExist:
+        return HttpResponse("❌ Parking lot not found.", status=404)
 
 def get_parking_lots(request):
     parking_lots = ParkingLot.objects.all().values("id", "name", "location", "total_spaces", "available_spaces")
@@ -179,7 +214,10 @@ def register_owner(request):
 
 def get_owner_dashboard(request):
     """Fetches owner dashboard details including total registered parking lots and verification status."""
-
+    parking_lots = ParkingLot.objects.filter(registered_by=request.user)
+    total_lots = parking_lots.count()
+    total_confirmed = parking_lots.filter(confirmed=True).count()
+    total_available_spaces = sum(lot.available_spaces for lot in parking_lots)
     # Check if the user is authenticated (default Django User model check)
     if not request.user.is_authenticated:
         return redirect('userRegister')  # Redirect to registration page if not authenticated
@@ -199,7 +237,8 @@ def get_owner_dashboard(request):
             "emailId": owner.emailId,
             "totalParkingLots": total_lots,
             "availableSpaces": total_available_spaces,
-            "idProof": owner.idProof 
+            "idProof": owner.idProof,
+            "totalConfirmedLots": total_confirmed
         }
 
         return render(request, "ownerDashboard.html", {"dashboard_data": dashboard_data})
