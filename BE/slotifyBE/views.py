@@ -22,9 +22,11 @@ from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
-GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "C:/Users/Ryan_/Downloads/decent-surf-448118-e5-44d0948444db.json")
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
+# Define your credentials path relative to the project
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
 
+# Load the credentials
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
 def userRegister(request):
@@ -184,8 +186,8 @@ def register_owner(request):
             )
 
             if id_proof_file:
-                storage_client = storage.Client()
-                bucket_name = "slotifydocuments"  # Your Google Cloud Storage bucket
+                storage_client = storage.Client(credentials=credentials)
+                bucket_name = "slotifydocument3"  # Your Google Cloud Storage bucket
                 bucket = storage_client.bucket(bucket_name)
 
                 new_file_name = f"{owner.id}_{first_name}_{last_name}".replace(" ", "_")
