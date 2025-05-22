@@ -14,11 +14,11 @@ def label_parking_slots_sequential_improved(slots, image_path, visualize=True):
         visualize (bool): Whether to visualize the results
     
     Returns:
-        list: Updated list of slot dictionaries with sequential labels
+        numpy.ndarray: Image with labeled parking slots
     """
     if not slots:
         print("No slots to label")
-        return slots
+        return None
     
     # Load the image for visualization
     image = cv2.imread(image_path)
@@ -126,7 +126,133 @@ def label_parking_slots_sequential_improved(slots, image_path, visualize=True):
         plt.savefig("parking_visualization.png", dpi=300, bbox_inches='tight')
         plt.show()
     
-    return labeled_slots
+    # Return the labeled image instead of the dictionary list
+    return result_img
+
+# def label_parking_slots_sequential_improved(slots, image_path, visualize=True):
+#     """
+#     Assign sequential labels (P1, P2, P3...) to detected parking slots
+#     with improved visualization
+    
+#     Args:
+#         slots (list): List of dictionaries containing slot information
+#         image_path (str): Path to the original image
+#         visualize (bool): Whether to visualize the results
+    
+#     Returns:
+#         list: Updated list of slot dictionaries with sequential labels
+#     """
+#     if not slots:
+#         print("No slots to label")
+#         return slots
+    
+#     # Load the image for visualization
+#     image = cv2.imread(image_path)
+#     if image is None:
+#         raise ValueError(f"Could not read image from {image_path}")
+    
+#     # Create two copies for different visualization options
+#     result_img = image.copy()
+#     enlarged_img = cv2.resize(image.copy(), (image.shape[1]*2, image.shape[0]*2))
+#     schematic_img = np.ones((1500, 2000, 3), dtype=np.uint8) * 255  # White background
+    
+#     # Extract coordinates for sorting (left-to-right, top-to-bottom)
+#     slot_coordinates = [(slot['id'], slot['x'], slot['y']) for slot in slots]
+#     slot_coordinates.sort(key=lambda coord: (coord[2], coord[1]))
+    
+#     # Assign sequential labels
+#     labeled_slots = []
+#     for i, (slot_id, _, _) in enumerate(slot_coordinates):
+#         # Find the original slot by ID
+#         for slot in slots:
+#             if slot['id'] == slot_id:
+#                 # Create a copy of the slot with the sequential label added
+#                 labeled_slot = slot.copy()
+#                 labeled_slot['label'] = f"P{i + 1}"
+#                 labeled_slots.append(labeled_slot)
+                
+#                 # Method 1: Original image with smaller font
+#                 text_pos = (slot['x'] + 5, slot['y'] + 20)
+#                 cv2.putText(result_img, labeled_slot['label'], text_pos,
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1)
+#                 cv2.rectangle(result_img, 
+#                              (slot['x'], slot['y']), 
+#                              (slot['x'] + slot['width'], slot['y'] + slot['height']), 
+#                              (0, 255, 0), 1)
+                
+#                 # Method 2: Enlarged image
+#                 cv2.putText(enlarged_img, labeled_slot['label'], 
+#                             (slot['x']*2 + 10, slot['y']*2 + 40),
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+#                 cv2.rectangle(enlarged_img, 
+#                              (slot['x']*2, slot['y']*2), 
+#                              ((slot['x'] + slot['width'])*2, (slot['y'] + slot['height'])*2), 
+#                              (0, 255, 0), 2)
+                
+#                 # Method 3: Schematic view with normalized spacing
+#                 # Scale factor to normalize the parking lot layout
+#                 scale_x = 1800 / image.shape[1]
+#                 scale_y = 1300 / image.shape[0]
+                
+#                 sch_x = int(slot['x'] * scale_x) + 100
+#                 sch_y = int(slot['y'] * scale_y) + 100
+#                 sch_w = max(int(slot['width'] * scale_x), 40)  # Minimum width
+#                 sch_h = max(int(slot['height'] * scale_y), 40)  # Minimum height
+                
+#                 cv2.rectangle(schematic_img, 
+#                              (sch_x, sch_y), 
+#                              (sch_x + sch_w, sch_y + sch_h), 
+#                              (0, 0, 0), 2)
+#                 cv2.putText(schematic_img, labeled_slot['label'], 
+#                             (sch_x + sch_w//4, sch_y + sch_h//2),
+#                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+#                 break
+    
+#     # Create a lookup table/index for easier verification
+#     lookup_img = np.ones((800, 800, 3), dtype=np.uint8) * 255
+#     columns = 5
+#     rows = (len(labeled_slots) // columns) + (1 if len(labeled_slots) % columns > 0 else 0)
+    
+#     for i, slot in enumerate(labeled_slots):
+#         row = i // columns
+#         col = i % columns
+        
+#         x = col * 160 + 20
+#         y = row * 30 + 40
+        
+#         text = f"{slot['label']}: (x={slot['x']}, y={slot['y']})"
+#         cv2.putText(lookup_img, text, (x, y), 
+#                     cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1)
+    
+#     # Visualization
+#     if visualize:
+#         plt.figure(figsize=(18, 14))
+        
+#         plt.subplot(2, 2, 1)
+#         plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
+#         plt.title(f"Original with Labels (P1-P{len(labeled_slots)})")
+#         plt.axis('off')
+        
+#         plt.subplot(2, 2, 2)
+#         plt.imshow(cv2.cvtColor(enlarged_img, cv2.COLOR_BGR2RGB))
+#         plt.title("Enlarged View (2x)")
+#         plt.axis('off')
+        
+#         plt.subplot(2, 2, 3)
+#         plt.imshow(cv2.cvtColor(schematic_img, cv2.COLOR_BGR2RGB))
+#         plt.title("Schematic View")
+#         plt.axis('off')
+        
+#         plt.subplot(2, 2, 4)
+#         plt.imshow(cv2.cvtColor(lookup_img, cv2.COLOR_BGR2RGB))
+#         plt.title("Label Index")
+#         plt.axis('off')
+        
+#         plt.tight_layout()
+#         plt.savefig("parking_visualization.png", dpi=300, bbox_inches='tight')
+#         plt.show()
+    
+#     return labeled_slots
 
 def generate_interactive_html(labeled_slots, image_path):
     """

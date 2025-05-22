@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "slotifyBE",
-    "parking_lot"
+    "parking_lot",
+    "Admin"
 ]
 
 MIDDLEWARE = [

@@ -22,9 +22,14 @@ from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
-# Define your credentials path relative to the project
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
+# <<<<<<< HEAD
+# # Define your credentials path relative to the project
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
+# =======
+GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "/Users/jainamdoshi/Desktop/Projects/Slotify/BE/decent-surf-448118-e5-3a45c35c5902.json")
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
+>>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
 
 # Load the credentials
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
@@ -148,6 +153,72 @@ def get_parking_lots(request):
     parking_lots = ParkingLot.objects.all().values("id", "name", "location", "total_spaces", "available_spaces")
     return JsonResponse(list(parking_lots), safe=False)
 
+# @csrf_exempt
+# def register_owner(request):
+#     if request.method == 'POST':
+#         try:
+#             # Get data from the request
+#             first_name = request.POST.get('firstName')
+#             last_name = request.POST.get('lastName')
+#             email_id = request.POST.get('emailId')
+#             password = request.POST.get('password')
+#             contact_number = request.POST.get('contactNumber')
+#             id_proof_file = request.FILES.get('idProof')  # The file uploaded
+
+#             if not all([first_name, last_name, email_id, password, contact_number]):
+#                 return JsonResponse({'error': 'All fields except idProof are required.'}, status=400)
+
+#             if User.objects.filter(username=email_id).exists():
+#                 return JsonResponse({'error': 'Email ID already exists.'}, status=400)
+#             if OwnerProfile.objects.filter(contactNumber=contact_number).exists():
+#                 return JsonResponse({'error': 'Contact Number already exists.'}, status=400)
+
+#             user = User.objects.create_user(
+#                 username=email_id,
+#                 password=password
+#             )
+
+#             hashed_password = make_password(password)
+
+#             owner = OwnerProfile.objects.create(
+#                 user=user, 
+#                 firstName=first_name,
+#                 lastName=last_name,
+#                 emailId=email_id,
+#                 password=hashed_password, 
+#                 contactNumber=contact_number,
+#                 verified=False
+#             )
+
+#             if id_proof_file:
+#                 storage_client = storage.Client()
+#                 bucket_name = "slotifydocuments"  # Your Google Cloud Storage bucket
+#                 bucket = storage_client.bucket(bucket_name)
+
+#                 new_file_name = f"{owner.id}_{first_name}_{last_name}".replace(" ", "_")
+#                 blob = bucket.blob(f"id_proofs/{new_file_name}")
+
+
+#                 blob.upload_from_file(id_proof_file, content_type=id_proof_file.content_type)
+
+#                 signed_url = blob.generate_signed_url(
+#                     expiration=timedelta(hours=1),
+#                     method='GET'
+#                 )
+
+#                 owner.idProof = signed_url
+#                 owner.save()
+
+#             login(request, user)
+
+#             return JsonResponse({'message': 'Owner registered successfully!'}, status=201)
+
+#         except Exception as e:
+#             logger.error(f"Error during registration: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
 @csrf_exempt
 def register_owner(request):
     if request.method == 'POST':
@@ -158,16 +229,16 @@ def register_owner(request):
             email_id = request.POST.get('emailId')
             password = request.POST.get('password')
             contact_number = request.POST.get('contactNumber')
-            id_proof_file = request.FILES.get('idProof')  # The file uploaded
 
             if not all([first_name, last_name, email_id, password, contact_number]):
-                return JsonResponse({'error': 'All fields except idProof are required.'}, status=400)
+                return JsonResponse({'error': 'All fields are required.'}, status=400)
 
             if User.objects.filter(username=email_id).exists():
                 return JsonResponse({'error': 'Email ID already exists.'}, status=400)
             if OwnerProfile.objects.filter(contactNumber=contact_number).exists():
                 return JsonResponse({'error': 'Contact Number already exists.'}, status=400)
 
+            # Create user
             user = User.objects.create_user(
                 username=email_id,
                 password=password
@@ -175,16 +246,18 @@ def register_owner(request):
 
             hashed_password = make_password(password)
 
+            # Create owner profile
             owner = OwnerProfile.objects.create(
-                user=user, 
+                user=user,
                 firstName=first_name,
                 lastName=last_name,
                 emailId=email_id,
-                password=hashed_password, 
+                password=hashed_password,
                 contactNumber=contact_number,
                 verified=False
             )
 
+<<<<<<< HEAD
             if id_proof_file:
                 storage_client = storage.Client(credentials=credentials)
                 bucket_name = "slotifydocument3"  # Your Google Cloud Storage bucket
@@ -204,6 +277,8 @@ def register_owner(request):
                 owner.idProof = signed_url
                 owner.save()
 
+=======
+>>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
             login(request, user)
 
             return JsonResponse({'message': 'Owner registered successfully!'}, status=201)
