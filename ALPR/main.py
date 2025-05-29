@@ -1,397 +1,397 @@
 #Use Input Video File 1
 
-from ultralytics import YOLO
-import cv2
-import numpy as np
-import pytesseract
-import re
-from collections import defaultdict, Counter
-import easyocr
-import time
-import os
+# from ultralytics import YOLO
+# import cv2
+# import numpy as np
+# import pytesseract
+# import re
+# from collections import defaultdict, Counter
+# import easyocr
+# import time
+# import os
  
-class PlateDetection:
-    def __init__(self):
-        self.plate_scores = defaultdict(list)
-        self.plate_history = Counter()
-        self.frame_window = 30
-        self.all_plates = Counter()  # Track all detected plates across the entire video
+# class PlateDetection:
+#     def __init__(self):
+#         self.plate_scores = defaultdict(list)
+#         self.plate_history = Counter()
+#         self.frame_window = 30
+#         self.all_plates = Counter()  # Track all detected plates across the entire video
  
-    def update_scores(self, plate_number, confidence, text_size):
-        score = confidence * 0.6 + text_size * 0.4
-        self.plate_scores[plate_number].append(score)
-        self.plate_history[plate_number] += 1
-        self.all_plates[plate_number] += 1  # Increment the count for this plate
+#     def update_scores(self, plate_number, confidence, text_size):
+#         score = confidence * 0.6 + text_size * 0.4
+#         self.plate_scores[plate_number].append(score)
+#         self.plate_history[plate_number] += 1
+#         self.all_plates[plate_number] += 1  # Increment the count for this plate
         
-        # Keep only the last window of scores for real-time processing
-        if len(self.plate_scores[plate_number]) > self.frame_window:
-            self.plate_scores[plate_number] = self.plate_scores[plate_number][-self.frame_window:]
+#         # Keep only the last window of scores for real-time processing
+#         if len(self.plate_scores[plate_number]) > self.frame_window:
+#             self.plate_scores[plate_number] = self.plate_scores[plate_number][-self.frame_window:]
  
-    def get_best_plate(self):
-        if not self.plate_scores:
-            return None, 0, 0
-        best_plate = None
-        best_score = 0
+#     def get_best_plate(self):
+#         if not self.plate_scores:
+#             return None, 0, 0
+#         best_plate = None
+#         best_score = 0
  
-        for plate, scores in self.plate_scores.items():
-            avg_score = sum(scores) / len(scores)
-            frequency = len(scores) / self.frame_window
-            final_score = avg_score * 0.7 + frequency * 0.3
+#         for plate, scores in self.plate_scores.items():
+#             avg_score = sum(scores) / len(scores)
+#             frequency = len(scores) / self.frame_window
+#             final_score = avg_score * 0.7 + frequency * 0.3
  
-            if final_score > best_score:
-                best_score = final_score
-                best_plate = plate
+#             if final_score > best_score:
+#                 best_score = final_score
+#                 best_plate = plate
  
-        frequency = len(self.plate_scores[best_plate]) / self.frame_window
-        return best_plate, best_score, frequency
+#         frequency = len(self.plate_scores[best_plate]) / self.frame_window
+#         return best_plate, best_score, frequency
     
-    def get_top_plates(self, n=5):
-        """Return the top n most frequently detected plates"""
-        return self.all_plates.most_common(n)
+#     def get_top_plates(self, n=5):
+#         """Return the top n most frequently detected plates"""
+#         return self.all_plates.most_common(n)
  
-def extract_text_with_tesseract(image):
-    # Enhanced tesseract configuration with more parameters
-    custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -c tessedit_do_invert=0'
-    try:
-        text = pytesseract.image_to_string(image, config=custom_config)
-        return text.strip()
-    except Exception as e:
-        print(f"Tesseract error: {str(e)}")
-        return ""
+# def extract_text_with_tesseract(image):
+#     # Enhanced tesseract configuration with more parameters
+#     custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -c tessedit_do_invert=0'
+#     try:
+#         text = pytesseract.image_to_string(image, config=custom_config)
+#         return text.strip()
+#     except Exception as e:
+#         print(f"Tesseract error: {str(e)}")
+#         return ""
  
-def extract_text_with_easyocr(reader, image):
-    try:
-        # Lower confidence threshold to catch more potential plates
-        results = reader.readtext(image, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', min_size=20)
-        cleaned_texts = []
-        for (bbox, text, confidence) in results:
-            # Only keep alphanumeric characters
-            text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
-            # More lenient length check
-            if 2 <= len(text) <= 10:
-                cleaned_texts.append((text, confidence))
-        return cleaned_texts
-    except Exception as e:
-        print(f"EasyOCR error: {str(e)}")
-        return []
+# def extract_text_with_easyocr(reader, image):
+#     try:
+#         # Lower confidence threshold to catch more potential plates
+#         results = reader.readtext(image, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', min_size=20)
+#         cleaned_texts = []
+#         for (bbox, text, confidence) in results:
+#             # Only keep alphanumeric characters
+#             text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+#             # More lenient length check
+#             if 2 <= len(text) <= 10:
+#                 cleaned_texts.append((text, confidence))
+#         return cleaned_texts
+#     except Exception as e:
+#         print(f"EasyOCR error: {str(e)}")
+#         return []
  
-def enhance_plate_region(plate_region):
-    """Apply multiple image enhancement techniques to improve plate readability"""
-    # Resize for better OCR performance if too small
-    min_height = 40 # Increased from 30
-    if plate_region.shape[0] < min_height:
-        scale = min_height / plate_region.shape[0]
-        width = int(plate_region.shape[1] * scale)
-        plate_region = cv2.resize(plate_region, (width, min_height))
+# def enhance_plate_region(plate_region):
+#     """Apply multiple image enhancement techniques to improve plate readability"""
+#     # Resize for better OCR performance if too small
+#     min_height = 40 # Increased from 30
+#     if plate_region.shape[0] < min_height:
+#         scale = min_height / plate_region.shape[0]
+#         width = int(plate_region.shape[1] * scale)
+#         plate_region = cv2.resize(plate_region, (width, min_height))
  
-    # Convert to grayscale
-    gray = cv2.cvtColor(plate_region, cv2.COLOR_BGR2GRAY)
+#     # Convert to grayscale
+#     gray = cv2.cvtColor(plate_region, cv2.COLOR_BGR2GRAY)
  
-    # Apply bilateral filter to remove noise while preserving edges
-    filtered = cv2.bilateralFilter(gray, 11, 17, 17)
+#     # Apply bilateral filter to remove noise while preserving edges
+#     filtered = cv2.bilateralFilter(gray, 11, 17, 17)
  
-    # Try different thresholding techniques
-    thresh_methods = []
+#     # Try different thresholding techniques
+#     thresh_methods = []
  
-    # Method 1: Adaptive thresholding
-    adaptive_thresh = cv2.adaptiveThreshold(
-        filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY, 11, 2
-    )
-    thresh_methods.append(adaptive_thresh)
+#     # Method 1: Adaptive thresholding
+#     adaptive_thresh = cv2.adaptiveThreshold(
+#         filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+#         cv2.THRESH_BINARY, 11, 2
+#     )
+#     thresh_methods.append(adaptive_thresh)
  
-    # Method 2: Otsu's thresholding
-    _, otsu_thresh = cv2.threshold(filtered, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    thresh_methods.append(otsu_thresh)
+#     # Method 2: Otsu's thresholding
+#     _, otsu_thresh = cv2.threshold(filtered, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+#     thresh_methods.append(otsu_thresh)
  
-    # Method 3: Simple binary threshold
-    _, simple_thresh = cv2.threshold(filtered, 127, 255, cv2.THRESH_BINARY)
-    thresh_methods.append(simple_thresh)
+#     # Method 3: Simple binary threshold
+#     _, simple_thresh = cv2.threshold(filtered, 127, 255, cv2.THRESH_BINARY)
+#     thresh_methods.append(simple_thresh)
  
-    # Apply morphological closing to all thresholded images
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    processed_images = []
-    for thresh in thresh_methods:
-        closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        processed_images.append(closed)
+#     # Apply morphological closing to all thresholded images
+#     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+#     processed_images = []
+#     for thresh in thresh_methods:
+#         closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+#         processed_images.append(closed)
  
-    # Also add the original grayscale and filtered images
-    processed_images.append(gray)
-    processed_images.append(filtered)
+#     # Also add the original grayscale and filtered images
+#     processed_images.append(gray)
+#     processed_images.append(filtered)
  
-    return processed_images, plate_region
+#     return processed_images, plate_region
  
-def detect_license_plates(frame, license_plate_detector, reader):
-    # Make a copy of the frame to avoid modifying the original
-    processed_frame = frame.copy()
+# def detect_license_plates(frame, license_plate_detector, reader):
+#     # Make a copy of the frame to avoid modifying the original
+#     processed_frame = frame.copy()
  
-    # Apply a series of image enhancements
-    # 1. Histogram equalization for better contrast
-    gray = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
+#     # Apply a series of image enhancements
+#     # 1. Histogram equalization for better contrast
+#     gray = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
+#     gray = cv2.equalizeHist(gray)
  
-    # 2. Apply gamma correction to adjust brightness for night videos
-    gamma = 1.5 # Increased gamma for night videos
-    lookUpTable = np.empty((1, 256), np.uint8)
-    for i in range(256):
-        lookUpTable[0, i] = np.clip(np.power(i / 255.0, gamma) * 255.0, 0, 255)
-    processed_frame = cv2.LUT(processed_frame, lookUpTable)
+#     # 2. Apply gamma correction to adjust brightness for night videos
+#     gamma = 1.5 # Increased gamma for night videos
+#     lookUpTable = np.empty((1, 256), np.uint8)
+#     for i in range(256):
+#         lookUpTable[0, i] = np.clip(np.power(i / 255.0, gamma) * 255.0, 0, 255)
+#     processed_frame = cv2.LUT(processed_frame, lookUpTable)
  
-    # 3. Increase contrast
-    alpha = 1.3 # Contrast control (1.0 means no change)
-    beta = 10 # Brightness control (0 means no change)
-    processed_frame = cv2.convertScaleAbs(processed_frame, alpha=alpha, beta=beta)
+#     # 3. Increase contrast
+#     alpha = 1.3 # Contrast control (1.0 means no change)
+#     beta = 10 # Brightness control (0 means no change)
+#     processed_frame = cv2.convertScaleAbs(processed_frame, alpha=alpha, beta=beta)
  
-    # Apply detection with lower confidence threshold
-    detections = license_plate_detector(processed_frame, conf=0.35)[0] # Lower confidence threshold
-    frame_plates = []
+#     # Apply detection with lower confidence threshold
+#     detections = license_plate_detector(processed_frame, conf=0.35)[0] # Lower confidence threshold
+#     frame_plates = []
  
-    for detection in detections.boxes.data.tolist():
-        if len(detection) >= 6:
-            x1, y1, x2, y2, score, class_id = detection
-            if score < 0.35: # Lower threshold to catch more plates
-                continue
+#     for detection in detections.boxes.data.tolist():
+#         if len(detection) >= 6:
+#             x1, y1, x2, y2, score, class_id = detection
+#             if score < 0.35: # Lower threshold to catch more plates
+#                 continue
  
-            x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+#             x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
  
-            # Add padding around the license plate region
-            padding = 5
-            y1 = max(0, y1 - padding)
-            y2 = min(frame.shape[0], y2 + padding)
-            x1 = max(0, x1 - padding)
-            x2 = min(frame.shape[1], x2 + padding)
+#             # Add padding around the license plate region
+#             padding = 5
+#             y1 = max(0, y1 - padding)
+#             y2 = min(frame.shape[0], y2 + padding)
+#             x1 = max(0, x1 - padding)
+#             x2 = min(frame.shape[1], x2 + padding)
  
-            if x1 >= x2 or y1 >= y2:
-                continue
+#             if x1 >= x2 or y1 >= y2:
+#                 continue
  
-            plate_region = processed_frame[y1:y2, x1:x2]
+#             plate_region = processed_frame[y1:y2, x1:x2]
  
-            if plate_region.size == 0:
-                continue
+#             if plate_region.size == 0:
+#                 continue
  
-            try:
-                # Apply multiple image processing techniques
-                processed_images, resized_plate = enhance_plate_region(plate_region)
+#             try:
+#                 # Apply multiple image processing techniques
+#                 processed_images, resized_plate = enhance_plate_region(plate_region)
  
-                all_texts = []
+#                 all_texts = []
  
-                # Try OCR on all processed images
-                for img in processed_images:
-                    # Try with Tesseract
-                    tesseract_text = extract_text_with_tesseract(img)
-                    if tesseract_text:
-                        all_texts.append((tesseract_text, 0.8))
+#                 # Try OCR on all processed images
+#                 for img in processed_images:
+#                     # Try with Tesseract
+#                     tesseract_text = extract_text_with_tesseract(img)
+#                     if tesseract_text:
+#                         all_texts.append((tesseract_text, 0.8))
  
-                # Try with EasyOCR on the original and resized plate
-                easyocr_texts = extract_text_with_easyocr(reader, resized_plate)
-                all_texts.extend(easyocr_texts)
+#                 # Try with EasyOCR on the original and resized plate
+#                 easyocr_texts = extract_text_with_easyocr(reader, resized_plate)
+#                 all_texts.extend(easyocr_texts)
  
-                # Process all detected texts
-                for text, confidence in all_texts:
-                    if not text.strip():
-                        continue
+#                 # Process all detected texts
+#                 for text, confidence in all_texts:
+#                     if not text.strip():
+#                         continue
  
-                    text_height = resized_plate.shape[0]
-                    relative_text_size = text_height / (y2 - y1)
+#                     text_height = resized_plate.shape[0]
+#                     relative_text_size = text_height / (y2 - y1)
  
-                    # Clean text - keep only alphanumeric characters
-                    cleaned_text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+#                     # Clean text - keep only alphanumeric characters
+#                     cleaned_text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
  
-                    # More lenient length check for night videos
-                    if 2 <= len(cleaned_text) <= 10:
-                        frame_plates.append({
-                            'plate_number': cleaned_text,
-                            'confidence': confidence * score,
-                            'text_size': relative_text_size,
-                            'bbox': (x1, y1, x2, y2),
-                            'image': resized_plate.copy()  # Save the plate image for display later
-                        })
-            except Exception as e:
-                print(f"OCR processing error: {str(e)}")
+#                     # More lenient length check for night videos
+#                     if 2 <= len(cleaned_text) <= 10:
+#                         frame_plates.append({
+#                             'plate_number': cleaned_text,
+#                             'confidence': confidence * score,
+#                             'text_size': relative_text_size,
+#                             'bbox': (x1, y1, x2, y2),
+#                             'image': resized_plate.copy()  # Save the plate image for display later
+#                         })
+#             except Exception as e:
+#                 print(f"OCR processing error: {str(e)}")
  
-    return frame_plates
+#     return frame_plates
  
-def process_video(video_path, license_plate_detector, reader):
-    print(f"Starting to process video: {video_path}")
+# def process_video(video_path, license_plate_detector, reader):
+#     print(f"Starting to process video: {video_path}")
     
-    # Initialize video capture
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        print(f"Error: Could not open video file {video_path}")
-        return None
+#     # Initialize video capture
+#     cap = cv2.VideoCapture(video_path)
+#     if not cap.isOpened():
+#         print(f"Error: Could not open video file {video_path}")
+#         return None
     
-    # Get video info
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"Video contains {total_frames} frames at {fps} FPS")
+#     # Get video info
+#     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+#     fps = cap.get(cv2.CAP_PROP_FPS)
+#     print(f"Video contains {total_frames} frames at {fps} FPS")
     
-    # Initialize plate tracker
-    plate_tracker = PlateDetection()
+#     # Initialize plate tracker
+#     plate_tracker = PlateDetection()
     
-    # Process frames
-    frame_count = 0
-    plate_images = {}  # Store the best image for each plate
-    plate_confidences = defaultdict(float)  # Track the best confidence for each plate
+#     # Process frames
+#     frame_count = 0
+#     plate_images = {}  # Store the best image for each plate
+#     plate_confidences = defaultdict(float)  # Track the best confidence for each plate
     
-    print("Processing frames...")
+#     print("Processing frames...")
     
-    # Create a progress indicator
-    progress_interval = max(1, total_frames // 20)  # Show progress at 5% intervals
+#     # Create a progress indicator
+#     progress_interval = max(1, total_frames // 20)  # Show progress at 5% intervals
     
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+#     while True:
+#         ret, frame = cap.read()
+#         if not ret:
+#             break
             
-        frame_count += 1
+#         frame_count += 1
         
-        # Show progress
-        if frame_count % progress_interval == 0:
-            progress = (frame_count / total_frames) * 100
-            print(f"Progress: {progress:.1f}% ({frame_count}/{total_frames} frames)")
+#         # Show progress
+#         if frame_count % progress_interval == 0:
+#             progress = (frame_count / total_frames) * 100
+#             print(f"Progress: {progress:.1f}% ({frame_count}/{total_frames} frames)")
         
-        # Process every 2nd frame to speed up analysis
-        if frame_count % 2 == 0:
-            plates = detect_license_plates(frame, license_plate_detector, reader)
+#         # Process every 2nd frame to speed up analysis
+#         if frame_count % 2 == 0:
+#             plates = detect_license_plates(frame, license_plate_detector, reader)
             
-            for plate in plates:
-                plate_number = plate['plate_number']
-                confidence = plate['confidence']
-                text_size = plate['text_size']
+#             for plate in plates:
+#                 plate_number = plate['plate_number']
+#                 confidence = plate['confidence']
+#                 text_size = plate['text_size']
                 
-                # Update tracker
-                plate_tracker.update_scores(plate_number, confidence, text_size)
+#                 # Update tracker
+#                 plate_tracker.update_scores(plate_number, confidence, text_size)
                 
-                # Store the best quality image for each plate
-                combined_score = confidence * 0.6 + text_size * 0.4
-                if combined_score > plate_confidences[plate_number]:
-                    plate_confidences[plate_number] = combined_score
-                    plate_images[plate_number] = plate['image']
+#                 # Store the best quality image for each plate
+#                 combined_score = confidence * 0.6 + text_size * 0.4
+#                 if combined_score > plate_confidences[plate_number]:
+#                     plate_confidences[plate_number] = combined_score
+#                     plate_images[plate_number] = plate['image']
     
-    # Release resources
-    cap.release()
+#     # Release resources
+#     cap.release()
     
-    # Get top plates
-    top_plates = plate_tracker.get_top_plates(5)
-    print(f"Processing complete. Found {len(plate_tracker.all_plates)} unique license plates.")
+#     # Get top plates
+#     top_plates = plate_tracker.get_top_plates(5)
+#     print(f"Processing complete. Found {len(plate_tracker.all_plates)} unique license plates.")
     
-    return top_plates, plate_images
+#     return top_plates, plate_images
  
-def create_result_display(top_plates, plate_images):
-    # Create a blank image for displaying results
-    result_img_height = 800
-    result_img_width = 600
-    result_img = np.ones((result_img_height, result_img_width, 3), dtype=np.uint8) * 255  # White background
+# def create_result_display(top_plates, plate_images):
+#     # Create a blank image for displaying results
+#     result_img_height = 800
+#     result_img_width = 600
+#     result_img = np.ones((result_img_height, result_img_width, 3), dtype=np.uint8) * 255  # White background
     
-    # Add title
-    title = "Top 5 Detected License Plates"
-    cv2.putText(result_img, title, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+#     # Add title
+#     title = "Top 5 Detected License Plates"
+#     cv2.putText(result_img, title, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
     
-    # Display each plate
-    y_offset = 100
-    for i, (plate, count) in enumerate(top_plates):
-        # Display number and count
-        text = f"{i+1}. {plate} - Detected {count} times"
-        cv2.putText(result_img, text, (20, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+#     # Display each plate
+#     y_offset = 100
+#     for i, (plate, count) in enumerate(top_plates):
+#         # Display number and count
+#         text = f"{i+1}. {plate} - Detected {count} times"
+#         cv2.putText(result_img, text, (20, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
         
-        # Display plate image if available
-        if plate in plate_images:
-            img = plate_images[plate]
+#         # Display plate image if available
+#         if plate in plate_images:
+#             img = plate_images[plate]
             
-            # Resize to a standard width while maintaining aspect ratio
-            target_width = 400
-            aspect_ratio = img.shape[1] / img.shape[0]
-            target_height = int(target_width / aspect_ratio)
-            resized_img = cv2.resize(img, (target_width, target_height))
+#             # Resize to a standard width while maintaining aspect ratio
+#             target_width = 400
+#             aspect_ratio = img.shape[1] / img.shape[0]
+#             target_height = int(target_width / aspect_ratio)
+#             resized_img = cv2.resize(img, (target_width, target_height))
             
-            # Add to result image
-            y_pos = y_offset + 20
+#             # Add to result image
+#             y_pos = y_offset + 20
             
-            # Make sure the image fits
-            if y_pos + resized_img.shape[0] < result_img_height and resized_img.shape[1] < result_img_width-40:
-                # Convert grayscale to BGR if needed
-                if len(resized_img.shape) == 2:
-                    resized_img = cv2.cvtColor(resized_img, cv2.COLOR_GRAY2BGR)
+#             # Make sure the image fits
+#             if y_pos + resized_img.shape[0] < result_img_height and resized_img.shape[1] < result_img_width-40:
+#                 # Convert grayscale to BGR if needed
+#                 if len(resized_img.shape) == 2:
+#                     resized_img = cv2.cvtColor(resized_img, cv2.COLOR_GRAY2BGR)
                 
-                # Place the image at the right position
-                result_img[y_pos:y_pos+resized_img.shape[0], 20:20+resized_img.shape[1]] = resized_img
+#                 # Place the image at the right position
+#                 result_img[y_pos:y_pos+resized_img.shape[0], 20:20+resized_img.shape[1]] = resized_img
                 
-                # Add a border around the image
-                cv2.rectangle(result_img, (19, y_pos-1), (21+resized_img.shape[1], y_pos+resized_img.shape[0]+1), (0, 0, 0), 1)
+#                 # Add a border around the image
+#                 cv2.rectangle(result_img, (19, y_pos-1), (21+resized_img.shape[1], y_pos+resized_img.shape[0]+1), (0, 0, 0), 1)
                 
-                y_offset = y_pos + resized_img.shape[0] + 40
-            else:
-                y_offset += 60  # Skip the image if it doesn't fit
-        else:
-            y_offset += 60
+#                 y_offset = y_pos + resized_img.shape[0] + 40
+#             else:
+#                 y_offset += 60  # Skip the image if it doesn't fit
+#         else:
+#             y_offset += 60
     
-    return result_img
+#     return result_img
  
-def main():
-    try:
-        # Specify your video file path
-        video_file_path = input("Enter the path to the video file: ")
+# def main():
+#     try:
+#         # Specify your video file path
+#         video_file_path = input("Enter the path to the video file: ")
         
-        # Check if the video file exists
-        if not os.path.isfile(video_file_path):
-            print(f"Error: Video file {video_file_path} not found.")
-            return
+#         # Check if the video file exists
+#         if not os.path.isfile(video_file_path):
+#             print(f"Error: Video file {video_file_path} not found.")
+#             return
         
-        # Load model paths
-        license_plate_model = input("Enter the path to the license plate detector model: ")
+#         # Load model paths
+#         license_plate_model = input("Enter the path to the license plate detector model: ")
         
-        if not os.path.isfile(license_plate_model):
-            print(f"Error: Model file not found at specified path")
-            return
+#         if not os.path.isfile(license_plate_model):
+#             print(f"Error: Model file not found at specified path")
+#             return
         
-        # Load models
-        print("Loading detection models...")
-        license_plate_detector = YOLO(license_plate_model)
+#         # Load models
+#         print("Loading detection models...")
+#         license_plate_detector = YOLO(license_plate_model)
         
-        print("Initializing OCR reader (this might take a minute)...")
-        try:
-            reader = easyocr.Reader(['en'], gpu=True)
-            print("EasyOCR initialized with GPU support")
-        except Exception as e:
-            print(f"Error initializing EasyOCR with GPU: {str(e)}")
-            print("Falling back to CPU mode")
-            reader = easyocr.Reader(['en'], gpu=False)
+#         print("Initializing OCR reader (this might take a minute)...")
+#         try:
+#             reader = easyocr.Reader(['en'], gpu=True)
+#             print("EasyOCR initialized with GPU support")
+#         except Exception as e:
+#             print(f"Error initializing EasyOCR with GPU: {str(e)}")
+#             print("Falling back to CPU mode")
+#             reader = easyocr.Reader(['en'], gpu=False)
         
-        # Process the video without showing it
-        start_time = time.time()
-        top_plates, plate_images = process_video(video_file_path, license_plate_detector, reader)
-        processing_time = time.time() - start_time
+#         # Process the video without showing it
+#         start_time = time.time()
+#         top_plates, plate_images = process_video(video_file_path, license_plate_detector, reader)
+#         processing_time = time.time() - start_time
         
-        if top_plates:
-            print(f"\nVideo processing completed in {processing_time:.2f} seconds")
-            print("\nTop 5 most frequently detected license plates:")
-            for i, (plate, count) in enumerate(top_plates):
-                print(f"{i+1}. {plate} - Detected {count} times")
+#         if top_plates:
+#             print(f"\nVideo processing completed in {processing_time:.2f} seconds")
+#             print("\nTop 5 most frequently detected license plates:")
+#             for i, (plate, count) in enumerate(top_plates):
+#                 print(f"{i+1}. {plate} - Detected {count} times")
             
-            # Create and display result image
-            result_img = create_result_display(top_plates, plate_images)
+#             # Create and display result image
+#             result_img = create_result_display(top_plates, plate_images)
             
-            # Show the results
-            cv2.namedWindow("License Plate Detection Results", cv2.WINDOW_NORMAL)
-            cv2.imshow("License Plate Detection Results", result_img)
+#             # Show the results
+#             cv2.namedWindow("License Plate Detection Results", cv2.WINDOW_NORMAL)
+#             cv2.imshow("License Plate Detection Results", result_img)
             
-            # Save the results
-            results_path = "license_plate_results.jpg"
-            cv2.imwrite(results_path, result_img)
-            print(f"\nResults saved to {results_path}")
+#             # Save the results
+#             results_path = "license_plate_results.jpg"
+#             cv2.imwrite(results_path, result_img)
+#             print(f"\nResults saved to {results_path}")
             
-            print("\nPress any key to exit...")
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-        else:
-            print("No license plates detected in the video.")
+#             print("\nPress any key to exit...")
+#             cv2.waitKey(0)
+#             cv2.destroyAllWindows()
+#         else:
+#             print("No license plates detected in the video.")
         
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        cv2.destroyAllWindows()
+#     except Exception as e:
+#         print(f"Error: {str(e)}")
+#         cv2.destroyAllWindows()
  
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 
 #Uses Live Camera Feed 1
@@ -1142,3 +1142,506 @@ if __name__ == "__main__":
 
 # if __name__ == "__main__":
 #     main()
+
+from ultralytics import YOLO
+import cv2
+import numpy as np
+import pytesseract
+import re
+from collections import defaultdict, Counter
+import time
+import os
+import threading
+import logging
+from datetime import datetime
+import json
+import requests
+from urllib.parse import urlparse
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('iphone_vehicle_tracking.log'),
+        logging.StreamHandler()
+    ]
+)
+
+class VehicleTracker:
+    def __init__(self):
+        self.vehicles = {}
+        self.plate_to_id = {}
+        self.next_id = 1
+        self.lock = threading.Lock()
+        
+    def add_vehicle(self, plate_number, camera_id, timestamp=None):
+        if timestamp is None:
+            timestamp = datetime.now()
+            
+        with self.lock:
+            if plate_number in self.plate_to_id:
+                vehicle_id = self.plate_to_id[plate_number]
+                self.vehicles[vehicle_id]['last_seen'] = timestamp
+                if camera_id not in self.vehicles[vehicle_id]['camera_detections']:
+                    self.vehicles[vehicle_id]['camera_detections'][camera_id] = []
+                self.vehicles[vehicle_id]['camera_detections'][camera_id].append(timestamp)
+                
+                # Check if this is a cross-camera detection
+                cameras_seen = list(self.vehicles[vehicle_id]['camera_detections'].keys())
+                if len(cameras_seen) > 1:
+                    logging.info(f"🎯 CROSS-CAMERA MATCH! Vehicle ID {vehicle_id} (Plate: {plate_number}) now seen on cameras: {cameras_seen}")
+                else:
+                    logging.info(f"Vehicle ID {vehicle_id} (Plate: {plate_number}) detected again on iPhone {camera_id}")
+            else:
+                vehicle_id = self.next_id
+                self.next_id += 1
+                self.plate_to_id[plate_number] = vehicle_id
+                self.vehicles[vehicle_id] = {
+                    'plate': plate_number,
+                    'first_seen': timestamp,
+                    'last_seen': timestamp,
+                    'camera_detections': {camera_id: [timestamp]}
+                }
+                logging.info(f"🆕 NEW VEHICLE: ID {vehicle_id} (Plate: {plate_number}) registered on iPhone {camera_id}")
+                
+            return vehicle_id
+
+    def get_all_vehicles(self):
+        with self.lock:
+            return self.vehicles.copy()
+
+    def save_tracking_data(self, filename):
+        with self.lock:
+            data = {}
+            for vehicle_id, vehicle_data in self.vehicles.items():
+                data[vehicle_id] = {
+                    'plate': vehicle_data['plate'],
+                    'first_seen': vehicle_data['first_seen'].isoformat(),
+                    'last_seen': vehicle_data['last_seen'].isoformat(),
+                    'camera_detections': {
+                        str(cam_id): [ts.isoformat() for ts in timestamps]
+                        for cam_id, timestamps in vehicle_data['camera_detections'].items()
+                    }
+                }
+            
+            with open(filename, 'w') as f:
+                json.dump(data, f, indent=2)
+
+class PlateDetection:
+    def __init__(self, camera_id):
+        self.camera_id = camera_id
+        self.plate_scores = defaultdict(list)
+        self.recent_detections = defaultdict(list)
+        self.frame_window = 10  # Reduced for iPhone streaming
+        self.confidence_threshold = 0.4  # Adjusted for iPhone cameras
+        
+    def update_scores(self, plate_number, confidence, text_size):
+        current_time = time.time()
+        score = confidence * 0.7 + text_size * 0.3
+        
+        self.plate_scores[plate_number].append(score)
+        self.recent_detections[plate_number].append(current_time)
+        
+        # Keep only recent detections (last 8 seconds)
+        cutoff_time = current_time - 8
+        self.recent_detections[plate_number] = [
+            t for t in self.recent_detections[plate_number] if t > cutoff_time
+        ]
+        
+        # Keep only the last window of scores
+        if len(self.plate_scores[plate_number]) > self.frame_window:
+            self.plate_scores[plate_number] = self.plate_scores[plate_number][-self.frame_window:]
+    
+    def get_stable_plates(self):
+        """Return plates that have been consistently detected"""
+        stable_plates = []
+        current_time = time.time()
+        
+        for plate, scores in self.plate_scores.items():
+            recent_count = len(self.recent_detections[plate])
+            
+            if len(scores) >= 4 and recent_count >= 2:  # Relaxed for iPhone streaming
+                avg_score = sum(scores[-4:]) / 4
+                if avg_score > self.confidence_threshold:
+                    last_detection = max(self.recent_detections[plate])
+                    if current_time - last_detection < 2:
+                        stable_plates.append((plate, avg_score))
+                        self.recent_detections[plate] = []
+        
+        return stable_plates
+
+def enhanced_ocr(image_region):
+    """Enhanced OCR function optimized for iPhone camera streams"""
+    try:
+        # Resize if too small
+        if image_region.shape[0] < 40:
+            scale = 40 / image_region.shape[0]
+            width = int(image_region.shape[1] * scale)
+            image_region = cv2.resize(image_region, (width, 40), interpolation=cv2.INTER_CUBIC)
+        
+        # Convert to grayscale
+        if len(image_region.shape) == 3:
+            gray = cv2.cvtColor(image_region, cv2.COLOR_BGR2GRAY)
+        else:
+            gray = image_region
+        
+        # Enhanced preprocessing for iPhone camera quality
+        gray = cv2.bilateralFilter(gray, 9, 75, 75)
+        gray = cv2.equalizeHist(gray)
+        
+        # Adaptive thresholding
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        
+        # Morphological operations to clean up
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        
+        # OCR with license plate specific config
+        custom_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+        text = pytesseract.image_to_string(thresh, config=custom_config)
+        
+        # Clean and validate the text
+        cleaned_text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+        
+        if 3 <= len(cleaned_text) <= 8:
+            # Simple confidence based on text clarity
+            confidence = min(0.9, len(cleaned_text) / 8.0 + 0.3)
+            return cleaned_text, confidence
+        
+        return None, 0
+        
+    except Exception as e:
+        return None, 0
+
+def detect_license_plates_iphone(frame, license_plate_detector, camera_id):
+    """License plate detection optimized for iPhone camera streams"""
+    try:
+        # iPhone camera optimization
+        enhanced = cv2.convertScaleAbs(frame, alpha=1.1, beta=15)
+        
+        # Denoise for better detection
+        enhanced = cv2.fastNlMeansDenoisingColored(enhanced, None, 10, 10, 7, 21)
+        
+        # Detection with adjusted confidence for iPhone cameras
+        detections = license_plate_detector(enhanced, conf=0.25)[0]
+        frame_plates = []
+        
+        for detection in detections.boxes.data.tolist():
+            if len(detection) >= 6:
+                x1, y1, x2, y2, score, class_id = detection
+                if score < 0.25:
+                    continue
+                    
+                x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+                
+                # Add padding for better OCR
+                padding = 12
+                y1 = max(0, y1 - padding)
+                y2 = min(frame.shape[0], y2 + padding)
+                x1 = max(0, x1 - padding)
+                x2 = min(frame.shape[1], x2 + padding)
+                
+                if x1 >= x2 or y1 >= y2:
+                    continue
+                    
+                plate_region = enhanced[y1:y2, x1:x2]
+                
+                if plate_region.size == 0:
+                    continue
+                
+                # Enhanced OCR
+                text, confidence = enhanced_ocr(plate_region)
+                
+                if text and len(text) >= 3:
+                    text_height = plate_region.shape[0]
+                    relative_text_size = text_height / max(1, (y2 - y1))
+                    
+                    frame_plates.append({
+                        'plate_number': text,
+                        'confidence': confidence * score,
+                        'text_size': relative_text_size,
+                        'bbox': (x1, y1, x2, y2),
+                        'camera_id': camera_id
+                    })
+        
+        return frame_plates
+        
+    except Exception as e:
+        print(f"Detection error on iPhone {camera_id}: {str(e)}")
+        return []
+
+def test_iphone_connection(camera_source):
+    """Test iPhone camera connection"""
+    print(f"Testing connection to: {camera_source}")
+    
+    # Test HTTP connection first if it's a URL
+    if isinstance(camera_source, str) and camera_source.startswith('http'):
+        try:
+            response = requests.get(camera_source, timeout=5, stream=True)
+            if response.status_code == 200:
+                print("✅ HTTP connection successful")
+            else:
+                print(f"❌ HTTP connection failed: {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ HTTP test failed: {e}")
+            return False
+    
+    # Test OpenCV connection
+    cap = cv2.VideoCapture(camera_source)
+    if cap.isOpened():
+        ret, frame = cap.read()
+        cap.release()
+        if ret and frame is not None:
+            print("✅ OpenCV connection successful")
+            return True
+        else:
+            print("❌ OpenCV connection failed - no frame received")
+            return False
+    else:
+        print("❌ OpenCV connection failed - cannot open stream")
+        return False
+
+def iphone_camera_thread(camera_id, camera_source, license_plate_detector, vehicle_tracker, plate_detector, display_queue):
+    """iPhone camera thread with optimized streaming"""
+    print(f"Starting iPhone {camera_id} thread with source: {camera_source}")
+    
+    # Test connection first
+    if not test_iphone_connection(camera_source):
+        logging.error(f"iPhone {camera_id}: Failed to connect to {camera_source}")
+        return
+    
+    # Initialize capture with iPhone optimizations
+    cap = cv2.VideoCapture(camera_source)
+    
+    if not cap.isOpened():
+        logging.error(f"iPhone {camera_id}: Failed to open stream")
+        return
+    
+    # iPhone streaming optimizations
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+    cap.set(cv2.CAP_PROP_FPS, 20)
+    
+    logging.info(f"iPhone {camera_id}: Connected successfully")
+    
+    frame_count = 0
+    last_plate_check = time.time()
+    last_display_update = time.time()
+    consecutive_failures = 0
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            consecutive_failures += 1
+            if consecutive_failures > 30:  # 30 consecutive failures
+                logging.error(f"iPhone {camera_id}: Too many consecutive failures, reconnecting...")
+                cap.release()
+                time.sleep(2)
+                cap = cv2.VideoCapture(camera_source)
+                consecutive_failures = 0
+                continue
+            time.sleep(0.1)
+            continue
+            
+        consecutive_failures = 0  # Reset on successful frame
+        frame_count += 1
+        current_time = time.time()
+        
+        # Process every 4th frame for iPhone performance
+        if frame_count % 4 == 0:
+            plates = detect_license_plates_iphone(frame, license_plate_detector, camera_id)
+            
+            for plate in plates:
+                plate_number = plate['plate_number']
+                confidence = plate['confidence']
+                text_size = plate['text_size']
+                bbox = plate['bbox']
+                
+                plate_detector.update_scores(plate_number, confidence, text_size)
+                
+                # Draw detection box
+                x1, y1, x2, y2 = bbox
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(frame, f"Detected: {plate_number}", (x1, y1-10), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        
+        # Check for stable plates every 2.5 seconds
+        if current_time - last_plate_check > 2.5:
+            stable_plates = plate_detector.get_stable_plates()
+            for plate_number, avg_score in stable_plates:
+                vehicle_id = vehicle_tracker.add_vehicle(plate_number, camera_id)
+                
+                # Show confirmed detection with larger text
+                cv2.putText(frame, f"CONFIRMED - ID: {vehicle_id}", (10, 60), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+                cv2.putText(frame, f"Plate: {plate_number}", (10, 100), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+            
+            last_plate_check = current_time
+        
+        # Add iPhone info
+        cv2.putText(frame, f"iPhone {camera_id}", (10, 35), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
+        
+        # Connection status
+        status_color = (0, 255, 0) if consecutive_failures == 0 else (0, 255, 255)
+        cv2.putText(frame, "CONNECTED", (10, frame.shape[0] - 20), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, status_color, 2)
+        
+        # Update display
+        if current_time - last_display_update > 0.08:  # ~12 FPS display
+            if not display_queue.full():
+                try:
+                    display_queue.put((camera_id, frame.copy()), block=False)
+                except:
+                    pass
+            last_display_update = current_time
+    
+    cap.release()
+
+def main():
+    print("📱 iPhone Vehicle Tracking System")
+    print("=" * 50)
+    
+    try:
+        # Get model path
+        license_plate_model = input("Enter path to license plate model (or press Enter for 'yolov8n.pt'): ").strip()
+        if not license_plate_model:
+            license_plate_model = "yolov8n.pt"
+        
+        print(f"Using model: {license_plate_model}")
+        
+        # iPhone camera setup with examples
+        print("\n📱 iPhone Camera Setup:")
+        print("Recommended apps and URL formats:")
+        print("  IP Webcam Pro: http://192.168.1.XXX:8080/video")
+        print("  EpocCam: Use the URL shown in the app")
+        print("  AtomicCam: http://192.168.1.XXX:8888/mjpeg")
+        print("  DroidCam: http://192.168.1.XXX:4747/mjpegfeed?640x480")
+        print("\nMake sure both iPhones are on the same WiFi network!")
+        
+        camera1_source = input("\nEnter iPhone 1 stream URL: ").strip()
+        camera2_source = input("Enter iPhone 2 stream URL: ").strip()
+        
+        if not camera1_source or not camera2_source:
+            print("❌ Both camera URLs are required!")
+            return
+        
+        # Load model
+        print("\n🔄 Loading YOLO model...")
+        try:
+            license_plate_detector = YOLO(license_plate_model)
+            print("✅ Model loaded successfully")
+        except Exception as e:
+            print(f"❌ Error loading model: {e}")
+            print("Make sure you have the YOLO model file in the current directory")
+            return
+        
+        # Initialize components
+        vehicle_tracker = VehicleTracker()
+        plate_detector1 = PlateDetection(1)
+        plate_detector2 = PlateDetection(2)
+        
+        # Create display queue
+        from queue import Queue
+        display_queue = Queue(maxsize=6)
+        
+        print("\n🚀 Starting iPhone camera connections...")
+        
+        # Start camera threads
+        thread1 = threading.Thread(target=iphone_camera_thread, args=(
+            1, camera1_source, license_plate_detector, 
+            vehicle_tracker, plate_detector1, display_queue
+        ))
+        thread2 = threading.Thread(target=iphone_camera_thread, args=(
+            2, camera2_source, license_plate_detector, 
+            vehicle_tracker, plate_detector2, display_queue
+        ))
+        
+        thread1.daemon = True
+        thread2.daemon = True
+        thread1.start()
+        thread2.start()
+        
+        print("\n✅ System started! Waiting for iPhone connections...")
+        print("Controls:")
+        print("  'q' - Quit")
+        print("  's' - Save tracking data")
+        print("  'r' - Print summary report")
+        print("  'c' - Clear all tracking data")
+        
+        # Display loop
+        camera_frames = {1: None, 2: None}
+        
+        while True:
+            # Get latest frames
+            try:
+                while not display_queue.empty():
+                    camera_id, frame = display_queue.get(block=False)
+                    camera_frames[camera_id] = frame
+            except:
+                pass
+            
+            # Display frames
+            for cam_id in [1, 2]:
+                if camera_frames[cam_id] is not None:
+                    frame = camera_frames[cam_id]
+                    height, width = frame.shape[:2]
+                    
+                    # Resize for display if too large
+                    if width > 900:
+                        scale = 900 / width
+                        new_width = int(width * scale)
+                        new_height = int(height * scale)
+                        frame = cv2.resize(frame, (new_width, new_height))
+                    
+                    cv2.imshow(f"iPhone {cam_id} Stream", frame)
+            
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                break
+            elif key == ord('s'):
+                filename = f"iphone_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                vehicle_tracker.save_tracking_data(filename)
+                print(f"💾 Data saved to {filename}")
+            elif key == ord('r'):
+                print_summary(vehicle_tracker)
+            elif key == ord('c'):
+                vehicle_tracker.vehicles.clear()
+                vehicle_tracker.plate_to_id.clear()
+                vehicle_tracker.next_id = 1
+                print("🧹 Tracking data cleared")
+        
+        # Cleanup
+        cv2.destroyAllWindows()
+        print_summary(vehicle_tracker)
+        
+    except KeyboardInterrupt:
+        print("\n🛑 Stopping system...")
+        cv2.destroyAllWindows()
+    except Exception as e:
+        logging.error(f"Error in main: {str(e)}")
+        cv2.destroyAllWindows()
+
+def print_summary(vehicle_tracker):
+    vehicles = vehicle_tracker.get_all_vehicles()
+    print(f"\n📊 SESSION SUMMARY")
+    print("=" * 50)
+    print(f"Total vehicles tracked: {len(vehicles)}")
+    
+    cross_camera_count = 0
+    for vehicle_id, data in vehicles.items():
+        cameras_seen = list(data['camera_detections'].keys())
+        status = "🎯 CROSS-CAMERA" if len(cameras_seen) > 1 else "📱 SINGLE-CAMERA"
+        if len(cameras_seen) > 1:
+            cross_camera_count += 1
+        
+        duration = (data['last_seen'] - data['first_seen']).total_seconds()
+        print(f"{status} - Vehicle {vehicle_id} (Plate: {data['plate']}) - iPhones: {cameras_seen} - Duration: {duration:.1f}s")
+    
+    print(f"\n🎯 Cross-camera matches: {cross_camera_count}")
+    print(f"📱 Single-camera only: {len(vehicles) - cross_camera_count}")
+
+if __name__ == "__main__":
+    main()
