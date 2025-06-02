@@ -568,104 +568,418 @@
     </main>
 
     <script>
-        // Tab functionality
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.getAttribute('data-tab');
-                
-                // Remove active class from all tabs and content
-                document.querySelectorAll('.tab-button').forEach(tab => {
-                    tab.classList.remove('active-tab');
-                    tab.classList.add('text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300');
-                    tab.classList.remove('text-primary-blue', 'border-primary-blue');
-                });
-                
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
-                
-                // Add active class to clicked tab
-                button.classList.add('active-tab');
-                button.classList.remove('text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300');
-                button.classList.add('text-primary-blue', 'border-primary-blue');
-                
-                // Show corresponding content
-                document.getElementById(tabId).classList.remove('hidden');
-            });
+// Tab functionality
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const tabId = button.getAttribute('data-tab');
+        
+        // Remove active class from all tabs and content
+        document.querySelectorAll('.tab-button').forEach(tab => {
+            tab.classList.remove('active-tab');
+            tab.classList.add('text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300');
+            tab.classList.remove('text-primary-blue', 'border-primary-blue');
         });
-
-        // Row expand/collapse functionality
-        document.querySelectorAll('.parking-row').forEach(row => {
-            row.addEventListener('click', () => {
-                const content = row.nextElementSibling;
-                const icon = row.querySelector('.expand-icon');
-                
-                if (content.classList.contains('hidden')) {
-                    content.classList.remove('hidden');
-                    icon.style.transform = 'rotate(180deg)';
-                } else {
-                    content.classList.add('hidden');
-                    icon.style.transform = 'rotate(0deg)';
-                }
-            });
+        
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
         });
+        
+        // Add active class to clicked tab
+        button.classList.add('active-tab');
+        button.classList.remove('text-gray-500', 'border-transparent', 'hover:text-gray-700', 'hover:border-gray-300');
+        button.classList.add('text-primary-blue', 'border-primary-blue');
+        
+        // Show corresponding content
+        document.getElementById(tabId).classList.remove('hidden');
+    });
+});
 
-        // Set initial active tab styles
-        document.addEventListener('DOMContentLoaded', () => {
-            const activeTab = document.querySelector('.active-tab');
-            if (activeTab) {
-                activeTab.classList.add('text-primary-blue', 'border-primary-blue');
-                activeTab.classList.remove('text-gray-500', 'border-transparent');
-            }
-        });
+// Row expand/collapse functionality
+document.querySelectorAll('.parking-row').forEach(row => {
+    row.addEventListener('click', () => {
+        const content = row.nextElementSibling;
+        const icon = row.querySelector('.expand-icon');
+        
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            content.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
+        }
+    });
+});
 
-        // Add event listener to the Confirm & Approve button
-document.querySelector('.confirm-approve-btn').addEventListener('click', async function() {
-    const button = this;
-    
-    // Disable button during API call
-    button.disabled = true;
-    button.textContent = 'Processing...';
+// Set initial active tab styles
+document.addEventListener('DOMContentLoaded', () => {
+    const activeTab = document.querySelector('.active-tab');
+    if (activeTab) {
+        activeTab.classList.add('text-primary-blue', 'border-primary-blue');
+        activeTab.classList.remove('text-gray-500', 'border-transparent');
+    }
+});
+
+// Function to upload image to server using the new API endpoint
+async function uploadImageToServer(file, address) {
+    const formData = new FormData();
+    formData.append('image', file);
+    // Keep the original address format without underscores
+    formData.append('address', address);
     
     try {
-        
-        // API call payload
-        const payload = {
-            script_path: '/Users/jainamdoshi/Desktop/Projects/Slotify/BE/parking_lot/label_parking_slots.py' // Update this with your actual script path
-        };
-        
-        const response = await fetch('/api/run-script/', {
+        const response = await fetch('/upload-image/', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
+            body: formData
         });
         
-        const data = await response.json();
-        
-        if (data.success) {
-            // Success handling
-            console.log('Script executed successfully:', data.stdout);
-            alert('Operation completed successfully!');
-            
-            // Optional: redirect or update UI
-            // window.location.reload();
-        } else {
-            // Error handling
-            console.error('Script execution failed:', data.error);
-            console.error('stderr:', data.stderr);
-            alert('Operation failed: ' + data.error);
+        if (!response.ok) {
+            throw new Error(`Upload failed: ${response.status}`);
         }
         
+        const data = await response.json();
+        return data;
     } catch (error) {
-        console.error('API call failed:', error);
-        alert('Network error occurred. Please try again.');
-    } finally {
-        // Re-enable button
-        button.disabled = false;
-        button.textContent = 'Confirm & Approve';
+        console.error('Image upload error:', error);
+        throw error;
     }
+}
+
+// Event delegation for dynamically generated file inputs and buttons
+document.addEventListener('change', function(event) {
+    // Handle file input changes - check for file input more broadly
+    if (event.target.type === 'file') {
+        console.log('File input detected:', event.target);
+        const fileInput = event.target;
+        
+        // Try to find the parking lot container - look for the white rounded container
+        const parkingLotContainer = fileInput.closest('.bg-white.rounded-xl') || 
+                                   fileInput.closest('.bg-white') ||
+                                   fileInput.closest('form').closest('.bg-white');
+        
+        if (!parkingLotContainer) {
+            console.log('No parking lot container found');
+            return;
+        }
+        
+        // Look for the confirm button more thoroughly
+        const confirmButton = parkingLotContainer.querySelector('.confirm-approve-btn') ||
+                             parkingLotContainer.querySelector('button[class*="confirm-approve-btn"]') ||
+                             parkingLotContainer.querySelector('button:last-of-type');
+        
+        const fileInfo = parkingLotContainer.querySelector('.file-info');
+        
+        console.log('Found elements:', { confirmButton, fileInfo });
+        console.log('Files selected:', fileInput.files);
+        
+        if (!confirmButton) {
+            console.error('Confirm button not found in container');
+            return;
+        }
+        
+        if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            console.log('File selected:', file.name);
+            
+            // Store the file in the button's dataset for later use
+            confirmButton.dataset.selectedFile = 'selected';
+            confirmButton._selectedFile = file; // Store actual file object
+            
+            // Enable the button
+            confirmButton.disabled = false;
+            confirmButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            // Update file info display
+            if (fileInfo) {
+                fileInfo.textContent = `Selected: ${file.name}`;
+                fileInfo.classList.remove('hidden');
+            } else {
+                // If no file-info element, create one or show alert
+                console.log(`File selected: ${file.name}`);
+            }
+            
+            console.log('Button enabled and file info updated');
+        } else {
+            console.log('No file selected, disabling button');
+            // No file selected, disable button
+            confirmButton.disabled = true;
+            confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
+            delete confirmButton.dataset.selectedFile;
+            delete confirmButton._selectedFile;
+            
+            if (fileInfo) {
+                fileInfo.classList.add('hidden');
+            }
+        }
+    }
+});
+
+// Event delegation for dynamically generated Confirm & Approve buttons
+document.addEventListener('click', async function(event) {
+    // Check if the clicked element is a confirm-approve-btn
+    if (event.target.classList.contains('confirm-approve-btn')) {
+        const button = event.target;
+        const lotId = button.getAttribute('data-lot-id');
+        
+        // Check if button is disabled
+        if (button.disabled) {
+            return;
+        }
+        
+        // Find the parking row to get the address
+        const parkingRow = button.closest('.bg-white').querySelector('.parking-row');
+        const address = parkingRow.querySelector('h3').textContent.trim();
+        
+        // Check if file is selected
+        if (!button._selectedFile) {
+            alert('Please select an image file before confirming and approving.');
+            return;
+        }
+        
+        // Disable button during processing
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = 'Uploading Image...';
+        
+        try {
+            // First, upload the image using the new API endpoint
+            console.log('Uploading image for address:', address);
+            const uploadResult = await uploadImageToServer(button._selectedFile, address);
+            console.log('Image uploaded successfully:', uploadResult);
+            
+            // Update button text for next phase
+            button.textContent = 'Processing...';
+            
+            // Then proceed with the original API call
+            const payload = {
+                script_path: '/Users/jainamdoshi/Desktop/Projects/Slotify/BE/parking_lot/label_parking_slots.py',
+                address: address  // Keep original address format
+            };
+            
+            const response = await fetch('/api/run-script/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Success handling
+                console.log('Script executed successfully:', data.stdout);
+                console.log('Address processed:', data.address_used);
+                alert(`Operation completed successfully for address: ${address}\nImage saved as: ${uploadResult.saved_as}`);
+                
+                // Optional: reload the parking lots or update UI
+                loadUnconfirmedParkingLots();
+            } else {
+                // Error handling
+                console.error('Script execution failed:', data.error);
+                console.error('stderr:', data.stderr);
+                alert('Operation failed during script execution: ' + data.error);
+            }
+            
+        } catch (error) {
+            console.error('Processing failed:', error);
+            if (error.message.includes('Upload failed')) {
+                alert('Image upload failed: ' + error.message);
+            } else {
+                alert('Operation failed: ' + error.message);
+            }
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    }
+});
+
+// Function to fetch and display unconfirmed parking lots
+async function loadUnconfirmedParkingLots() {
+    try {
+        const response = await fetch('/api/unconfirmed-parkinglots/');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const parkingLots = data.unconfirmedParkingLots;
+        
+        // Get the container where parking lots will be rendered
+        const container = document.querySelector('.space-y-4');
+        
+        // Clear existing content
+        container.innerHTML = '';
+        
+        // Generate HTML for each parking lot
+        parkingLots.forEach((lot, index) => {
+            const parkingLotHTML = generateParkingLotHTML(lot, index + 1);
+            container.appendChild(parkingLotHTML);
+        });
+        
+        // Reinitialize event listeners for the new elements
+        initializeParkingLotEvents();
+        
+    } catch (error) {
+        console.error('Error fetching parking lots:', error);
+        showErrorMessage('Failed to load parking lots. Please try again.');
+    }
+}
+
+// Function to generate HTML for a single parking lot
+function generateParkingLotHTML(lot, rowNumber) {
+    const div = document.createElement('div');
+    div.className = 'bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden';
+    
+    // Format the registration date
+    const registrationDate = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    div.innerHTML = `
+        <div class="parking-row cursor-pointer p-6 hover:bg-gray-50 transition duration-200" data-row="${rowNumber}" data-lot-id="${lot.parkingLotId}">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">${lot.location}</h3>
+                        <p class="text-sm text-gray-600">${lot.name || 'Unnamed Parking Lot'}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">Pending Review</span>
+                    <svg class="expand-icon w-5 h-5 text-gray-400 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Expandable Form -->
+        <div class="row-content hidden border-t border-gray-200 p-6 bg-gray-50">
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Property Owner Name</label>
+                        <input type="text" value="${lot.owner.firstName} ${lot.owner.lastName}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                        <input type="text" value="${lot.location}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Total Spaces</label>
+                        <input type="number" value="${lot.totalSpaces}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Registered By</label>
+                        <input type="text" value="${lot.owner.emailId}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+                        <input type="text" value="${lot.owner.contactNumber}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <input type="text" value="Pending Review" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-yellow-50 text-yellow-800" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Registration Date</label>
+                        <input type="text" value="${registrationDate}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Owner Verified</label>
+                        <input type="text" value="${lot.owner.verified ? 'Yes' : 'No'}" class="w-full px-3 py-2 border border-gray-300 rounded-lg ${lot.owner.verified ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}" readonly>
+                    </div>
+                </div>
+                
+                ${lot.owner.idProof ? `
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ID Proof Document</label>
+                    <div class="mt-1 flex items-center space-x-4">
+                        <a href="${lot.owner.idProof}" target="_blank" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            View ID Proof
+                        </a>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Attach Verification Image <span class="text-red-500">*</span></label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-primary-blue transition duration-200">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-primary-blue hover:text-primary-green focus-within:outline-none">
+                                    <span>Upload a file</span>
+                                    <input type="file" class="sr-only" accept="image/*" required>
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            <p class="file-info text-sm text-green-600 hidden"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" class="reject-btn px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200" data-lot-id="${lot.parkingLotId}">
+                        Reject
+                    </button>
+                    <button type="button" class="confirm-approve-btn px-6 py-2 bg-gradient-to-r from-primary-blue to-primary-green text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition duration-200 shadow-md opacity-50 cursor-not-allowed" data-lot-id="${lot.parkingLotId}" disabled>
+                        Confirm & Approve
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    return div;
+}
+
+// Function to initialize event listeners for parking lot interactions
+function initializeParkingLotEvents() {
+    // Handle row expansion/collapse
+    document.querySelectorAll('.parking-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const content = this.parentElement.querySelector('.row-content');
+            const icon = this.querySelector('.expand-icon');
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        });
+    });
+}
+
+// Function to show error messages
+function showErrorMessage(message) {
+    const container = document.querySelector('.space-y-4');
+    if (container) {
+        container.innerHTML = `<div class="text-center py-8 text-red-600">${message}</div>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadUnconfirmedParkingLots();
 });
     </script>
 

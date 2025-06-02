@@ -22,7 +22,7 @@ from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 # <<<<<<< HEAD
 # # Define your credentials path relative to the project
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -264,7 +264,7 @@ def register_owner(request):
                 verified=False
             )
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
             if id_proof_file:
                 storage_client = storage.Client(credentials=credentials)
                 bucket_name = "slotifydocument3"  # Your Google Cloud Storage bucket
@@ -284,8 +284,8 @@ def register_owner(request):
                 owner.idProof = signed_url
                 owner.save()
 
-=======
->>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
+# =======
+# >>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
             login(request, user)
 
             return JsonResponse({'message': 'Owner registered successfully!'}, status=201)

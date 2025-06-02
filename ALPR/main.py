@@ -1143,27 +1143,1996 @@
 # if __name__ == "__main__":
 #     main()
 
+
+# Use Live Feed 3
+
+# from ultralytics import YOLO
+# import cv2
+# import numpy as np
+# import pytesseract
+# import re
+# from collections import defaultdict, Counter
+# import time
+# import os
+# import threading
+# import logging
+# from datetime import datetime
+# import json
+
+# # Setup logging
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+#     handlers=[
+#         logging.FileHandler('mac_vehicle_tracking.log'),
+#         logging.StreamHandler()
+#     ]
+# )
+
+# class VehicleTracker:
+#     def __init__(self):
+#         self.vehicles = {}
+#         self.plate_to_id = {}
+#         self.next_id = 1
+#         self.lock = threading.Lock()
+        
+#     def add_vehicle(self, plate_number, camera_id, timestamp=None):
+#         if timestamp is None:
+#             timestamp = datetime.now()
+            
+#         with self.lock:
+#             if plate_number in self.plate_to_id:
+#                 vehicle_id = self.plate_to_id[plate_number]
+#                 self.vehicles[vehicle_id]['last_seen'] = timestamp
+#                 if camera_id not in self.vehicles[vehicle_id]['camera_detections']:
+#                     self.vehicles[vehicle_id]['camera_detections'][camera_id] = []
+#                 self.vehicles[vehicle_id]['camera_detections'][camera_id].append(timestamp)
+                
+#                 # Check if this is a cross-camera detection
+#                 cameras_seen = list(self.vehicles[vehicle_id]['camera_detections'].keys())
+#                 camera_names = ["USB Camera" if c == 0 else "iPhone" for c in cameras_seen]
+#                 if len(cameras_seen) > 1:
+#                     logging.info(f"🎯 CROSS-CAMERA MATCH! Vehicle ID {vehicle_id} (Plate: {plate_number}) now seen on: {camera_names}")
+#                 else:
+#                     camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#                     logging.info(f"Vehicle ID {vehicle_id} (Plate: {plate_number}) detected again on {camera_name}")
+#             else:
+#                 vehicle_id = self.next_id
+#                 self.next_id += 1
+#                 self.plate_to_id[plate_number] = vehicle_id
+#                 camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#                 self.vehicles[vehicle_id] = {
+#                     'plate': plate_number,
+#                     'first_seen': timestamp,
+#                     'last_seen': timestamp,
+#                     'camera_detections': {camera_id: [timestamp]}
+#                 }
+#                 logging.info(f"🆕 NEW VEHICLE: ID {vehicle_id} (Plate: {plate_number}) registered on {camera_name}")
+                
+#             return vehicle_id
+
+#     def get_all_vehicles(self):
+#         with self.lock:
+#             return self.vehicles.copy()
+
+#     def save_tracking_data(self, filename):
+#         with self.lock:
+#             data = {}
+#             for vehicle_id, vehicle_data in self.vehicles.items():
+#                 data[vehicle_id] = {
+#                     'plate': vehicle_data['plate'],
+#                     'first_seen': vehicle_data['first_seen'].isoformat(),
+#                     'last_seen': vehicle_data['last_seen'].isoformat(),
+#                     'camera_detections': {
+#                         str(cam_id): [ts.isoformat() for ts in timestamps]
+#                         for cam_id, timestamps in vehicle_data['camera_detections'].items()
+#                     }
+#                 }
+            
+#             with open(filename, 'w') as f:
+#                 json.dump(data, f, indent=2)
+
+# class PlateDetection:
+#     def __init__(self, camera_id):
+#         self.camera_id = camera_id
+#         self.camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#         self.plate_scores = defaultdict(list)
+#         self.recent_detections = defaultdict(list)
+#         # Different settings for USB vs iPhone
+#         if camera_id == 0:  # USB Camera
+#             self.frame_window = 12
+#             self.confidence_threshold = 0.5
+#         else:  # iPhone
+#             self.frame_window = 10
+#             self.confidence_threshold = 0.45
+        
+#     def update_scores(self, plate_number, confidence, text_size):
+#         current_time = time.time()
+#         score = confidence * 0.7 + text_size * 0.3
+        
+#         self.plate_scores[plate_number].append(score)
+#         self.recent_detections[plate_number].append(current_time)
+        
+#         # Keep only recent detections (last 8 seconds)
+#         cutoff_time = current_time - 8
+#         self.recent_detections[plate_number] = [
+#             t for t in self.recent_detections[plate_number] if t > cutoff_time
+#         ]
+        
+#         # Keep only the last window of scores
+#         if len(self.plate_scores[plate_number]) > self.frame_window:
+#             self.plate_scores[plate_number] = self.plate_scores[plate_number][-self.frame_window:]
+    
+#     def get_stable_plates(self):
+#         """Return plates that have been consistently detected"""
+#         stable_plates = []
+#         current_time = time.time()
+        
+#         for plate, scores in self.plate_scores.items():
+#             recent_count = len(self.recent_detections[plate])
+            
+#             # Different requirements for USB vs iPhone
+#             min_scores = 5 if self.camera_id == 0 else 4
+#             min_recent = 3 if self.camera_id == 0 else 2
+            
+#             if len(scores) >= min_scores and recent_count >= min_recent:
+#                 avg_score = sum(scores[-min_scores:]) / min_scores
+#                 if avg_score > self.confidence_threshold:
+#                     last_detection = max(self.recent_detections[plate])
+#                     if current_time - last_detection < 2:
+#                         stable_plates.append((plate, avg_score))
+#                         self.recent_detections[plate] = []
+        
+#         return stable_plates
+
+# def enhanced_ocr_mac(image_region, camera_id):
+#     """Enhanced OCR function optimized for Mac with different settings for USB vs iPhone"""
+#     try:
+#         # Resize if too small
+#         min_height = 35 if camera_id == 0 else 40
+#         if image_region.shape[0] < min_height:
+#             scale = min_height / image_region.shape[0]
+#             width = int(image_region.shape[1] * scale)
+#             image_region = cv2.resize(image_region, (width, min_height), interpolation=cv2.INTER_CUBIC)
+        
+#         # Convert to grayscale
+#         if len(image_region.shape) == 3:
+#             gray = cv2.cvtColor(image_region, cv2.COLOR_BGR2GRAY)
+#         else:
+#             gray = image_region
+        
+#         # Different preprocessing for USB vs iPhone
+#         if camera_id == 0:  # USB Camera - typically better quality
+#             gray = cv2.equalizeHist(gray)
+#             thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+#         else:  # iPhone - may need more processing
+#             gray = cv2.bilateralFilter(gray, 9, 75, 75)
+#             gray = cv2.equalizeHist(gray)
+#             thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 13, 2)
+        
+#         # Morphological operations
+#         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+#         thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        
+#         # OCR with license plate specific config
+#         custom_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+#         text = pytesseract.image_to_string(thresh, config=custom_config)
+        
+#         # Clean and validate the text
+#         cleaned_text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+        
+#         if 3 <= len(cleaned_text) <= 8:
+#             # Confidence based on text clarity and camera type
+#             base_confidence = 0.85 if camera_id == 0 else 0.75
+#             confidence = min(0.95, base_confidence + len(cleaned_text) / 20.0)
+#             return cleaned_text, confidence
+        
+#         return None, 0
+        
+#     except Exception as e:
+#         return None, 0
+
+# def detect_license_plates_mac(frame, license_plate_detector, camera_id):
+#     """License plate detection optimized for Mac with USB and iPhone cameras"""
+#     try:
+#         # Different enhancement for USB vs iPhone
+#         if camera_id == 0:  # USB Camera
+#             enhanced = cv2.convertScaleAbs(frame, alpha=1.1, beta=10)
+#         else:  # iPhone
+#             enhanced = cv2.convertScaleAbs(frame, alpha=1.2, beta=15)
+#             # Additional denoising for iPhone
+#             enhanced = cv2.fastNlMeansDenoisingColored(enhanced, None, 10, 10, 7, 21)
+        
+#         # Detection with different confidence thresholds
+#         conf_threshold = 0.3 if camera_id == 0 else 0.25
+#         detections = license_plate_detector(enhanced, conf=conf_threshold)[0]
+#         frame_plates = []
+        
+#         for detection in detections.boxes.data.tolist():
+#             if len(detection) >= 6:
+#                 x1, y1, x2, y2, score, class_id = detection
+#                 if score < conf_threshold:
+#                     continue
+                    
+#                 x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+                
+#                 # Different padding for USB vs iPhone
+#                 padding = 10 if camera_id == 0 else 12
+#                 y1 = max(0, y1 - padding)
+#                 y2 = min(frame.shape[0], y2 + padding)
+#                 x1 = max(0, x1 - padding)
+#                 x2 = min(frame.shape[1], x2 + padding)
+                
+#                 if x1 >= x2 or y1 >= y2:
+#                     continue
+                    
+#                 plate_region = enhanced[y1:y2, x1:x2]
+                
+#                 if plate_region.size == 0:
+#                     continue
+                
+#                 # Enhanced OCR
+#                 text, confidence = enhanced_ocr_mac(plate_region, camera_id)
+                
+#                 if text and len(text) >= 3:
+#                     text_height = plate_region.shape[0]
+#                     relative_text_size = text_height / max(1, (y2 - y1))
+                    
+#                     frame_plates.append({
+#                         'plate_number': text,
+#                         'confidence': confidence * score,
+#                         'text_size': relative_text_size,
+#                         'bbox': (x1, y1, x2, y2),
+#                         'camera_id': camera_id
+#                     })
+        
+#         return frame_plates
+        
+#     except Exception as e:
+#         camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#         print(f"Detection error on {camera_name}: {str(e)}")
+#         return []
+
+# def find_available_cameras():
+#     """Find available cameras on Mac"""
+#     available_cameras = {}
+    
+#     print("🔍 Scanning for available cameras...")
+    
+#     # Test USB cameras (usually 0, 1, 2)
+#     for i in range(4):
+#         cap = cv2.VideoCapture(i)
+#         if cap.isOpened():
+#             ret, frame = cap.read()
+#             if ret and frame is not None:
+#                 # Try to get camera name (Mac specific)
+#                 try:
+#                     backend = cap.getBackendName()
+#                     available_cameras[i] = f"Camera {i} ({backend})"
+#                     print(f"✅ Found USB Camera {i}")
+#                 except:
+#                     available_cameras[i] = f"Camera {i}"
+#                     print(f"✅ Found Camera {i}")
+#             cap.release()
+#         else:
+#             cap.release()
+    
+#     return available_cameras
+
+# def test_camera_connection(camera_id):
+#     """Test camera connection"""
+#     print(f"Testing camera {camera_id}...")
+#     cap = cv2.VideoCapture(camera_id)
+#     if cap.isOpened():
+#         ret, frame = cap.read()
+#         cap.release()
+#         if ret and frame is not None:
+#             print(f"✅ Camera {camera_id} connection successful")
+#             return True
+#         else:
+#             print(f"❌ Camera {camera_id} opened but no frame received")
+#             return False
+#     else:
+#         print(f"❌ Camera {camera_id} connection failed")
+#         return False
+
+# def camera_thread_mac(camera_id, license_plate_detector, vehicle_tracker, plate_detector, display_queue):
+#     """Camera thread optimized for Mac with USB and iPhone cameras"""
+#     camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#     print(f"Starting {camera_name} thread (ID: {camera_id})")
+    
+#     # Test connection first
+#     if not test_camera_connection(camera_id):
+#         logging.error(f"{camera_name}: Failed to connect")
+#         return
+    
+#     # Initialize capture
+#     cap = cv2.VideoCapture(camera_id)
+    
+#     if not cap.isOpened():
+#         logging.error(f"{camera_name}: Failed to open camera")
+#         return
+    
+#     # Camera optimizations
+#     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+#     # Different FPS for USB vs iPhone
+#     fps = 25 if camera_id == 0 else 20
+#     cap.set(cv2.CAP_PROP_FPS, fps)
+    
+#     # Try to set resolution (may not work on all cameras)
+#     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+#     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    
+#     logging.info(f"{camera_name}: Connected successfully")
+    
+#     frame_count = 0
+#     last_plate_check = time.time()
+#     last_display_update = time.time()
+#     consecutive_failures = 0
+    
+#     while True:
+#         ret, frame = cap.read()
+#         if not ret:
+#             consecutive_failures += 1
+#             if consecutive_failures > 20:
+#                 logging.error(f"{camera_name}: Too many consecutive failures, attempting reconnection...")
+#                 cap.release()
+#                 time.sleep(1)
+#                 cap = cv2.VideoCapture(camera_id)
+#                 consecutive_failures = 0
+#                 continue
+#             time.sleep(0.05)
+#             continue
+            
+#         consecutive_failures = 0
+#         frame_count += 1
+#         current_time = time.time()
+        
+#         # Process frames - different intervals for USB vs iPhone
+#         process_interval = 3 if camera_id == 0 else 4
+#         if frame_count % process_interval == 0:
+#             plates = detect_license_plates_mac(frame, license_plate_detector, camera_id)
+            
+#             for plate in plates:
+#                 plate_number = plate['plate_number']
+#                 confidence = plate['confidence']
+#                 text_size = plate['text_size']
+#                 bbox = plate['bbox']
+                
+#                 plate_detector.update_scores(plate_number, confidence, text_size)
+                
+#                 # Draw detection box
+#                 x1, y1, x2, y2 = bbox
+#                 color = (0, 255, 0) if camera_id == 0 else (0, 255, 255)
+#                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+#                 cv2.putText(frame, f"Detected: {plate_number}", (x1, y1-10), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+        
+#         # Check for stable plates
+#         check_interval = 2.5 if camera_id == 0 else 3.0
+#         if current_time - last_plate_check > check_interval:
+#             stable_plates = plate_detector.get_stable_plates()
+#             for plate_number, avg_score in stable_plates:
+#                 vehicle_id = vehicle_tracker.add_vehicle(plate_number, camera_id)
+                
+#                 # Show confirmed detection
+#                 confirm_color = (0, 255, 0) if camera_id == 0 else (0, 255, 255)
+#                 cv2.putText(frame, f"CONFIRMED - ID: {vehicle_id}", (10, 60), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
+#                 cv2.putText(frame, f"Plate: {plate_number}", (10, 100), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
+            
+#             last_plate_check = current_time
+        
+#         # Add camera info
+#         label_color = (255, 255, 255) if camera_id == 0 else (255, 255, 0)
+#         cv2.putText(frame, camera_name, (10, 35), 
+#                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, label_color, 2)
+        
+#         # Connection status
+#         status_color = (0, 255, 0) if consecutive_failures == 0 else (0, 255, 255)
+#         cv2.putText(frame, "CONNECTED", (10, frame.shape[0] - 20), 
+#                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
+        
+#         # Update display
+#         if current_time - last_display_update > 0.08:  # ~12 FPS display
+#             if not display_queue.full():
+#                 try:
+#                     display_queue.put((camera_id, frame.copy()), block=False)
+#                 except:
+#                     pass
+#             last_display_update = current_time
+    
+#     cap.release()
+
+# def main():
+#     print("🖥️ Mac Vehicle Tracking System (USB + iPhone)")
+#     print("=" * 50)
+    
+#     try:
+#         # Find available cameras
+#         available_cameras = find_available_cameras()
+        
+#         if not available_cameras:
+#             print("❌ No cameras found! Make sure your USB camera is connected and iPhone is connected to Mac.")
+#             return
+        
+#         print(f"\nAvailable cameras: {available_cameras}")
+        
+#         # Get model path
+#         license_plate_model = input("\nEnter path to license plate model (or press Enter for 'yolov8n.pt'): ").strip()
+#         if not license_plate_model:
+#             license_plate_model = "yolov8n.pt"
+        
+#         print(f"Using model: {license_plate_model}")
+        
+#         # Camera setup
+#         print("\n📹 Camera Setup:")
+#         print("Available cameras:")
+#         for cam_id, cam_name in available_cameras.items():
+#             print(f"  {cam_id}: {cam_name}")
+        
+#         try:
+#             usb_camera_id = int(input("\nEnter USB camera ID (usually 0 or 1): ").strip())
+#             iphone_camera_id = int(input("Enter iPhone camera ID (usually 1 or 2): ").strip())
+#         except ValueError:
+#             print("❌ Invalid camera ID! Please enter numbers only.")
+#             return
+        
+#         if usb_camera_id not in available_cameras or iphone_camera_id not in available_cameras:
+#             print("❌ One or both camera IDs not found in available cameras!")
+#             return
+        
+#         if usb_camera_id == iphone_camera_id:
+#             print("❌ USB and iPhone camera IDs must be different!")
+#             return
+        
+#         # Load model
+#         print("\n🔄 Loading YOLO model...")
+#         try:
+#             license_plate_detector = YOLO(license_plate_model)
+#             print("✅ Model loaded successfully")
+#         except Exception as e:
+#             print(f"❌ Error loading model: {e}")
+#             print("Make sure you have the YOLO model file in the current directory")
+#             return
+        
+#         # Initialize components
+#         vehicle_tracker = VehicleTracker()
+#         plate_detector_usb = PlateDetection(0)  # Always use 0 for USB camera logic
+#         plate_detector_iphone = PlateDetection(1)  # Always use 1 for iPhone logic
+        
+#         # Create display queue
+#         from queue import Queue
+#         display_queue = Queue(maxsize=6)
+        
+#         print("\n🚀 Starting camera connections...")
+        
+#         # Start camera threads
+#         thread_usb = threading.Thread(target=camera_thread_mac, args=(
+#             usb_camera_id, license_plate_detector, 
+#             vehicle_tracker, plate_detector_usb, display_queue
+#         ))
+#         thread_iphone = threading.Thread(target=camera_thread_mac, args=(
+#             iphone_camera_id, license_plate_detector, 
+#             vehicle_tracker, plate_detector_iphone, display_queue
+#         ))
+        
+#         thread_usb.daemon = True
+#         thread_iphone.daemon = True
+#         thread_usb.start()
+#         thread_iphone.start()
+        
+#         print("\n✅ System started!")
+#         print("Controls:")
+#         print("  'q' - Quit")
+#         print("  's' - Save tracking data")
+#         print("  'r' - Print summary report")
+#         print("  'c' - Clear all tracking data")
+        
+#         # Display loop
+#         camera_frames = {}
+        
+#         while True:
+#             # Get latest frames
+#             try:
+#                 while not display_queue.empty():
+#                     camera_id, frame = display_queue.get(block=False)
+#                     camera_frames[camera_id] = frame
+#             except:
+#                 pass
+            
+#             # Display frames
+#             for cam_id in [usb_camera_id, iphone_camera_id]:
+#                 if cam_id in camera_frames and camera_frames[cam_id] is not None:
+#                     frame = camera_frames[cam_id]
+#                     height, width = frame.shape[:2]
+                    
+#                     # Resize for display if too large
+#                     if width > 900:
+#                         scale = 900 / width
+#                         new_width = int(width * scale)
+#                         new_height = int(height * scale)
+#                         frame = cv2.resize(frame, (new_width, new_height))
+                    
+#                     window_name = "USB Camera" if cam_id == usb_camera_id else "iPhone Camera"
+#                     cv2.imshow(window_name, frame)
+            
+#             key = cv2.waitKey(1) & 0xFF
+#             if key == ord('q'):
+#                 break
+#             elif key == ord('s'):
+#                 filename = f"mac_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+#                 vehicle_tracker.save_tracking_data(filename)
+#                 print(f"💾 Data saved to {filename}")
+#             elif key == ord('r'):
+#                 print_summary(vehicle_tracker)
+#             elif key == ord('c'):
+#                 vehicle_tracker.vehicles.clear()
+#                 vehicle_tracker.plate_to_id.clear()
+#                 vehicle_tracker.next_id = 1
+#                 print("🧹 Tracking data cleared")
+        
+#         # Cleanup
+#         cv2.destroyAllWindows()
+#         print_summary(vehicle_tracker)
+        
+#     except KeyboardInterrupt:
+#         print("\n🛑 Stopping system...")
+#         cv2.destroyAllWindows()
+#     except Exception as e:
+#         logging.error(f"Error in main: {str(e)}")
+#         cv2.destroyAllWindows()
+
+# def print_summary(vehicle_tracker):
+#     vehicles = vehicle_tracker.get_all_vehicles()
+#     print(f"\n📊 SESSION SUMMARY")
+#     print("=" * 50)
+#     print(f"Total vehicles tracked: {len(vehicles)}")
+    
+#     cross_camera_count = 0
+#     for vehicle_id, data in vehicles.items():
+#         cameras_seen = list(data['camera_detections'].keys())
+#         camera_names = ["USB Camera" if c == 0 else "iPhone" for c in cameras_seen]
+#         status = "🎯 CROSS-CAMERA" if len(cameras_seen) > 1 else "📷 SINGLE-CAMERA"
+#         if len(cameras_seen) > 1:
+#             cross_camera_count += 1
+        
+#         duration = (data['last_seen'] - data['first_seen']).total_seconds()
+#         print(f"{status} - Vehicle {vehicle_id} (Plate: {data['plate']}) - Cameras: {camera_names} - Duration: {duration:.1f}s")
+    
+#     print(f"\n🎯 Cross-camera matches: {cross_camera_count}")
+#     print(f"📷 Single-camera only: {len(vehicles) - cross_camera_count}")
+
+# if __name__ == "__main__":
+#     main()
+
+#Use Live Feed 4 - Bounding Boxes
+
+# from ultralytics import YOLO
+# import cv2
+# import numpy as np
+# import pytesseract
+# import re
+# from collections import defaultdict, Counter
+# import time
+# import os
+# import threading
+# import logging
+# from datetime import datetime
+# import json
+
+# # Setup logging
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+#     handlers=[
+#         logging.FileHandler('mac_vehicle_tracking.log'),
+#         logging.StreamHandler()
+#     ]
+# )
+
+# class VehicleTracker:
+#     def __init__(self):
+#         self.vehicles = {}
+#         self.plate_to_id = {}
+#         self.next_id = 1
+#         self.lock = threading.Lock()
+        
+#     def add_vehicle(self, plate_number, camera_id, timestamp=None):
+#         if timestamp is None:
+#             timestamp = datetime.now()
+            
+#         with self.lock:
+#             if plate_number in self.plate_to_id:
+#                 vehicle_id = self.plate_to_id[plate_number]
+#                 self.vehicles[vehicle_id]['last_seen'] = timestamp
+#                 if camera_id not in self.vehicles[vehicle_id]['camera_detections']:
+#                     self.vehicles[vehicle_id]['camera_detections'][camera_id] = []
+#                 self.vehicles[vehicle_id]['camera_detections'][camera_id].append(timestamp)
+                
+#                 # Check if this is a cross-camera detection
+#                 cameras_seen = list(self.vehicles[vehicle_id]['camera_detections'].keys())
+#                 camera_names = ["USB Camera" if c == 0 else "iPhone" for c in cameras_seen]
+#                 if len(cameras_seen) > 1:
+#                     logging.info(f"🎯 CROSS-CAMERA MATCH! Vehicle ID {vehicle_id} (Plate: {plate_number}) now seen on: {camera_names}")
+#                 else:
+#                     camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#                     logging.info(f"Vehicle ID {vehicle_id} (Plate: {plate_number}) detected again on {camera_name}")
+#             else:
+#                 vehicle_id = self.next_id
+#                 self.next_id += 1
+#                 self.plate_to_id[plate_number] = vehicle_id
+#                 camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#                 self.vehicles[vehicle_id] = {
+#                     'plate': plate_number,
+#                     'first_seen': timestamp,
+#                     'last_seen': timestamp,
+#                     'camera_detections': {camera_id: [timestamp]}
+#                 }
+#                 logging.info(f"🆕 NEW VEHICLE: ID {vehicle_id} (Plate: {plate_number}) registered on {camera_name}")
+                
+#             return vehicle_id
+
+#     def get_all_vehicles(self):
+#         with self.lock:
+#             return self.vehicles.copy()
+
+#     def save_tracking_data(self, filename):
+#         with self.lock:
+#             data = {}
+#             for vehicle_id, vehicle_data in self.vehicles.items():
+#                 data[vehicle_id] = {
+#                     'plate': vehicle_data['plate'],
+#                     'first_seen': vehicle_data['first_seen'].isoformat(),
+#                     'last_seen': vehicle_data['last_seen'].isoformat(),
+#                     'camera_detections': {
+#                         str(cam_id): [ts.isoformat() for ts in timestamps]
+#                         for cam_id, timestamps in vehicle_data['camera_detections'].items()
+#                     }
+#                 }
+            
+#             with open(filename, 'w') as f:
+#                 json.dump(data, f, indent=2)
+
+# class PlateDetection:
+#     def __init__(self, camera_id):
+#         self.camera_id = camera_id
+#         self.camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#         self.plate_scores = defaultdict(list)
+#         self.recent_detections = defaultdict(list)
+#         # Store detected bounding boxes with timestamps
+#         self.active_detections = {}
+#         # Different settings for USB vs iPhone
+#         if camera_id == 0:  # USB Camera
+#             self.frame_window = 12
+#             self.confidence_threshold = 0.5
+#         else:  # iPhone
+#             self.frame_window = 10
+#             self.confidence_threshold = 0.45
+        
+#     def update_scores(self, plate_number, confidence, text_size, bbox):
+#         current_time = time.time()
+#         score = confidence * 0.7 + text_size * 0.3
+        
+#         self.plate_scores[plate_number].append(score)
+#         self.recent_detections[plate_number].append(current_time)
+        
+#         # Store the bounding box with timestamp
+#         self.active_detections[plate_number] = {
+#             'bbox': bbox,
+#             'timestamp': current_time,
+#             'confidence': confidence,
+#             'score': score
+#         }
+        
+#         # Keep only recent detections (last 8 seconds)
+#         cutoff_time = current_time - 8
+#         self.recent_detections[plate_number] = [
+#             t for t in self.recent_detections[plate_number] if t > cutoff_time
+#         ]
+        
+#         # Clean old active detections (older than 5 seconds)
+#         plates_to_remove = []
+#         for plate, detection in self.active_detections.items():
+#             if current_time - detection['timestamp'] > 5:
+#                 plates_to_remove.append(plate)
+        
+#         for plate in plates_to_remove:
+#             del self.active_detections[plate]
+        
+#         # Keep only the last window of scores
+#         if len(self.plate_scores[plate_number]) > self.frame_window:
+#             self.plate_scores[plate_number] = self.plate_scores[plate_number][-self.frame_window:]
+    
+#     def get_stable_plates(self):
+#         """Return plates that have been consistently detected"""
+#         stable_plates = []
+#         current_time = time.time()
+        
+#         for plate, scores in self.plate_scores.items():
+#             recent_count = len(self.recent_detections[plate])
+            
+#             # Different requirements for USB vs iPhone
+#             min_scores = 5 if self.camera_id == 0 else 4
+#             min_recent = 3 if self.camera_id == 0 else 2
+            
+#             if len(scores) >= min_scores and recent_count >= min_recent:
+#                 avg_score = sum(scores[-min_scores:]) / min_scores
+#                 if avg_score > self.confidence_threshold:
+#                     last_detection = max(self.recent_detections[plate])
+#                     if current_time - last_detection < 2:
+#                         stable_plates.append((plate, avg_score))
+#                         self.recent_detections[plate] = []
+        
+#         return stable_plates
+    
+#     def get_active_detections(self):
+#         """Return currently active detections for drawing"""
+#         return self.active_detections.copy()
+
+# def enhanced_ocr_mac(image_region, camera_id):
+#     """Enhanced OCR function optimized for Mac with different settings for USB vs iPhone"""
+#     try:
+#         # Resize if too small
+#         min_height = 35 if camera_id == 0 else 40
+#         if image_region.shape[0] < min_height:
+#             scale = min_height / image_region.shape[0]
+#             width = int(image_region.shape[1] * scale)
+#             image_region = cv2.resize(image_region, (width, min_height), interpolation=cv2.INTER_CUBIC)
+        
+#         # Convert to grayscale
+#         if len(image_region.shape) == 3:
+#             gray = cv2.cvtColor(image_region, cv2.COLOR_BGR2GRAY)
+#         else:
+#             gray = image_region
+        
+#         # Different preprocessing for USB vs iPhone
+#         if camera_id == 0:  # USB Camera - typically better quality
+#             gray = cv2.equalizeHist(gray)
+#             thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+#         else:  # iPhone - may need more processing
+#             gray = cv2.bilateralFilter(gray, 9, 75, 75)
+#             gray = cv2.equalizeHist(gray)
+#             thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 13, 2)
+        
+#         # Morphological operations
+#         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+#         thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        
+#         # OCR with license plate specific config
+#         custom_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+#         text = pytesseract.image_to_string(thresh, config=custom_config)
+        
+#         # Clean and validate the text
+#         cleaned_text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+        
+#         if 3 <= len(cleaned_text) <= 8:
+#             # Confidence based on text clarity and camera type
+#             base_confidence = 0.85 if camera_id == 0 else 0.75
+#             confidence = min(0.95, base_confidence + len(cleaned_text) / 20.0)
+#             return cleaned_text, confidence
+        
+#         return None, 0
+        
+#     except Exception as e:
+#         return None, 0
+
+# def detect_license_plates_mac(frame, license_plate_detector, camera_id):
+#     """License plate detection optimized for Mac with USB and iPhone cameras"""
+#     try:
+#         # Different enhancement for USB vs iPhone
+#         if camera_id == 0:  # USB Camera
+#             enhanced = cv2.convertScaleAbs(frame, alpha=1.1, beta=10)
+#         else:  # iPhone
+#             enhanced = cv2.convertScaleAbs(frame, alpha=1.2, beta=15)
+#             # Additional denoising for iPhone
+#             enhanced = cv2.fastNlMeansDenoisingColored(enhanced, None, 10, 10, 7, 21)
+        
+#         # Detection with different confidence thresholds
+#         conf_threshold = 0.3 if camera_id == 0 else 0.25
+#         detections = license_plate_detector(enhanced, conf=conf_threshold)[0]
+#         frame_plates = []
+        
+#         for detection in detections.boxes.data.tolist():
+#             if len(detection) >= 6:
+#                 x1, y1, x2, y2, score, class_id = detection
+#                 if score < conf_threshold:
+#                     continue
+                    
+#                 x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+                
+#                 # Different padding for USB vs iPhone
+#                 padding = 10 if camera_id == 0 else 12
+#                 y1 = max(0, y1 - padding)
+#                 y2 = min(frame.shape[0], y2 + padding)
+#                 x1 = max(0, x1 - padding)
+#                 x2 = min(frame.shape[1], x2 + padding)
+                
+#                 if x1 >= x2 or y1 >= y2:
+#                     continue
+                    
+#                 plate_region = enhanced[y1:y2, x1:x2]
+                
+#                 if plate_region.size == 0:
+#                     continue
+                
+#                 # Enhanced OCR
+#                 text, confidence = enhanced_ocr_mac(plate_region, camera_id)
+                
+#                 if text and len(text) >= 3:
+#                     text_height = plate_region.shape[0]
+#                     relative_text_size = text_height / max(1, (y2 - y1))
+                    
+#                     frame_plates.append({
+#                         'plate_number': text,
+#                         'confidence': confidence * score,
+#                         'text_size': relative_text_size,
+#                         'bbox': (x1, y1, x2, y2),
+#                         'camera_id': camera_id
+#                     })
+        
+#         return frame_plates
+        
+#     except Exception as e:
+#         camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#         print(f"Detection error on {camera_name}: {str(e)}")
+#         return []
+
+# def find_available_cameras():
+#     """Find available cameras on Mac"""
+#     available_cameras = {}
+    
+#     print("🔍 Scanning for available cameras...")
+    
+#     # Test USB cameras (usually 0, 1, 2)
+#     for i in range(4):
+#         cap = cv2.VideoCapture(i)
+#         if cap.isOpened():
+#             ret, frame = cap.read()
+#             if ret and frame is not None:
+#                 # Try to get camera name (Mac specific)
+#                 try:
+#                     backend = cap.getBackendName()
+#                     available_cameras[i] = f"Camera {i} ({backend})"
+#                     print(f"✅ Found USB Camera {i}")
+#                 except:
+#                     available_cameras[i] = f"Camera {i}"
+#                     print(f"✅ Found Camera {i}")
+#             cap.release()
+#         else:
+#             cap.release()
+    
+#     return available_cameras
+
+# def test_camera_connection(camera_id):
+#     """Test camera connection"""
+#     print(f"Testing camera {camera_id}...")
+#     cap = cv2.VideoCapture(camera_id)
+#     if cap.isOpened():
+#         ret, frame = cap.read()
+#         cap.release()
+#         if ret and frame is not None:
+#             print(f"✅ Camera {camera_id} connection successful")
+#             return True
+#         else:
+#             print(f"❌ Camera {camera_id} opened but no frame received")
+#             return False
+#     else:
+#         print(f"❌ Camera {camera_id} connection failed")
+#         return False
+
+# # Global flag for graceful shutdown
+# shutdown_flag = threading.Event()
+
+# def camera_thread_mac(camera_id, license_plate_detector, vehicle_tracker, plate_detector, display_queue):
+#     """Camera thread optimized for Mac with USB and iPhone cameras"""
+#     camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#     print(f"Starting {camera_name} thread (ID: {camera_id})")
+    
+#     # Test connection first
+#     if not test_camera_connection(camera_id):
+#         logging.error(f"{camera_name}: Failed to connect")
+#         return
+    
+#     # Initialize capture
+#     cap = cv2.VideoCapture(camera_id)
+    
+#     if not cap.isOpened():
+#         logging.error(f"{camera_name}: Failed to open camera")
+#         return
+    
+#     # Camera optimizations
+#     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+#     # Different FPS for USB vs iPhone
+#     fps = 25 if camera_id == 0 else 20
+#     cap.set(cv2.CAP_PROP_FPS, fps)
+    
+#     # Try to set resolution (may not work on all cameras)
+#     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+#     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    
+#     logging.info(f"{camera_name}: Connected successfully")
+    
+#     frame_count = 0
+#     last_plate_check = time.time()
+#     last_display_update = time.time()
+#     consecutive_failures = 0
+    
+#     while not shutdown_flag.is_set():
+#         ret, frame = cap.read()
+#         if not ret:
+#             consecutive_failures += 1
+#             if consecutive_failures > 20:
+#                 logging.error(f"{camera_name}: Too many consecutive failures, attempting reconnection...")
+#                 cap.release()
+#                 time.sleep(1)
+#                 cap = cv2.VideoCapture(camera_id)
+#                 consecutive_failures = 0
+#                 continue
+#             time.sleep(0.05)
+#             continue
+            
+#         consecutive_failures = 0
+#         frame_count += 1
+#         current_time = time.time()
+        
+#         # Process frames - different intervals for USB vs iPhone
+#         process_interval = 3 if camera_id == 0 else 4
+#         if frame_count % process_interval == 0:
+#             plates = detect_license_plates_mac(frame, license_plate_detector, camera_id)
+            
+#             for plate in plates:
+#                 plate_number = plate['plate_number']
+#                 confidence = plate['confidence']
+#                 text_size = plate['text_size']
+#                 bbox = plate['bbox']
+                
+#                 plate_detector.update_scores(plate_number, confidence, text_size, bbox)
+        
+#         # Draw all active detections (persistent bounding boxes)
+#         active_detections = plate_detector.get_active_detections()
+#         for plate_number, detection in active_detections.items():
+#             x1, y1, x2, y2 = detection['bbox']
+#             confidence = detection['confidence']
+            
+#             # Different colors for USB vs iPhone
+#             color = (0, 255, 0) if camera_id == 0 else (0, 255, 255)
+            
+#             # Draw bounding box
+#             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            
+#             # Draw plate text and confidence
+#             label = f"{plate_number} ({confidence:.2f})"
+#             label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+#             cv2.rectangle(frame, (x1, y1-25), (x1 + label_size[0], y1), color, -1)
+#             cv2.putText(frame, label, (x1, y1-5), 
+#                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+        
+#         # Check for stable plates
+#         check_interval = 2.5 if camera_id == 0 else 3.0
+#         if current_time - last_plate_check > check_interval:
+#             stable_plates = plate_detector.get_stable_plates()
+#             for plate_number, avg_score in stable_plates:
+#                 vehicle_id = vehicle_tracker.add_vehicle(plate_number, camera_id)
+                
+#                 # Show confirmed detection
+#                 confirm_color = (0, 255, 0) if camera_id == 0 else (0, 255, 255)
+#                 cv2.putText(frame, f"CONFIRMED - ID: {vehicle_id}", (10, 60), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
+#                 cv2.putText(frame, f"Plate: {plate_number}", (10, 100), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
+            
+#             last_plate_check = current_time
+        
+#         # Add camera info
+#         label_color = (255, 255, 255) if camera_id == 0 else (255, 255, 0)
+#         cv2.putText(frame, camera_name, (10, 35), 
+#                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, label_color, 2)
+        
+#         # Connection status
+#         status_color = (0, 255, 0) if consecutive_failures == 0 else (0, 255, 255)
+#         cv2.putText(frame, "CONNECTED", (10, frame.shape[0] - 20), 
+#                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
+        
+#         # Update display
+#         if current_time - last_display_update > 0.08:  # ~12 FPS display
+#             if not display_queue.full():
+#                 try:
+#                     display_queue.put((camera_id, frame.copy()), block=False)
+#                 except:
+#                     pass
+#             last_display_update = current_time
+    
+#     cap.release()
+#     logging.info(f"{camera_name}: Thread stopped gracefully")
+
+# def main():
+#     print("🖥️ Mac Vehicle Tracking System (USB + iPhone)")
+#     print("=" * 50)
+    
+#     try:
+#         # Find available cameras
+#         available_cameras = find_available_cameras()
+        
+#         if not available_cameras:
+#             print("❌ No cameras found! Make sure your USB camera is connected and iPhone is connected to Mac.")
+#             return
+        
+#         print(f"\nAvailable cameras: {available_cameras}")
+        
+#         # Get model path
+#         license_plate_model = input("\nEnter path to license plate model (or press Enter for 'yolov8n.pt'): ").strip()
+#         if not license_plate_model:
+#             license_plate_model = "yolov8n.pt"
+        
+#         print(f"Using model: {license_plate_model}")
+        
+#         # Camera setup
+#         print("\n📹 Camera Setup:")
+#         print("Available cameras:")
+#         for cam_id, cam_name in available_cameras.items():
+#             print(f"  {cam_id}: {cam_name}")
+        
+#         try:
+#             usb_camera_id = int(input("\nEnter USB camera ID (usually 0 or 1): ").strip())
+#             iphone_camera_id = int(input("Enter iPhone camera ID (usually 1 or 2): ").strip())
+#         except ValueError:
+#             print("❌ Invalid camera ID! Please enter numbers only.")
+#             return
+        
+#         if usb_camera_id not in available_cameras or iphone_camera_id not in available_cameras:
+#             print("❌ One or both camera IDs not found in available cameras!")
+#             return
+        
+#         if usb_camera_id == iphone_camera_id:
+#             print("❌ USB and iPhone camera IDs must be different!")
+#             return
+        
+#         # Load model
+#         print("\n🔄 Loading YOLO model...")
+#         try:
+#             license_plate_detector = YOLO(license_plate_model)
+#             print("✅ Model loaded successfully")
+#         except Exception as e:
+#             print(f"❌ Error loading model: {e}")
+#             print("Make sure you have the YOLO model file in the current directory")
+#             return
+        
+#         # Initialize components
+#         vehicle_tracker = VehicleTracker()
+#         plate_detector_usb = PlateDetection(0)  # Always use 0 for USB camera logic
+#         plate_detector_iphone = PlateDetection(1)  # Always use 1 for iPhone logic
+        
+#         # Create display queue
+#         from queue import Queue
+#         display_queue = Queue(maxsize=6)
+        
+#         print("\n🚀 Starting camera connections...")
+        
+#         # Start camera threads
+#         thread_usb = threading.Thread(target=camera_thread_mac, args=(
+#             usb_camera_id, license_plate_detector, 
+#             vehicle_tracker, plate_detector_usb, display_queue
+#         ))
+#         thread_iphone = threading.Thread(target=camera_thread_mac, args=(
+#             iphone_camera_id, license_plate_detector, 
+#             vehicle_tracker, plate_detector_iphone, display_queue
+#         ))
+        
+#         thread_usb.daemon = True
+#         thread_iphone.daemon = True
+#         thread_usb.start()
+#         thread_iphone.start()
+        
+#         print("\n✅ System started!")
+#         print("Controls:")
+#         print("  ANY KEY - Exit and complete logs")
+#         print("  ESC or 'q' - Quick exit")
+        
+#         # Display loop
+#         camera_frames = {}
+        
+#         while True:
+#             # Get latest frames
+#             try:
+#                 while not display_queue.empty():
+#                     camera_id, frame = display_queue.get(block=False)
+#                     camera_frames[camera_id] = frame
+#             except:
+#                 pass
+            
+#             # Display frames
+#             for cam_id in [usb_camera_id, iphone_camera_id]:
+#                 if cam_id in camera_frames and camera_frames[cam_id] is not None:
+#                     frame = camera_frames[cam_id]
+#                     height, width = frame.shape[:2]
+                    
+#                     # Resize for display if too large
+#                     if width > 900:
+#                         scale = 900 / width
+#                         new_width = int(width * scale)
+#                         new_height = int(height * scale)
+#                         frame = cv2.resize(frame, (new_width, new_height))
+                    
+#                     window_name = "USB Camera" if cam_id == usb_camera_id else "iPhone Camera"
+#                     cv2.imshow(window_name, frame)
+            
+#             key = cv2.waitKey(1) & 0xFF
+            
+#             # Exit on ANY key press
+#             if key != 255:  # 255 means no key pressed
+#                 if key == 27 or key == ord('q'):  # ESC or 'q' for quick exit
+#                     print(f"\n🛑 Quick exit requested (key: {key})")
+#                     break
+#                 else:
+#                     print(f"\n🛑 Exit requested with key press (key: {key})")
+#                     print("🔄 Completing logs and saving data...")
+                    
+#                     # Auto-save data before exit
+#                     filename = f"mac_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+#                     vehicle_tracker.save_tracking_data(filename)
+#                     print(f"💾 Data automatically saved to {filename}")
+#                     break
+        
+#         # Signal threads to stop
+#         print("🔄 Stopping camera threads...")
+#         shutdown_flag.set()
+        
+#         # Wait for threads to finish (with timeout)
+#         thread_usb.join(timeout=2)
+#         thread_iphone.join(timeout=2)
+        
+#         # Cleanup
+#         cv2.destroyAllWindows()
+        
+#         # Complete final logs
+#         print("\n📋 Generating final logs...")
+#         print_summary(vehicle_tracker)
+        
+#         # Save final data if not already saved
+#         final_filename = f"final_tracking_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+#         vehicle_tracker.save_tracking_data(final_filename)
+#         print(f"💾 Final session data saved to {final_filename}")
+        
+#         logging.info("🏁 Vehicle tracking session completed successfully")
+#         print("\n✅ Session completed with full logs!")
+        
+#     except KeyboardInterrupt:
+#         print("\n🛑 Keyboard interrupt received...")
+#         shutdown_flag.set()
+#         cv2.destroyAllWindows()
+#         print_summary(vehicle_tracker)
+#         logging.info("🏁 Session terminated by user")
+#     except Exception as e:
+#         logging.error(f"❌ Error in main: {str(e)}")
+#         shutdown_flag.set()
+#         cv2.destroyAllWindows()
+#         print_summary(vehicle_tracker)
+#         logging.error("🏁 Session terminated due to error")
+
+# def print_summary(vehicle_tracker):
+#     vehicles = vehicle_tracker.get_all_vehicles()
+#     print(f"\n📊 SESSION SUMMARY")
+#     print("=" * 50)
+#     print(f"Total vehicles tracked: {len(vehicles)}")
+    
+#     cross_camera_count = 0
+#     for vehicle_id, data in vehicles.items():
+#         cameras_seen = list(data['camera_detections'].keys())
+#         camera_names = ["USB Camera" if c == 0 else "iPhone" for c in cameras_seen]
+#         status = "🎯 CROSS-CAMERA" if len(cameras_seen) > 1 else "📷 SINGLE-CAMERA"
+#         if len(cameras_seen) > 1:
+#             cross_camera_count += 1
+        
+#         duration = (data['last_seen'] - data['first_seen']).total_seconds()
+#         print(f"{status} - Vehicle {vehicle_id} (Plate: {data['plate']}) - Cameras: {camera_names} - Duration: {duration:.1f}s")
+    
+#     print(f"\n🎯 Cross-camera matches: {cross_camera_count}")
+#     print(f"📷 Single-camera only: {len(vehicles) - cross_camera_count}")
+#     print("=" * 50)
+
+# if __name__ == "__main__":
+#     main()
+
+
+
+# Live Feed - Working Best code
+
+
+# from ultralytics import YOLO
+# import cv2
+# import numpy as np
+# import pytesseract
+# import re
+# from collections import defaultdict, Counter
+# import easyocr
+# import time
+# import os
+# import threading
+# import logging
+# from datetime import datetime
+# import json
+
+# # Setup logging
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+#     handlers=[
+#         logging.FileHandler('mac_vehicle_tracking.log'),
+#         logging.StreamHandler()
+#     ]
+# )
+
+# class VehicleTracker:
+#     def __init__(self):
+#         self.vehicles = {}
+#         self.plate_to_id = {}
+#         self.next_id = 1
+#         self.lock = threading.Lock()
+        
+#     def add_vehicle(self, plate_number, camera_id, timestamp=None):
+#         if timestamp is None:
+#             timestamp = datetime.now()
+            
+#         with self.lock:
+#             if plate_number in self.plate_to_id:
+#                 vehicle_id = self.plate_to_id[plate_number]
+#                 self.vehicles[vehicle_id]['last_seen'] = timestamp
+#                 if camera_id not in self.vehicles[vehicle_id]['camera_detections']:
+#                     self.vehicles[vehicle_id]['camera_detections'][camera_id] = []
+#                 self.vehicles[vehicle_id]['camera_detections'][camera_id].append(timestamp)
+                
+#                 # Check if this is a cross-camera detection
+#                 cameras_seen = list(self.vehicles[vehicle_id]['camera_detections'].keys())
+#                 camera_names = ["USB Camera" if c == 0 else "iPhone" for c in cameras_seen]
+#                 if len(cameras_seen) > 1:
+#                     logging.info(f"🎯 CROSS-CAMERA MATCH! Vehicle ID {vehicle_id} (Plate: {plate_number}) now seen on: {camera_names}")
+#                 else:
+#                     camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#                     logging.info(f"Vehicle ID {vehicle_id} (Plate: {plate_number}) detected again on {camera_name}")
+#             else:
+#                 vehicle_id = self.next_id
+#                 self.next_id += 1
+#                 self.plate_to_id[plate_number] = vehicle_id
+#                 camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#                 self.vehicles[vehicle_id] = {
+#                     'plate': plate_number,
+#                     'first_seen': timestamp,
+#                     'last_seen': timestamp,
+#                     'camera_detections': {camera_id: [timestamp]}
+#                 }
+#                 logging.info(f"🆕 NEW VEHICLE: ID {vehicle_id} (Plate: {plate_number}) registered on {camera_name}")
+                
+#             return vehicle_id
+
+#     def get_all_vehicles(self):
+#         with self.lock:
+#             return self.vehicles.copy()
+
+#     def save_tracking_data(self, filename):
+#         with self.lock:
+#             data = {}
+#             for vehicle_id, vehicle_data in self.vehicles.items():
+#                 data[vehicle_id] = {
+#                     'plate': vehicle_data['plate'],
+#                     'first_seen': vehicle_data['first_seen'].isoformat(),
+#                     'last_seen': vehicle_data['last_seen'].isoformat(),
+#                     'camera_detections': {
+#                         str(cam_id): [ts.isoformat() for ts in timestamps]
+#                         for cam_id, timestamps in vehicle_data['camera_detections'].items()
+#                     }
+#                 }
+            
+#             with open(filename, 'w') as f:
+#                 json.dump(data, f, indent=2)
+
+# class PlateDetection:
+#     def __init__(self, camera_id):
+#         self.camera_id = camera_id
+#         self.camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#         self.plate_scores = defaultdict(list)
+#         self.recent_detections = defaultdict(list)
+#         # Store detected bounding boxes with timestamps
+#         self.active_detections = {}
+#         # Different settings for USB vs iPhone
+#         if camera_id == 0:  # USB Camera
+#             self.frame_window = 15
+#             self.confidence_threshold = 0.6
+#         else:  # iPhone
+#             self.frame_window = 12
+#             self.confidence_threshold = 0.55
+        
+#     def update_scores(self, plate_number, confidence, text_size, bbox):
+#         current_time = time.time()
+#         score = confidence * 0.7 + text_size * 0.3
+        
+#         self.plate_scores[plate_number].append(score)
+#         self.recent_detections[plate_number].append(current_time)
+        
+#         # Store the bounding box with timestamp
+#         self.active_detections[plate_number] = {
+#             'bbox': bbox,
+#             'timestamp': current_time,
+#             'confidence': confidence,
+#             'score': score
+#         }
+        
+#         # Keep only recent detections (last 8 seconds)
+#         cutoff_time = current_time - 8
+#         self.recent_detections[plate_number] = [
+#             t for t in self.recent_detections[plate_number] if t > cutoff_time
+#         ]
+        
+#         # Clean old active detections (older than 5 seconds)
+#         plates_to_remove = []
+#         for plate, detection in self.active_detections.items():
+#             if current_time - detection['timestamp'] > 5:
+#                 plates_to_remove.append(plate)
+        
+#         for plate in plates_to_remove:
+#             del self.active_detections[plate]
+        
+#         # Keep only the last window of scores
+#         if len(self.plate_scores[plate_number]) > self.frame_window:
+#             self.plate_scores[plate_number] = self.plate_scores[plate_number][-self.frame_window:]
+    
+#     def get_stable_plates(self):
+#         """Return plates that have been consistently detected"""
+#         stable_plates = []
+#         current_time = time.time()
+        
+#         for plate, scores in self.plate_scores.items():
+#             recent_count = len(self.recent_detections[plate])
+            
+#             # Different requirements for USB vs iPhone
+#             min_scores = 6 if self.camera_id == 0 else 5
+#             min_recent = 4 if self.camera_id == 0 else 3
+            
+#             if len(scores) >= min_scores and recent_count >= min_recent:
+#                 avg_score = sum(scores[-min_scores:]) / min_scores
+#                 if avg_score > self.confidence_threshold:
+#                     last_detection = max(self.recent_detections[plate])
+#                     if current_time - last_detection < 2:
+#                         stable_plates.append((plate, avg_score))
+#                         self.recent_detections[plate] = []
+        
+#         return stable_plates
+    
+#     def get_active_detections(self):
+#         """Return currently active detections for drawing"""
+#         return self.active_detections.copy()
+
+# def extract_text_with_tesseract(image):
+#     """Enhanced tesseract configuration with more parameters"""
+#     custom_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -c tessedit_do_invert=0'
+#     try:
+#         text = pytesseract.image_to_string(image, config=custom_config)
+#         return text.strip()
+#     except Exception as e:
+#         return ""
+
+# def extract_text_with_easyocr(reader, image):
+#     """Extract text using EasyOCR with optimized settings"""
+#     try:
+#         # Lower confidence threshold to catch more potential plates
+#         results = reader.readtext(image, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', min_size=15)
+#         cleaned_texts = []
+#         for (bbox, text, confidence) in results:
+#             # Only keep alphanumeric characters
+#             text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+#             # More lenient length check
+#             if 3 <= len(text) <= 8:
+#                 cleaned_texts.append((text, confidence))
+#         return cleaned_texts
+#     except Exception as e:
+#         return []
+
+# def enhance_plate_region(plate_region):
+#     """Apply multiple image enhancement techniques to improve plate readability"""
+#     # Resize for better OCR performance if too small
+#     min_height = 45
+#     if plate_region.shape[0] < min_height:
+#         scale = min_height / plate_region.shape[0]
+#         width = int(plate_region.shape[1] * scale)
+#         plate_region = cv2.resize(plate_region, (width, min_height), interpolation=cv2.INTER_CUBIC)
+
+#     # Convert to grayscale
+#     if len(plate_region.shape) == 3:
+#         gray = cv2.cvtColor(plate_region, cv2.COLOR_BGR2GRAY)
+#     else:
+#         gray = plate_region
+
+#     # Apply bilateral filter to remove noise while preserving edges
+#     filtered = cv2.bilateralFilter(gray, 11, 17, 17)
+
+#     # Try different thresholding techniques
+#     thresh_methods = []
+
+#     # Method 1: Adaptive thresholding
+#     adaptive_thresh = cv2.adaptiveThreshold(
+#         filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+#         cv2.THRESH_BINARY, 11, 2
+#     )
+#     thresh_methods.append(adaptive_thresh)
+
+#     # Method 2: Otsu's thresholding
+#     _, otsu_thresh = cv2.threshold(filtered, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+#     thresh_methods.append(otsu_thresh)
+
+#     # Method 3: Simple binary threshold
+#     _, simple_thresh = cv2.threshold(filtered, 127, 255, cv2.THRESH_BINARY)
+#     thresh_methods.append(simple_thresh)
+
+#     # Apply morphological closing to all thresholded images
+#     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+#     processed_images = []
+#     for thresh in thresh_methods:
+#         closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+#         processed_images.append(closed)
+
+#     # Also add the original grayscale and filtered images
+#     processed_images.append(gray)
+#     processed_images.append(filtered)
+
+#     return processed_images, plate_region
+
+# def enhanced_ocr_mac(image_region, camera_id, reader):
+#     """Enhanced OCR function with multiple processing techniques"""
+#     try:
+#         # Apply enhancement techniques
+#         processed_images, resized_plate = enhance_plate_region(image_region)
+        
+#         all_texts = []
+        
+#         # Try OCR on all processed images with Tesseract
+#         for img in processed_images:
+#             tesseract_text = extract_text_with_tesseract(img)
+#             if tesseract_text:
+#                 cleaned_text = ''.join(re.findall(r'[A-Z0-9]', tesseract_text.upper()))
+#                 if 3 <= len(cleaned_text) <= 8:
+#                     all_texts.append((cleaned_text, 0.85))
+
+#         # Try with EasyOCR on the resized plate
+#         easyocr_texts = extract_text_with_easyocr(reader, resized_plate)
+#         all_texts.extend(easyocr_texts)
+        
+#         # Find the best result
+#         if all_texts:
+#             # Sort by confidence and length preference
+#             best_text = max(all_texts, key=lambda x: x[1] * (1 + len(x[0]) / 10.0))
+#             text, confidence = best_text
+            
+#             # Boost confidence based on camera type and text characteristics
+#             if camera_id == 0:  # USB Camera
+#                 confidence *= 1.1
+#             else:  # iPhone
+#                 confidence *= 1.05
+                
+#             # Boost confidence for typical license plate patterns
+#             if 4 <= len(text) <= 8:
+#                 confidence *= 1.1
+                
+#             return text, min(0.95, confidence)
+        
+#         return None, 0
+        
+#     except Exception as e:
+#         return None, 0
+
+# def detect_license_plates_mac(frame, license_plate_detector, camera_id, reader):
+#     """Enhanced license plate detection with improved accuracy"""
+#     try:
+#         # Make a copy of the frame to avoid modifying the original
+#         processed_frame = frame.copy()
+        
+#         # Apply image enhancements based on camera type
+#         if camera_id == 0:  # USB Camera
+#             # Histogram equalization for better contrast
+#             gray = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
+#             gray = cv2.equalizeHist(gray)
+            
+#             # Apply gamma correction
+#             gamma = 1.3
+#             lookUpTable = np.empty((1, 256), np.uint8)
+#             for i in range(256):
+#                 lookUpTable[0, i] = np.clip(np.power(i / 255.0, gamma) * 255.0, 0, 255)
+#             processed_frame = cv2.LUT(processed_frame, lookUpTable)
+            
+#             # Increase contrast
+#             alpha = 1.2  # Contrast control
+#             beta = 10    # Brightness control
+#             processed_frame = cv2.convertScaleAbs(processed_frame, alpha=alpha, beta=beta)
+            
+#         else:  # iPhone
+#             # More aggressive processing for iPhone
+#             gray = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
+#             gray = cv2.equalizeHist(gray)
+            
+#             # Apply gamma correction
+#             gamma = 1.4
+#             lookUpTable = np.empty((1, 256), np.uint8)
+#             for i in range(256):
+#                 lookUpTable[0, i] = np.clip(np.power(i / 255.0, gamma) * 255.0, 0, 255)
+#             processed_frame = cv2.LUT(processed_frame, lookUpTable)
+            
+#             # Higher contrast and brightness adjustment
+#             alpha = 1.3
+#             beta = 15
+#             processed_frame = cv2.convertScaleAbs(processed_frame, alpha=alpha, beta=beta)
+            
+#             # Additional denoising for iPhone
+#             processed_frame = cv2.fastNlMeansDenoisingColored(processed_frame, None, 10, 10, 7, 21)
+
+#         # Detection with optimized confidence thresholds
+#         conf_threshold = 0.3 if camera_id == 0 else 0.25
+#         detections = license_plate_detector(processed_frame, conf=conf_threshold)[0]
+#         frame_plates = []
+
+#         for detection in detections.boxes.data.tolist():
+#             if len(detection) >= 6:
+#                 x1, y1, x2, y2, score, class_id = detection
+#                 if score < conf_threshold:
+#                     continue
+                    
+#                 x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
+                
+#                 # Add padding around the license plate region
+#                 padding = 8 if camera_id == 0 else 10
+#                 y1 = max(0, y1 - padding)
+#                 y2 = min(frame.shape[0], y2 + padding)
+#                 x1 = max(0, x1 - padding)
+#                 x2 = min(frame.shape[1], x2 + padding)
+                
+#                 if x1 >= x2 or y1 >= y2:
+#                     continue
+                    
+#                 plate_region = processed_frame[y1:y2, x1:x2]
+                
+#                 if plate_region.size == 0:
+#                     continue
+                
+#                 # Enhanced OCR with multiple techniques
+#                 text, confidence = enhanced_ocr_mac(plate_region, camera_id, reader)
+                
+#                 if text and len(text) >= 3:
+#                     text_height = plate_region.shape[0]
+#                     relative_text_size = text_height / max(1, (y2 - y1))
+                    
+#                     frame_plates.append({
+#                         'plate_number': text,
+#                         'confidence': confidence * score,
+#                         'text_size': relative_text_size,
+#                         'bbox': (x1, y1, x2, y2),
+#                         'camera_id': camera_id
+#                     })
+        
+#         return frame_plates
+        
+#     except Exception as e:
+#         camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#         print(f"Detection error on {camera_name}: {str(e)}")
+#         return []
+
+# def find_available_cameras():
+#     """Find available cameras on Mac"""
+#     available_cameras = {}
+    
+#     print("🔍 Scanning for available cameras...")
+    
+#     # Test USB cameras (usually 0, 1, 2)
+#     for i in range(4):
+#         cap = cv2.VideoCapture(i)
+#         if cap.isOpened():
+#             ret, frame = cap.read()
+#             if ret and frame is not None:
+#                 # Try to get camera name (Mac specific)
+#                 try:
+#                     backend = cap.getBackendName()
+#                     available_cameras[i] = f"Camera {i} ({backend})"
+#                     print(f"✅ Found USB Camera {i}")
+#                 except:
+#                     available_cameras[i] = f"Camera {i}"
+#                     print(f"✅ Found Camera {i}")
+#             cap.release()
+#         else:
+#             cap.release()
+    
+#     return available_cameras
+
+# def test_camera_connection(camera_id):
+#     """Test camera connection"""
+#     print(f"Testing camera {camera_id}...")
+#     cap = cv2.VideoCapture(camera_id)
+#     if cap.isOpened():
+#         ret, frame = cap.read()
+#         cap.release()
+#         if ret and frame is not None:
+#             print(f"✅ Camera {camera_id} connection successful")
+#             return True
+#         else:
+#             print(f"❌ Camera {camera_id} opened but no frame received")
+#             return False
+#     else:
+#         print(f"❌ Camera {camera_id} connection failed")
+#         return False
+
+# # Global flag for graceful shutdown
+# shutdown_flag = threading.Event()
+
+# def camera_thread_mac(camera_id, license_plate_detector, vehicle_tracker, plate_detector, display_queue, reader):
+#     """Enhanced camera thread with improved OCR accuracy"""
+#     camera_name = "USB Camera" if camera_id == 0 else "iPhone"
+#     print(f"Starting {camera_name} thread (ID: {camera_id})")
+    
+#     # Test connection first
+#     if not test_camera_connection(camera_id):
+#         logging.error(f"{camera_name}: Failed to connect")
+#         return
+    
+#     # Initialize capture
+#     cap = cv2.VideoCapture(camera_id)
+    
+#     if not cap.isOpened():
+#         logging.error(f"{camera_name}: Failed to open camera")
+#         return
+    
+#     # Camera optimizations
+#     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+#     # Different FPS for USB vs iPhone
+#     fps = 25 if camera_id == 0 else 20
+#     cap.set(cv2.CAP_PROP_FPS, fps)
+    
+#     # Try to set resolution (may not work on all cameras)
+#     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+#     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    
+#     logging.info(f"{camera_name}: Connected successfully")
+    
+#     frame_count = 0
+#     last_plate_check = time.time()
+#     last_display_update = time.time()
+#     consecutive_failures = 0
+    
+#     while not shutdown_flag.is_set():
+#         ret, frame = cap.read()
+#         if not ret:
+#             consecutive_failures += 1
+#             if consecutive_failures > 20:
+#                 logging.error(f"{camera_name}: Too many consecutive failures, attempting reconnection...")
+#                 cap.release()
+#                 time.sleep(1)
+#                 cap = cv2.VideoCapture(camera_id)
+#                 consecutive_failures = 0
+#                 continue
+#             time.sleep(0.05)
+#             continue
+            
+#         consecutive_failures = 0
+#         frame_count += 1
+#         current_time = time.time()
+        
+#         # Process frames - different intervals for USB vs iPhone
+#         process_interval = 2 if camera_id == 0 else 3
+#         if frame_count % process_interval == 0:
+#             plates = detect_license_plates_mac(frame, license_plate_detector, camera_id, reader)
+            
+#             for plate in plates:
+#                 plate_number = plate['plate_number']
+#                 confidence = plate['confidence']
+#                 text_size = plate['text_size']
+#                 bbox = plate['bbox']
+                
+#                 plate_detector.update_scores(plate_number, confidence, text_size, bbox)
+        
+#         # Draw all active detections (persistent bounding boxes)
+#         active_detections = plate_detector.get_active_detections()
+#         for plate_number, detection in active_detections.items():
+#             x1, y1, x2, y2 = detection['bbox']
+#             confidence = detection['confidence']
+            
+#             # Different colors for USB vs iPhone
+#             color = (0, 255, 0) if camera_id == 0 else (0, 255, 255)
+            
+#             # Draw bounding box
+#             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            
+#             # Draw plate text and confidence
+#             label = f"{plate_number} ({confidence:.2f})"
+#             label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+#             cv2.rectangle(frame, (x1, y1-25), (x1 + label_size[0], y1), color, -1)
+#             cv2.putText(frame, label, (x1, y1-5), 
+#                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+        
+#         # Check for stable plates
+#         check_interval = 2.0 if camera_id == 0 else 2.5
+#         if current_time - last_plate_check > check_interval:
+#             stable_plates = plate_detector.get_stable_plates()
+#             for plate_number, avg_score in stable_plates:
+#                 vehicle_id = vehicle_tracker.add_vehicle(plate_number, camera_id)
+                
+#                 # Show confirmed detection
+#                 confirm_color = (0, 255, 0) if camera_id == 0 else (0, 255, 255)
+#                 cv2.putText(frame, f"CONFIRMED - ID: {vehicle_id}", (10, 60), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
+#                 cv2.putText(frame, f"Plate: {plate_number}", (10, 100), 
+#                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
+            
+#             last_plate_check = current_time
+        
+#         # Add camera info
+#         label_color = (255, 255, 255) if camera_id == 0 else (255, 255, 0)
+#         cv2.putText(frame, camera_name, (10, 35), 
+#                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, label_color, 2)
+        
+#         # Connection status
+#         status_color = (0, 255, 0) if consecutive_failures == 0 else (0, 255, 255)
+#         cv2.putText(frame, "CONNECTED", (10, frame.shape[0] - 20), 
+#                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
+        
+#         # Update display
+#         if current_time - last_display_update > 0.08:  # ~12 FPS display
+#             if not display_queue.full():
+#                 try:
+#                     display_queue.put((camera_id, frame.copy()), block=False)
+#                 except:
+#                     pass
+#             last_display_update = current_time
+    
+#     cap.release()
+#     logging.info(f"{camera_name}: Thread stopped gracefully")
+
+# def main():
+#     print("🖥️ Enhanced Mac Vehicle Tracking System (USB + iPhone)")
+#     print("=" * 60)
+    
+#     try:
+#         # Find available cameras
+#         available_cameras = find_available_cameras()
+        
+#         if not available_cameras:
+#             print("❌ No cameras found! Make sure your USB camera is connected and iPhone is connected to Mac.")
+#             return
+        
+#         print(f"\nAvailable cameras: {available_cameras}")
+        
+#         # Use the specified model path
+#         license_plate_model = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/license_plate_detector.pt"
+        
+#         if not os.path.isfile(license_plate_model):
+#             print(f"❌ Model file not found at: {license_plate_model}")
+#             print("Please make sure the model file exists at the specified path.")
+#             return
+        
+#         print(f"Using model: {license_plate_model}")
+        
+#         # Camera setup
+#         print("\n📹 Camera Setup:")
+#         print("Available cameras:")
+#         for cam_id, cam_name in available_cameras.items():
+#             print(f"  {cam_id}: {cam_name}")
+        
+#         try:
+#             usb_camera_id = int(input("\nEnter USB camera ID (usually 0 or 1): ").strip())
+#             iphone_camera_id = int(input("Enter iPhone camera ID (usually 1 or 2): ").strip())
+#         except ValueError:
+#             print("❌ Invalid camera ID! Please enter numbers only.")
+#             return
+        
+#         if usb_camera_id not in available_cameras or iphone_camera_id not in available_cameras:
+#             print("❌ One or both camera IDs not found in available cameras!")
+#             return
+        
+#         if usb_camera_id == iphone_camera_id:
+#             print("❌ USB and iPhone camera IDs must be different!")
+#             return
+        
+#         # Load model
+#         print("\n🔄 Loading YOLO model...")
+#         try:
+#             license_plate_detector = YOLO(license_plate_model)
+#             print("✅ Model loaded successfully")
+#         except Exception as e:
+#             print(f"❌ Error loading model: {e}")
+#             print("Make sure you have the YOLO model file at the specified path")
+#             return
+        
+#         # Initialize EasyOCR
+#         print("\n🔄 Initializing EasyOCR (this might take a minute)...")
+#         try:
+#             reader = easyocr.Reader(['en'], gpu=True)
+#             print("✅ EasyOCR initialized with GPU support")
+#         except Exception as e:
+#             print(f"Warning: EasyOCR GPU initialization failed: {str(e)}")
+#             print("🔄 Falling back to CPU mode...")
+#             try:
+#                 reader = easyocr.Reader(['en'], gpu=False)
+#                 print("✅ EasyOCR initialized with CPU support")
+#             except Exception as e2:
+#                 print(f"❌ EasyOCR initialization failed: {str(e2)}")
+#                 print("Please install EasyOCR: pip install easyocr")
+#                 return
+        
+#         # Initialize components
+#         vehicle_tracker = VehicleTracker()
+#         plate_detector_usb = PlateDetection(0)  # Always use 0 for USB camera logic
+#         plate_detector_iphone = PlateDetection(1)  # Always use 1 for iPhone logic
+        
+#         # Create display queue
+#         from queue import Queue
+#         display_queue = Queue(maxsize=6)
+        
+#         print("\n🚀 Starting camera connections...")
+        
+#         # Start camera threads
+#         thread_usb = threading.Thread(target=camera_thread_mac, args=(
+#             usb_camera_id, license_plate_detector, 
+#             vehicle_tracker, plate_detector_usb, display_queue, reader
+#         ))
+#         thread_iphone = threading.Thread(target=camera_thread_mac, args=(
+#             iphone_camera_id, license_plate_detector, 
+#             vehicle_tracker, plate_detector_iphone, display_queue, reader
+#         ))
+        
+#         thread_usb.daemon = True
+#         thread_iphone.daemon = True
+#         thread_usb.start()
+#         thread_iphone.start()
+        
+#         print("\n✅ Enhanced system started with improved OCR!")
+#         print("Features:")
+#         print("  • Multiple OCR engines (Tesseract + EasyOCR)")
+#         print("  • Advanced image preprocessing")
+#         print("  • Enhanced accuracy algorithms")
+#         print("Controls:")
+#         print("  ANY KEY - Exit and complete logs")
+#         print("  ESC or 'q' - Quick exit")
+        
+#         # Display loop
+#         camera_frames = {}
+        
+#         while True:
+#             # Get latest frames
+#             try:
+#                 while not display_queue.empty():
+#                     camera_id, frame = display_queue.get(block=False)
+#                     camera_frames[camera_id] = frame
+#             except:
+#                 pass
+            
+#             # Display frames
+#             for cam_id in [usb_camera_id, iphone_camera_id]:
+#                 if cam_id in camera_frames and camera_frames[cam_id] is not None:
+#                     frame = camera_frames[cam_id]
+#                     height, width = frame.shape[:2]
+                    
+#                     # Resize for display if too large
+#                     if width > 900:
+#                         scale = 900 / width
+#                         new_width = int(width * scale)
+#                         new_height = int(height * scale)
+#                         frame = cv2.resize(frame, (new_width, new_height))
+                    
+#                     window_name = "USB Camera" if cam_id == usb_camera_id else "iPhone Camera"
+#                     cv2.imshow(window_name, frame)
+            
+#             key = cv2.waitKey(1) & 0xFF
+            
+#             # Exit on ANY key press
+#             if key != 255:  # 255 means no key pressed
+#                 if key == 27 or key == ord('q'):  # ESC or 'q' for quick exit
+#                     print(f"\n🛑 Quick exit requested (key: {key})")
+#                     break
+#                 else:
+#                     print(f"\n🛑 Exit requested with key press (key: {key})")
+#                     print("🔄 Completing logs and saving data...")
+                    
+#                     # Auto-save data before exit
+#                     filename = f"enhanced_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+#                     vehicle_tracker.save_tracking_data(filename)
+#                     print(f"💾 Data automatically saved to {filename}")
+#                     break
+        
+#         # Signal threads to stop
+#         print("🔄 Stopping camera threads...")
+#         shutdown_flag.set()
+        
+#         # Wait for threads to finish (with timeout)
+#         thread_usb.join(timeout=2)
+#         thread_iphone.join(timeout=2)
+        
+#         # Cleanup
+#         cv2.destroyAllWindows()
+        
+#         # Complete final logs
+#         # Complete final logs
+#         print("\n📋 FINAL TRACKING SUMMARY")
+#         print("=" * 50)
+        
+#         all_vehicles = vehicle_tracker.get_all_vehicles()
+#         if all_vehicles:
+#             print(f"Total vehicles tracked: {len(all_vehicles)}")
+            
+#             cross_camera_count = 0
+#             for vehicle_id, vehicle_data in all_vehicles.items():
+#                 cameras_seen = list(vehicle_data['camera_detections'].keys())
+#                 camera_names = []
+#                 for cam_id in cameras_seen:
+#                     if cam_id == usb_camera_id:
+#                         camera_names.append("USB Camera")
+#                     elif cam_id == iphone_camera_id:
+#                         camera_names.append("iPhone")
+#                     else:
+#                         camera_names.append(f"Camera {cam_id}")
+                
+#                 if len(cameras_seen) > 1:
+#                     cross_camera_count += 1
+#                     print(f"🎯 Vehicle ID {vehicle_id} (Plate: {vehicle_data['plate']}) - Cross-camera detection: {', '.join(camera_names)}")
+#                 else:
+#                     print(f"📍 Vehicle ID {vehicle_id} (Plate: {vehicle_data['plate']}) - Single camera: {camera_names[0]}")
+            
+#             print(f"\n🔗 Cross-camera matches: {cross_camera_count}")
+#             print(f"📊 Single-camera detections: {len(all_vehicles) - cross_camera_count}")
+            
+#             # Ask if user wants to save data
+#             try:
+#                 save_data = input("\n💾 Save tracking data to file? (y/n): ").strip().lower()
+#                 if save_data in ['y', 'yes', '']:
+#                     filename = f"vehicle_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+#                     vehicle_tracker.save_tracking_data(filename)
+#                     print(f"✅ Data saved to: {filename}")
+#                 else:
+#                     print("📝 Data not saved")
+#             except KeyboardInterrupt:
+#                 print("\n⚡ Interrupted - data not saved")
+#         else:
+#             print("No vehicles were tracked in this session")
+        
+#         print("\n🏁 Enhanced Mac Vehicle Tracking System - Session Complete")
+#         print("Thank you for using the enhanced tracking system!")
+        
+#     except KeyboardInterrupt:
+#         print("\n⚡ System interrupted by user")
+#         shutdown_flag.set()
+#         cv2.destroyAllWindows()
+        
+#     except Exception as e:
+#         print(f"\n❌ Unexpected error: {str(e)}")
+#         logging.error(f"Main function error: {str(e)}")
+#         shutdown_flag.set()
+#         cv2.destroyAllWindows()
+        
+#     finally:
+#         # Ensure cleanup
+#         try:
+#             cv2.destroyAllWindows()
+#             shutdown_flag.set()
+#         except:
+#             pass
+
+# if __name__ == "__main__":
+#     main()
+
 from ultralytics import YOLO
 import cv2
 import numpy as np
 import pytesseract
 import re
 from collections import defaultdict, Counter
+import easyocr
 import time
 import os
 import threading
 import logging
 from datetime import datetime
 import json
-import requests
-from urllib.parse import urlparse
 
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('iphone_vehicle_tracking.log'),
+        logging.FileHandler('mac_vehicle_tracking.log'),
         logging.StreamHandler()
     ]
 )
@@ -1189,21 +3158,24 @@ class VehicleTracker:
                 
                 # Check if this is a cross-camera detection
                 cameras_seen = list(self.vehicles[vehicle_id]['camera_detections'].keys())
+                camera_names = [f"USB Camera {c}" for c in cameras_seen]
                 if len(cameras_seen) > 1:
-                    logging.info(f"🎯 CROSS-CAMERA MATCH! Vehicle ID {vehicle_id} (Plate: {plate_number}) now seen on cameras: {cameras_seen}")
+                    logging.info(f"🎯 CROSS-CAMERA MATCH! Vehicle ID {vehicle_id} (Plate: {plate_number}) now seen on: {camera_names}")
                 else:
-                    logging.info(f"Vehicle ID {vehicle_id} (Plate: {plate_number}) detected again on iPhone {camera_id}")
+                    camera_name = f"USB Camera {camera_id}"
+                    logging.info(f"Vehicle ID {vehicle_id} (Plate: {plate_number}) detected again on {camera_name}")
             else:
                 vehicle_id = self.next_id
                 self.next_id += 1
                 self.plate_to_id[plate_number] = vehicle_id
+                camera_name = f"USB Camera {camera_id}"
                 self.vehicles[vehicle_id] = {
                     'plate': plate_number,
                     'first_seen': timestamp,
                     'last_seen': timestamp,
                     'camera_detections': {camera_id: [timestamp]}
                 }
-                logging.info(f"🆕 NEW VEHICLE: ID {vehicle_id} (Plate: {plate_number}) registered on iPhone {camera_id}")
+                logging.info(f"🆕 NEW VEHICLE: ID {vehicle_id} (Plate: {plate_number}) registered on {camera_name}")
                 
             return vehicle_id
 
@@ -1231,23 +3203,44 @@ class VehicleTracker:
 class PlateDetection:
     def __init__(self, camera_id):
         self.camera_id = camera_id
+        self.camera_name = f"USB Camera {camera_id}"
         self.plate_scores = defaultdict(list)
         self.recent_detections = defaultdict(list)
-        self.frame_window = 10  # Reduced for iPhone streaming
-        self.confidence_threshold = 0.4  # Adjusted for iPhone cameras
+        # Store detected bounding boxes with timestamps
+        self.active_detections = {}
+        # Consistent settings for all USB cameras
+        self.frame_window = 15
+        self.confidence_threshold = 0.6
         
-    def update_scores(self, plate_number, confidence, text_size):
+    def update_scores(self, plate_number, confidence, text_size, bbox):
         current_time = time.time()
         score = confidence * 0.7 + text_size * 0.3
         
         self.plate_scores[plate_number].append(score)
         self.recent_detections[plate_number].append(current_time)
         
+        # Store the bounding box with timestamp
+        self.active_detections[plate_number] = {
+            'bbox': bbox,
+            'timestamp': current_time,
+            'confidence': confidence,
+            'score': score
+        }
+        
         # Keep only recent detections (last 8 seconds)
         cutoff_time = current_time - 8
         self.recent_detections[plate_number] = [
             t for t in self.recent_detections[plate_number] if t > cutoff_time
         ]
+        
+        # Clean old active detections (older than 5 seconds)
+        plates_to_remove = []
+        for plate, detection in self.active_detections.items():
+            if current_time - detection['timestamp'] > 5:
+                plates_to_remove.append(plate)
+        
+        for plate in plates_to_remove:
+            del self.active_detections[plate]
         
         # Keep only the last window of scores
         if len(self.plate_scores[plate_number]) > self.frame_window:
@@ -1261,8 +3254,12 @@ class PlateDetection:
         for plate, scores in self.plate_scores.items():
             recent_count = len(self.recent_detections[plate])
             
-            if len(scores) >= 4 and recent_count >= 2:  # Relaxed for iPhone streaming
-                avg_score = sum(scores[-4:]) / 4
+            # Consistent requirements for all USB cameras
+            min_scores = 6
+            min_recent = 4
+            
+            if len(scores) >= min_scores and recent_count >= min_recent:
+                avg_score = sum(scores[-min_scores:]) / min_scores
                 if avg_score > self.confidence_threshold:
                     last_detection = max(self.recent_detections[plate])
                     if current_time - last_detection < 2:
@@ -1270,73 +3267,163 @@ class PlateDetection:
                         self.recent_detections[plate] = []
         
         return stable_plates
+    
+    def get_active_detections(self):
+        """Return currently active detections for drawing"""
+        return self.active_detections.copy()
 
-def enhanced_ocr(image_region):
-    """Enhanced OCR function optimized for iPhone camera streams"""
+def extract_text_with_tesseract(image):
+    """Enhanced tesseract configuration with more parameters"""
+    custom_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -c tessedit_do_invert=0'
     try:
-        # Resize if too small
-        if image_region.shape[0] < 40:
-            scale = 40 / image_region.shape[0]
-            width = int(image_region.shape[1] * scale)
-            image_region = cv2.resize(image_region, (width, 40), interpolation=cv2.INTER_CUBIC)
+        text = pytesseract.image_to_string(image, config=custom_config)
+        return text.strip()
+    except Exception as e:
+        return ""
+
+def extract_text_with_easyocr(reader, image):
+    """Extract text using EasyOCR with optimized settings"""
+    try:
+        # Lower confidence threshold to catch more potential plates
+        results = reader.readtext(image, allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', min_size=15)
+        cleaned_texts = []
+        for (bbox, text, confidence) in results:
+            # Only keep alphanumeric characters
+            text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
+            # More lenient length check
+            if 3 <= len(text) <= 8:
+                cleaned_texts.append((text, confidence))
+        return cleaned_texts
+    except Exception as e:
+        return []
+
+def enhance_plate_region(plate_region):
+    """Apply multiple image enhancement techniques to improve plate readability"""
+    # Resize for better OCR performance if too small
+    min_height = 45
+    if plate_region.shape[0] < min_height:
+        scale = min_height / plate_region.shape[0]
+        width = int(plate_region.shape[1] * scale)
+        plate_region = cv2.resize(plate_region, (width, min_height), interpolation=cv2.INTER_CUBIC)
+
+    # Convert to grayscale
+    if len(plate_region.shape) == 3:
+        gray = cv2.cvtColor(plate_region, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = plate_region
+
+    # Apply bilateral filter to remove noise while preserving edges
+    filtered = cv2.bilateralFilter(gray, 11, 17, 17)
+
+    # Try different thresholding techniques
+    thresh_methods = []
+
+    # Method 1: Adaptive thresholding
+    adaptive_thresh = cv2.adaptiveThreshold(
+        filtered, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY, 11, 2
+    )
+    thresh_methods.append(adaptive_thresh)
+
+    # Method 2: Otsu's thresholding
+    _, otsu_thresh = cv2.threshold(filtered, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    thresh_methods.append(otsu_thresh)
+
+    # Method 3: Simple binary threshold
+    _, simple_thresh = cv2.threshold(filtered, 127, 255, cv2.THRESH_BINARY)
+    thresh_methods.append(simple_thresh)
+
+    # Apply morphological closing to all thresholded images
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    processed_images = []
+    for thresh in thresh_methods:
+        closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        processed_images.append(closed)
+
+    # Also add the original grayscale and filtered images
+    processed_images.append(gray)
+    processed_images.append(filtered)
+
+    return processed_images, plate_region
+
+def enhanced_ocr_mac(image_region, camera_id, reader):
+    """Enhanced OCR function with multiple processing techniques"""
+    try:
+        # Apply enhancement techniques
+        processed_images, resized_plate = enhance_plate_region(image_region)
         
-        # Convert to grayscale
-        if len(image_region.shape) == 3:
-            gray = cv2.cvtColor(image_region, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = image_region
+        all_texts = []
         
-        # Enhanced preprocessing for iPhone camera quality
-        gray = cv2.bilateralFilter(gray, 9, 75, 75)
-        gray = cv2.equalizeHist(gray)
+        # Try OCR on all processed images with Tesseract
+        for img in processed_images:
+            tesseract_text = extract_text_with_tesseract(img)
+            if tesseract_text:
+                cleaned_text = ''.join(re.findall(r'[A-Z0-9]', tesseract_text.upper()))
+                if 3 <= len(cleaned_text) <= 8:
+                    all_texts.append((cleaned_text, 0.85))
+
+        # Try with EasyOCR on the resized plate
+        easyocr_texts = extract_text_with_easyocr(reader, resized_plate)
+        all_texts.extend(easyocr_texts)
         
-        # Adaptive thresholding
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        
-        # Morphological operations to clean up
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-        thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        
-        # OCR with license plate specific config
-        custom_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-        text = pytesseract.image_to_string(thresh, config=custom_config)
-        
-        # Clean and validate the text
-        cleaned_text = ''.join(re.findall(r'[A-Z0-9]', text.upper()))
-        
-        if 3 <= len(cleaned_text) <= 8:
-            # Simple confidence based on text clarity
-            confidence = min(0.9, len(cleaned_text) / 8.0 + 0.3)
-            return cleaned_text, confidence
+        # Find the best result
+        if all_texts:
+            # Sort by confidence and length preference
+            best_text = max(all_texts, key=lambda x: x[1] * (1 + len(x[0]) / 10.0))
+            text, confidence = best_text
+            
+            # Boost confidence for USB cameras
+            confidence *= 1.1
+                
+            # Boost confidence for typical license plate patterns
+            if 4 <= len(text) <= 8:
+                confidence *= 1.1
+                
+            return text, min(0.95, confidence)
         
         return None, 0
         
     except Exception as e:
         return None, 0
 
-def detect_license_plates_iphone(frame, license_plate_detector, camera_id):
-    """License plate detection optimized for iPhone camera streams"""
+def detect_license_plates_mac(frame, license_plate_detector, camera_id, reader):
+    """Enhanced license plate detection with improved accuracy"""
     try:
-        # iPhone camera optimization
-        enhanced = cv2.convertScaleAbs(frame, alpha=1.1, beta=15)
+        # Make a copy of the frame to avoid modifying the original
+        processed_frame = frame.copy()
         
-        # Denoise for better detection
-        enhanced = cv2.fastNlMeansDenoisingColored(enhanced, None, 10, 10, 7, 21)
+        # Apply consistent image enhancements for all USB cameras
+        # Histogram equalization for better contrast
+        gray = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
         
-        # Detection with adjusted confidence for iPhone cameras
-        detections = license_plate_detector(enhanced, conf=0.25)[0]
+        # Apply gamma correction
+        gamma = 1.3
+        lookUpTable = np.empty((1, 256), np.uint8)
+        for i in range(256):
+            lookUpTable[0, i] = np.clip(np.power(i / 255.0, gamma) * 255.0, 0, 255)
+        processed_frame = cv2.LUT(processed_frame, lookUpTable)
+        
+        # Increase contrast
+        alpha = 1.2  # Contrast control
+        beta = 10    # Brightness control
+        processed_frame = cv2.convertScaleAbs(processed_frame, alpha=alpha, beta=beta)
+
+        # Detection with optimized confidence threshold
+        conf_threshold = 0.3
+        detections = license_plate_detector(processed_frame, conf=conf_threshold)[0]
         frame_plates = []
-        
+
         for detection in detections.boxes.data.tolist():
             if len(detection) >= 6:
                 x1, y1, x2, y2, score, class_id = detection
-                if score < 0.25:
+                if score < conf_threshold:
                     continue
                     
                 x1, y1, x2, y2 = map(int, (x1, y1, x2, y2))
                 
-                # Add padding for better OCR
-                padding = 12
+                # Add padding around the license plate region
+                padding = 8
                 y1 = max(0, y1 - padding)
                 y2 = min(frame.shape[0], y2 + padding)
                 x1 = max(0, x1 - padding)
@@ -1345,13 +3432,13 @@ def detect_license_plates_iphone(frame, license_plate_detector, camera_id):
                 if x1 >= x2 or y1 >= y2:
                     continue
                     
-                plate_region = enhanced[y1:y2, x1:x2]
+                plate_region = processed_frame[y1:y2, x1:x2]
                 
                 if plate_region.size == 0:
                     continue
                 
-                # Enhanced OCR
-                text, confidence = enhanced_ocr(plate_region)
+                # Enhanced OCR with multiple techniques
+                text, confidence = enhanced_ocr_mac(plate_region, camera_id, reader)
                 
                 if text and len(text) >= 3:
                     text_height = plate_region.shape[0]
@@ -1368,89 +3455,112 @@ def detect_license_plates_iphone(frame, license_plate_detector, camera_id):
         return frame_plates
         
     except Exception as e:
-        print(f"Detection error on iPhone {camera_id}: {str(e)}")
+        camera_name = f"USB Camera {camera_id}"
+        print(f"Detection error on {camera_name}: {str(e)}")
         return []
 
-def test_iphone_connection(camera_source):
-    """Test iPhone camera connection"""
-    print(f"Testing connection to: {camera_source}")
+def find_available_cameras():
+    """Find available cameras on Mac"""
+    available_cameras = {}
     
-    # Test HTTP connection first if it's a URL
-    if isinstance(camera_source, str) and camera_source.startswith('http'):
-        try:
-            response = requests.get(camera_source, timeout=5, stream=True)
-            if response.status_code == 200:
-                print("✅ HTTP connection successful")
-            else:
-                print(f"❌ HTTP connection failed: {response.status_code}")
-                return False
-        except Exception as e:
-            print(f"❌ HTTP test failed: {e}")
-            return False
+    print("🔍 Scanning for available cameras...")
     
-    # Test OpenCV connection
-    cap = cv2.VideoCapture(camera_source)
+    # Test USB cameras (usually 0, 1, 2, 3)
+    for i in range(6):
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            ret, frame = cap.read()
+            if ret and frame is not None:
+                # Try to get camera name (Mac specific)
+                try:
+                    backend = cap.getBackendName()
+                    available_cameras[i] = f"USB Camera {i} ({backend})"
+                    print(f"✅ Found USB Camera {i}")
+                except:
+                    available_cameras[i] = f"USB Camera {i}"
+                    print(f"✅ Found USB Camera {i}")
+            cap.release()
+        else:
+            cap.release()
+    
+    return available_cameras
+
+def test_camera_connection(camera_id):
+    """Test camera connection"""
+    print(f"Testing USB camera {camera_id}...")
+    cap = cv2.VideoCapture(camera_id)
     if cap.isOpened():
         ret, frame = cap.read()
         cap.release()
         if ret and frame is not None:
-            print("✅ OpenCV connection successful")
+            print(f"✅ USB Camera {camera_id} connection successful")
             return True
         else:
-            print("❌ OpenCV connection failed - no frame received")
+            print(f"❌ USB Camera {camera_id} opened but no frame received")
             return False
     else:
-        print("❌ OpenCV connection failed - cannot open stream")
+        print(f"❌ USB Camera {camera_id} connection failed")
         return False
 
-def iphone_camera_thread(camera_id, camera_source, license_plate_detector, vehicle_tracker, plate_detector, display_queue):
-    """iPhone camera thread with optimized streaming"""
-    print(f"Starting iPhone {camera_id} thread with source: {camera_source}")
+# Global flag for graceful shutdown
+shutdown_flag = threading.Event()
+
+def camera_thread_mac(camera_id, license_plate_detector, vehicle_tracker, plate_detector, display_queue, reader):
+    """Enhanced camera thread with improved OCR accuracy"""
+    camera_name = f"USB Camera {camera_id}"
+    print(f"Starting {camera_name} thread (ID: {camera_id})")
     
     # Test connection first
-    if not test_iphone_connection(camera_source):
-        logging.error(f"iPhone {camera_id}: Failed to connect to {camera_source}")
+    if not test_camera_connection(camera_id):
+        logging.error(f"{camera_name}: Failed to connect")
         return
     
-    # Initialize capture with iPhone optimizations
-    cap = cv2.VideoCapture(camera_source)
+    # Initialize capture
+    cap = cv2.VideoCapture(camera_id)
     
     if not cap.isOpened():
-        logging.error(f"iPhone {camera_id}: Failed to open stream")
+        logging.error(f"{camera_name}: Failed to open camera")
         return
     
-    # iPhone streaming optimizations
+    # Camera optimizations
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-    cap.set(cv2.CAP_PROP_FPS, 20)
+    # Consistent FPS for all USB cameras
+    fps = 25
+    cap.set(cv2.CAP_PROP_FPS, fps)
     
-    logging.info(f"iPhone {camera_id}: Connected successfully")
+    # Try to set resolution (may not work on all cameras)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    
+    logging.info(f"{camera_name}: Connected successfully")
     
     frame_count = 0
     last_plate_check = time.time()
     last_display_update = time.time()
     consecutive_failures = 0
     
-    while True:
+    while not shutdown_flag.is_set():
         ret, frame = cap.read()
         if not ret:
             consecutive_failures += 1
-            if consecutive_failures > 30:  # 30 consecutive failures
-                logging.error(f"iPhone {camera_id}: Too many consecutive failures, reconnecting...")
+            if consecutive_failures > 20:
+                logging.error(f"{camera_name}: Too many consecutive failures, attempting reconnection...")
                 cap.release()
-                time.sleep(2)
-                cap = cv2.VideoCapture(camera_source)
+                time.sleep(1)
+                cap = cv2.VideoCapture(camera_id)
                 consecutive_failures = 0
                 continue
-            time.sleep(0.1)
+            time.sleep(0.05)
             continue
             
-        consecutive_failures = 0  # Reset on successful frame
+        consecutive_failures = 0
         frame_count += 1
         current_time = time.time()
         
-        # Process every 4th frame for iPhone performance
-        if frame_count % 4 == 0:
-            plates = detect_license_plates_iphone(frame, license_plate_detector, camera_id)
+        # Process frames - consistent interval for all USB cameras
+        process_interval = 2
+        if frame_count % process_interval == 0:
+            plates = detect_license_plates_mac(frame, license_plate_detector, camera_id, reader)
             
             for plate in plates:
                 plate_number = plate['plate_number']
@@ -1458,36 +3568,55 @@ def iphone_camera_thread(camera_id, camera_source, license_plate_detector, vehic
                 text_size = plate['text_size']
                 bbox = plate['bbox']
                 
-                plate_detector.update_scores(plate_number, confidence, text_size)
-                
-                # Draw detection box
-                x1, y1, x2, y2 = bbox
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(frame, f"Detected: {plate_number}", (x1, y1-10), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                plate_detector.update_scores(plate_number, confidence, text_size, bbox)
         
-        # Check for stable plates every 2.5 seconds
-        if current_time - last_plate_check > 2.5:
+        # Draw all active detections (persistent bounding boxes)
+        active_detections = plate_detector.get_active_detections()
+        for plate_number, detection in active_detections.items():
+            x1, y1, x2, y2 = detection['bbox']
+            confidence = detection['confidence']
+            
+            # Different colors for different cameras
+            colors = [(0, 255, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0), (255, 0, 0), (0, 0, 255)]
+            color = colors[camera_id % len(colors)]
+            
+            # Draw bounding box
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            
+            # Draw plate text and confidence
+            label = f"{plate_number} ({confidence:.2f})"
+            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+            cv2.rectangle(frame, (x1, y1-25), (x1 + label_size[0], y1), color, -1)
+            cv2.putText(frame, label, (x1, y1-5), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2)
+        
+        # Check for stable plates
+        check_interval = 2.0
+        if current_time - last_plate_check > check_interval:
             stable_plates = plate_detector.get_stable_plates()
             for plate_number, avg_score in stable_plates:
                 vehicle_id = vehicle_tracker.add_vehicle(plate_number, camera_id)
                 
-                # Show confirmed detection with larger text
+                # Show confirmed detection
+                colors = [(0, 255, 0), (0, 255, 255), (255, 0, 255), (255, 255, 0), (255, 0, 0), (0, 0, 255)]
+                confirm_color = colors[camera_id % len(colors)]
                 cv2.putText(frame, f"CONFIRMED - ID: {vehicle_id}", (10, 60), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
                 cv2.putText(frame, f"Plate: {plate_number}", (10, 100), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.0, confirm_color, 3)
             
             last_plate_check = current_time
         
-        # Add iPhone info
-        cv2.putText(frame, f"iPhone {camera_id}", (10, 35), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
+        # Add camera info
+        colors = [(255, 255, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255), (255, 0, 0), (0, 255, 0)]
+        label_color = colors[camera_id % len(colors)]
+        cv2.putText(frame, camera_name, (10, 35), 
+                   cv2.FONT_HERSHEY_SIMPLEX, 1.0, label_color, 2)
         
         # Connection status
         status_color = (0, 255, 0) if consecutive_failures == 0 else (0, 255, 255)
         cv2.putText(frame, "CONNECTED", (10, frame.shape[0] - 20), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.8, status_color, 2)
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, status_color, 2)
         
         # Update display
         if current_time - last_display_update > 0.08:  # ~12 FPS display
@@ -1499,33 +3628,56 @@ def iphone_camera_thread(camera_id, camera_source, license_plate_detector, vehic
             last_display_update = current_time
     
     cap.release()
+    logging.info(f"{camera_name}: Thread stopped gracefully")
 
 def main():
-    print("📱 iPhone Vehicle Tracking System")
-    print("=" * 50)
+    print("🖥️ Enhanced Mac Dual USB Camera Vehicle Tracking System")
+    print("=" * 60)
     
     try:
-        # Get model path
-        license_plate_model = input("Enter path to license plate model (or press Enter for 'yolov8n.pt'): ").strip()
-        if not license_plate_model:
-            license_plate_model = "yolov8n.pt"
+        # Find available cameras
+        available_cameras = find_available_cameras()
+        
+        if not available_cameras:
+            print("❌ No cameras found! Make sure your USB cameras are connected.")
+            return
+        
+        if len(available_cameras) < 2:
+            print("❌ Less than 2 cameras found! This system requires 2 USB cameras.")
+            print(f"Available cameras: {available_cameras}")
+            return
+        
+        print(f"\nAvailable cameras: {available_cameras}")
+        
+        # Use the specified model path
+        license_plate_model = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/license_plate_detector.pt"
+        
+        if not os.path.isfile(license_plate_model):
+            print(f"❌ Model file not found at: {license_plate_model}")
+            print("Please make sure the model file exists at the specified path.")
+            return
         
         print(f"Using model: {license_plate_model}")
         
-        # iPhone camera setup with examples
-        print("\n📱 iPhone Camera Setup:")
-        print("Recommended apps and URL formats:")
-        print("  IP Webcam Pro: http://192.168.1.XXX:8080/video")
-        print("  EpocCam: Use the URL shown in the app")
-        print("  AtomicCam: http://192.168.1.XXX:8888/mjpeg")
-        print("  DroidCam: http://192.168.1.XXX:4747/mjpegfeed?640x480")
-        print("\nMake sure both iPhones are on the same WiFi network!")
+        # Camera setup
+        print("\n📹 Camera Setup:")
+        print("Available cameras:")
+        for cam_id, cam_name in available_cameras.items():
+            print(f"  {cam_id}: {cam_name}")
         
-        camera1_source = input("\nEnter iPhone 1 stream URL: ").strip()
-        camera2_source = input("Enter iPhone 2 stream URL: ").strip()
+        try:
+            camera1_id = int(input("\nEnter first USB camera ID (usually 0): ").strip())
+            camera2_id = int(input("Enter second USB camera ID (usually 1): ").strip())
+        except ValueError:
+            print("❌ Invalid camera ID! Please enter numbers only.")
+            return
         
-        if not camera1_source or not camera2_source:
-            print("❌ Both camera URLs are required!")
+        if camera1_id not in available_cameras or camera2_id not in available_cameras:
+            print("❌ One or both camera IDs not found in available cameras!")
+            return
+        
+        if camera1_id == camera2_id:
+            print("❌ Camera IDs must be different!")
             return
         
         # Load model
@@ -1535,44 +3687,64 @@ def main():
             print("✅ Model loaded successfully")
         except Exception as e:
             print(f"❌ Error loading model: {e}")
-            print("Make sure you have the YOLO model file in the current directory")
+            print("Make sure you have the YOLO model file at the specified path")
             return
+        
+        # Initialize EasyOCR
+        print("\n🔄 Initializing EasyOCR (this might take a minute)...")
+        try:
+            reader = easyocr.Reader(['en'], gpu=True)
+            print("✅ EasyOCR initialized with GPU support")
+        except Exception as e:
+            print(f"Warning: EasyOCR GPU initialization failed: {str(e)}")
+            print("🔄 Falling back to CPU mode...")
+            try:
+                reader = easyocr.Reader(['en'], gpu=False)
+                print("✅ EasyOCR initialized with CPU support")
+            except Exception as e2:
+                print(f"❌ EasyOCR initialization failed: {str(e2)}")
+                print("Please install EasyOCR: pip install easyocr")
+                return
         
         # Initialize components
         vehicle_tracker = VehicleTracker()
-        plate_detector1 = PlateDetection(1)
-        plate_detector2 = PlateDetection(2)
+        plate_detector_1 = PlateDetection(camera1_id)
+        plate_detector_2 = PlateDetection(camera2_id)
         
         # Create display queue
         from queue import Queue
         display_queue = Queue(maxsize=6)
         
-        print("\n🚀 Starting iPhone camera connections...")
+        print("\n🚀 Starting camera connections...")
         
         # Start camera threads
-        thread1 = threading.Thread(target=iphone_camera_thread, args=(
-            1, camera1_source, license_plate_detector, 
-            vehicle_tracker, plate_detector1, display_queue
+        thread_1 = threading.Thread(target=camera_thread_mac, args=(
+            camera1_id, license_plate_detector, 
+            vehicle_tracker, plate_detector_1, display_queue, reader
         ))
-        thread2 = threading.Thread(target=iphone_camera_thread, args=(
-            2, camera2_source, license_plate_detector, 
-            vehicle_tracker, plate_detector2, display_queue
+        thread_2 = threading.Thread(target=camera_thread_mac, args=(
+            camera2_id, license_plate_detector, 
+            vehicle_tracker, plate_detector_2, display_queue, reader
         ))
         
-        thread1.daemon = True
-        thread2.daemon = True
-        thread1.start()
-        thread2.start()
+        thread_1.daemon = True
+        thread_2.daemon = True
+        thread_1.start()
+        thread_2.start()
         
-        print("\n✅ System started! Waiting for iPhone connections...")
+        print("\n✅ Enhanced system started with dual USB cameras!")
+        print("Features:")
+        print("  • Dual USB camera support")
+        print("  • Multiple OCR engines (Tesseract + EasyOCR)")
+        print("  • Advanced image preprocessing")
+        print("  • Enhanced accuracy algorithms")
+        print("  • Cross-camera vehicle tracking")
         print("Controls:")
-        print("  'q' - Quit")
-        print("  's' - Save tracking data")
-        print("  'r' - Print summary report")
-        print("  'c' - Clear all tracking data")
+        print("  ANY KEY - Exit and complete logs")
+        print("  ESC or 'q' - Quick exit")
         
         # Display loop
-        camera_frames = {1: None, 2: None}
+        camera_frames = {}
         
         while True:
             # Get latest frames
@@ -1584,8 +3756,8 @@ def main():
                 pass
             
             # Display frames
-            for cam_id in [1, 2]:
-                if camera_frames[cam_id] is not None:
+            for cam_id in [camera1_id, camera2_id]:
+                if cam_id in camera_frames and camera_frames[cam_id] is not None:
                     frame = camera_frames[cam_id]
                     height, width = frame.shape[:2]
                     
@@ -1596,52 +3768,95 @@ def main():
                         new_height = int(height * scale)
                         frame = cv2.resize(frame, (new_width, new_height))
                     
-                    cv2.imshow(f"iPhone {cam_id} Stream", frame)
+                    window_name = f"USB Camera {cam_id}"
+                    cv2.imshow(window_name, frame)
             
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('q'):
-                break
-            elif key == ord('s'):
-                filename = f"iphone_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                vehicle_tracker.save_tracking_data(filename)
-                print(f"💾 Data saved to {filename}")
-            elif key == ord('r'):
-                print_summary(vehicle_tracker)
-            elif key == ord('c'):
-                vehicle_tracker.vehicles.clear()
-                vehicle_tracker.plate_to_id.clear()
-                vehicle_tracker.next_id = 1
-                print("🧹 Tracking data cleared")
+            
+            # Exit on ANY key press
+            if key != 255:  # 255 means no key pressed
+                if key == 27 or key == ord('q'):  # ESC or 'q' for quick exit
+                    print(f"\n🛑 Quick exit requested (key: {key})")
+                    break
+                else:
+                    print(f"\n🛑 Exit requested with key press (key: {key})")
+                    print("🔄 Completing logs and saving data...")
+                    
+                    # Auto-save data before exit
+                    filename = f"enhanced_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    vehicle_tracker.save_tracking_data(filename)
+                    print(f"💾 Data automatically saved to {filename}")
+                    break
+        
+        # Signal threads to stop
+        print("🔄 Stopping camera threads...")
+        shutdown_flag.set()
+        
+        # Wait for threads to finish (with timeout)
+        thread_1.join(timeout=2)
+        thread_2.join(timeout=2)
         
         # Cleanup
         cv2.destroyAllWindows()
-        print_summary(vehicle_tracker)
+        
+        # Complete final logs
+        print("\n📋 FINAL TRACKING SUMMARY")
+        print("=" * 50)
+        
+        all_vehicles = vehicle_tracker.get_all_vehicles()
+        if all_vehicles:
+            print(f"Total vehicles tracked: {len(all_vehicles)}")
+            
+            cross_camera_count = 0
+            for vehicle_id, vehicle_data in all_vehicles.items():
+                cameras_seen = list(vehicle_data['camera_detections'].keys())
+                camera_names = [f"USB Camera {cam_id}" for cam_id in cameras_seen]
+                
+                if len(cameras_seen) > 1:
+                    cross_camera_count += 1
+                    print(f"🎯 Vehicle ID {vehicle_id} (Plate: {vehicle_data['plate']}) - Cross-camera detection: {', '.join(camera_names)}")
+                else:
+                    print(f"📍 Vehicle ID {vehicle_id} (Plate: {vehicle_data['plate']}) - Single camera: {camera_names[0]}")
+            
+            print(f"\n🔗 Cross-camera matches: {cross_camera_count}")
+            print(f"📊 Single-camera detections: {len(all_vehicles) - cross_camera_count}")
+            
+            # Ask if user wants to save data
+            try:
+                save_data = input("\n💾 Save tracking data to file? (y/n): ").strip().lower()
+                if save_data in ['y', 'yes', '']:
+                    filename = f"vehicle_tracking_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    vehicle_tracker.save_tracking_data(filename)
+                    print(f"✅ Data saved to: {filename}")
+                else:
+                    print("📝 Data not saved")
+            except KeyboardInterrupt:
+                print("\n⚡ Interrupted - data not saved")
+        else:
+            print("No vehicles were tracked in this session")
+        
+        print("\n🏁 Enhanced Mac Vehicle Tracking System - Session Complete")
+        print("Thank you for using the enhanced tracking system!")
         
     except KeyboardInterrupt:
-        print("\n🛑 Stopping system...")
+        print("\n⚡ System interrupted by user")
+        shutdown_flag.set()
         cv2.destroyAllWindows()
-    except Exception as e:
-        logging.error(f"Error in main: {str(e)}")
-        cv2.destroyAllWindows()
-
-def print_summary(vehicle_tracker):
-    vehicles = vehicle_tracker.get_all_vehicles()
-    print(f"\n📊 SESSION SUMMARY")
-    print("=" * 50)
-    print(f"Total vehicles tracked: {len(vehicles)}")
-    
-    cross_camera_count = 0
-    for vehicle_id, data in vehicles.items():
-        cameras_seen = list(data['camera_detections'].keys())
-        status = "🎯 CROSS-CAMERA" if len(cameras_seen) > 1 else "📱 SINGLE-CAMERA"
-        if len(cameras_seen) > 1:
-            cross_camera_count += 1
         
-        duration = (data['last_seen'] - data['first_seen']).total_seconds()
-        print(f"{status} - Vehicle {vehicle_id} (Plate: {data['plate']}) - iPhones: {cameras_seen} - Duration: {duration:.1f}s")
-    
-    print(f"\n🎯 Cross-camera matches: {cross_camera_count}")
-    print(f"📱 Single-camera only: {len(vehicles) - cross_camera_count}")
+    except Exception as e:
+        print(f"\n❌ Unexpected error: {str(e)}")
+        logging.error(f"Main function error: {str(e)}")
+        shutdown_flag.set()
+        cv2.destroyAllWindows()
+        
+    finally:
+        # Ensure cleanup
+        try:
+            cv2.destroyAllWindows()
+            shutdown_flag.set()
+        except:
+            pass
 
 if __name__ == "__main__":
     main()
+
