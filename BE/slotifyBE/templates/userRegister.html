@@ -7,68 +7,323 @@
   <title>Registration Page</title>
   <link rel="icon" href="https://i.postimg.cc/9FDXtjBK/Logo.png" type="image/png">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .input-focus:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(30, 129, 176, 0.4);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .slide-up {
+      animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+    
+    .floating {
+      animation: floating 3s ease-in-out infinite;
+    }
+    
+    @keyframes floating {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .bg-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+    }
+    
+    .success-popup {
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      transition: all 0.3s ease;
+    }
+
+    .form-group:focus-within label {
+      color: #3b82f6;
+      transform: scale(0.95);
+    }
+
+    .file-upload {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .file-upload input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .file-upload-content {
+      padding: 1rem;
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      text-align: center;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+      position: relative;
+      z-index: 1;
+    }
+
+    .file-upload:hover .file-upload-content {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+    .stagger-6 { animation-delay: 0.6s; }
+  </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex">
+<body class="bg-gray-50 min-h-screen flex overflow-hidden">
+  <!-- Left Panel - Hero Section -->
+  <div class="w-1/2 relative gradient-bg bg-pattern">
+    <div class="absolute inset-0 flex items-center justify-center p-12">
+      <div class="text-center text-white fade-in">
+        <div class="floating mb-8">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-2xl glass-effect flex items-center justify-center">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+          </div>
+        </div>
+        <h1 class="text-5xl font-bold mb-6 leading-tight">
+          Join the Future of
+          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+            Smart Parking
+          </span>
+        </h1>
+        <p class="text-xl opacity-90 font-light max-w-md mx-auto leading-relaxed">
+          Create your account and start managing parking lots with AI-powered efficiency
+        </p>
+        <div class="mt-8 flex justify-center space-x-4">
+          <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+          <div class="w-8 h-2 bg-white rounded-full"></div>
+          <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Decorative Elements -->
+    <div class="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
+    <div class="absolute bottom-10 right-10 w-24 h-24 border border-white/20 rounded-full"></div>
+    <div class="absolute top-1/2 right-20 w-4 h-4 bg-white/30 rounded-full"></div>
+  </div>
 
-  <div class="w-1/2 bg-cover bg-center relative" style="background-image: url('https://i.postimg.cc/W3w8HgpY/Parking.jpg');">
-    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="text-center text-white">
-        <h1 class="text-4xl font-bold tracking-wide mb-4 font-montserrat">Welcome to Slotify</h1>
-        <p class="text-lg font-semibold">The future of parking is here with AIParkSystem</p>
+  <!-- Right Panel - Registration Form -->
+  <div class="w-1/2 flex flex-col justify-center bg-white relative overflow-y-auto">
+    <div class="max-w-md mx-auto w-full px-8 py-12 slide-up">
+      <!-- Logo & Header -->
+      <div class="text-center mb-8">
+        <img src="https://i.postimg.cc/5tnjKtdq/Logo-BGRemoved.png" alt="Logo" class="w-20 h-20 mx-auto mb-4 floating">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
+        <p class="text-gray-500 font-light">Join thousands of parking lot owners</p>
+      </div>
+
+      <!-- Registration Form -->
+      <form id="registrationForm" class="space-y-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-group stagger-1">
+            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+            <input 
+              type="text" 
+              id="firstName" 
+              maxlength="50" 
+              class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+              placeholder="John"
+              required
+            >
+          </div>
+
+          <div class="form-group stagger-2">
+            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              maxlength="50" 
+              class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+              placeholder="Doe"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="form-group stagger-3">
+          <label for="emailId" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+          <div class="relative">
+            <input 
+              type="email" 
+              id="emailId" 
+              maxlength="255" 
+              class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+              placeholder="john@example.com"
+              required
+            >
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group stagger-4">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password" 
+              maxlength="255" 
+              class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+              placeholder="Create a strong password"
+              required
+            >
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group stagger-5">
+          <label for="contactNumber" class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="contactNumber" 
+              maxlength="10" 
+              class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+              placeholder="1234567890"
+              required
+            >
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group stagger-6">
+          <label for="profileImage" class="block text-sm font-medium text-gray-700 mb-2">Profile Image</label>
+          <div class="file-upload">
+            <input type="file" id="profileImage" accept="image/*" required>
+            <div class="file-upload-content">
+              <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+              <p class="text-sm text-gray-600 font-medium">Click to upload profile image</p>
+              <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+            </div>
+          </div>
+          <div id="imagePreview" class="mt-2 text-sm text-green-600 hidden"></div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 rounded-xl transition-all duration-300 btn-hover transform shadow-lg"
+        >
+          <span class="flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+            Create My Account
+          </span>
+        </button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-gray-600">
+          Already have an account? 
+          <a href="#" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+            Sign in here
+          </a>
+        </p>
       </div>
     </div>
   </div>
 
-  <div class="w-1/2 p-8 flex flex-col justify-center bg-white">
-    <img src="https://i.postimg.cc/5tnjKtdq/Logo-BGRemoved.png" alt="Logo" class="w-32 mb-6 mx-auto">
-
-    <h2 class="text-3xl font-bold text-center text-gray-700 mb-6">Register</h2>
-
-    <form id="registrationForm" class="space-y-6">
-      <div class="mb-4">
-        <label for="firstName" class="block text-gray-600 font-medium mb-2">First Name</label>
-        <input type="text" id="firstName" maxlength="50" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+  <!-- Success Popup -->
+  <div id="successPopup" class="fixed inset-0 success-popup flex items-center justify-center hidden z-50">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform transition-all duration-300">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
       </div>
-
-      <div class="mb-4">
-        <label for="lastName" class="block text-gray-600 font-medium mb-2">Last Name</label>
-        <input type="text" id="lastName" maxlength="50" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">Registration Successful!</h3>
+      <p class="text-gray-600 mb-6">Welcome to Slotify! Redirecting you now...</p>
+      <div class="flex items-center justify-center space-x-1">
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
       </div>
-
-      <div class="mb-4">
-        <label for="emailId" class="block text-gray-600 font-medium mb-2">Email ID</label>
-        <input type="email" id="emailId" maxlength="255" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-      </div>
-
-      <div class="mb-4">
-        <label for="password" class="block text-gray-600 font-medium mb-2">Password</label>
-        <input type="password" id="password" maxlength="255" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-      </div>
-
-      <div class="mb-4">
-        <label for="contactNumber" class="block text-gray-600 font-medium mb-2">Contact Number</label>
-        <input type="text" id="contactNumber" maxlength="10" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-      </div>
-
-      <div class="mb-4">
-        <label for="profileImage" class="block text-gray-600 font-medium mb-2">Upload Profile Image</label>
-        <input type="file" id="profileImage" accept="image/*" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-      </div>
-
-      <button type="submit" class="w-48 bg-[#1e81b0] hover:bg-[#154c79] text-white font-medium py-3 rounded focus:outline-none focus:ring-2 focus:ring-[#1e81b0]">
-        Register Now
-      </button>
-      
-      
-    </form>
-  </div>
-
-  <div id="successPopup" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
-      <h3 class="text-xl font-bold text-green-600 mb-4">Registration Successful!</h3>
-      <p class="text-gray-600 mb-6">Thank you for registering with us.</p>
-      <button onclick="closePopup()" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <button 
+        onclick="closePopup()" 
+        class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
+      >
         Close
       </button>
     </div>
@@ -77,48 +332,182 @@
   <script>
   const form = document.getElementById('registrationForm');
   const successPopup = document.getElementById('successPopup');
+  const imagePreview = document.getElementById('imagePreview');
 
-  form.addEventListener('submit', async function(event) {
-  event.preventDefault(); 
-
-  const formData = new FormData();
-  formData.append('firstName', document.getElementById('firstName').value);
-  formData.append('lastName', document.getElementById('lastName').value);
-  formData.append('emailId', document.getElementById('emailId').value);
-  formData.append('password', document.getElementById('password').value);
-  formData.append('contactNumber', document.getElementById('contactNumber').value);
-
-  const profileImage = document.getElementById('profileImage').files[0];
-  if (profileImage) {
-    formData.append('idProof', profileImage);
-  }
-
-  try {
-    const response = await fetch('/registerOwner/', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (response.ok) {
-      successPopup.classList.remove('hidden');
-      form.reset(); 
-
-  setTimeout(() => {
-        window.location.href = '/options/';
-  }, 2000);  
+  // File upload preview - Fixed
+  document.getElementById('profileImage').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const content = document.querySelector('.file-upload-content');
+    
+    if (file) {
+      // Update the visual feedback
+      content.innerHTML = `
+        <svg class="w-8 h-8 text-green-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <p class="text-sm text-green-600 font-medium">${file.name}</p>
+        <p class="text-xs text-gray-400 mt-1">File selected successfully (${(file.size / 1024 / 1024).toFixed(2)} MB)</p>
+      `;
+      
+      // Show additional preview
+      imagePreview.innerHTML = `Selected: ${file.name}`;
+      imagePreview.classList.remove('hidden');
     } else {
-      const errorData = await response.json();
-      alert(`Error: ${errorData.error || 'Registration failed'}`);
+      // Reset to original state
+      content.innerHTML = `
+        <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+        </svg>
+        <p class="text-sm text-gray-600 font-medium">Click to upload profile image</p>
+        <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+      `;
+      imagePreview.classList.add('hidden');
     }
-  } catch (error) {
-    console.error('Error:', error);
-    alert('An error occurred. Please try again later.');
-  }
-});
+  });
 
-function closePopup() {
-  successPopup.classList.add('hidden');
-}
+  // Form submission - Updated to match API requirements
+  form.addEventListener('submit', async function(event) {
+    event.preventDefault(); 
+
+    // Basic form validation
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const emailId = document.getElementById('emailId').value.trim();
+    const password = document.getElementById('password').value;
+    const contactNumber = document.getElementById('contactNumber').value.trim();
+    const profileImage = document.getElementById('profileImage').files[0];
+
+    // Validate all required fields
+    if (!firstName || !lastName || !emailId || !password || !contactNumber) {
+      alert('All fields are required. Please fill in all information.');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailId)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    // Validate contact number (assuming 10 digits)
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(contactNumber)) {
+      alert('Please enter a valid 10-digit contact number.');
+      return;
+    }
+
+    // Validate password strength (minimum 6 characters)
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+
+    // Validate file upload
+    if (!profileImage) {
+      alert('Please select a profile image.');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(profileImage.type)) {
+      alert('Please select a valid image file (JPG, JPEG, PNG, or GIF).');
+      return;
+    }
+
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (profileImage.size > maxSize) {
+      alert('Image file size must be less than 10MB.');
+      return;
+    }
+
+    // Create FormData matching API expectations
+    const formData = new FormData();
+    formData.append('firstName', firstName);
+    formData.append('lastName', lastName);
+    formData.append('emailId', emailId);
+    formData.append('password', password);
+    formData.append('contactNumber', contactNumber);
+    formData.append('idProof', profileImage); // API expects 'idProof' not 'profileImage'
+
+    // Disable the submit button to prevent double submission
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <span class="flex items-center justify-center">
+        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Creating Account...
+      </span>
+    `;
+
+    try {
+      const response = await fetch('/registerOwner/', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const responseData = await response.json();
+
+      if (response.ok) {
+        console.log('Registration successful:', responseData);
+        
+        // Show success popup
+        successPopup.classList.remove('hidden');
+        
+        // Reset form
+        form.reset(); 
+        
+        // Reset file upload display
+        document.querySelector('.file-upload-content').innerHTML = `
+          <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          <p class="text-sm text-gray-600 font-medium">Click to upload profile image</p>
+          <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+        `;
+        imagePreview.classList.add('hidden');
+
+        // Redirect after delay
+        setTimeout(() => {
+          window.location.href = '/options/';
+        }, 3000);  
+      } else {
+        // Handle specific error cases from API
+        let errorMessage = 'Registration failed';
+        
+        if (response.status === 400) {
+          errorMessage = responseData.error || 'Invalid input data';
+        } else if (response.status === 500) {
+          errorMessage = 'Server error occurred. Please try again later.';
+        } else {
+          errorMessage = responseData.error || 'An unexpected error occurred';
+        }
+        
+        console.error('Registration failed:', responseData);
+        alert(`Registration Error: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      alert('Network error occurred. Please check your connection and try again.');
+    } finally {
+      // Re-enable the submit button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnText;
+    }
+  });
+
+  function closePopup() {
+    successPopup.classList.add('hidden');
+  }
+
+  // Test functionality for demo purposes
+  console.log('Registration form loaded successfully');
   </script>
 </body>
 

@@ -7,105 +7,294 @@
   <title>Login Page</title>
   <link rel="icon" href="https://i.postimg.cc/9FDXtjBK/Logo.png" type="image/png" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .input-focus:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(30, 129, 176, 0.4);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .slide-up {
+      animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+    
+    .floating {
+      animation: floating 3s ease-in-out infinite;
+    }
+    
+    @keyframes floating {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .bg-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+    }
+    
+    .success-popup {
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.6);
+    }
+  </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex">
-  <div class="w-1/2 bg-cover bg-center relative" style="background-image: url('https://i.postimg.cc/W3w8HgpY/Parking.jpg');">
-    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="text-center text-white">
-        <h1 class="text-4xl font-bold tracking-wide mb-4 font-montserrat">Welcome Back to Slotify</h1>
-        <p class="text-lg font-semibold">Park smarter with AIParkSystem</p>
+<body class="bg-gray-50 min-h-screen flex overflow-hidden">
+  <!-- Left Panel - Hero Section -->
+  <div class="w-1/2 relative gradient-bg bg-pattern">
+    <div class="absolute inset-0 flex items-center justify-center p-12">
+      <div class="text-center text-white fade-in">
+        <div class="floating mb-8">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-2xl glass-effect flex items-center justify-center">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+            </svg>
+          </div>
+        </div>
+        <h1 class="text-5xl font-bold mb-6 leading-tight">
+          Welcome Back to
+          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+            Slotify
+          </span>
+        </h1>
+        <p class="text-xl opacity-90 font-light max-w-md mx-auto leading-relaxed">
+          Experience the future of smart parking with our AI-powered system
+        </p>
+        <div class="mt-8 flex justify-center space-x-4">
+          <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+          <div class="w-8 h-2 bg-white rounded-full"></div>
+          <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Decorative Elements -->
+    <div class="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
+    <div class="absolute bottom-10 right-10 w-24 h-24 border border-white/20 rounded-full"></div>
+    <div class="absolute top-1/2 right-20 w-4 h-4 bg-white/30 rounded-full"></div>
+  </div>
+
+  <!-- Right Panel - Login Form -->
+  <div class="w-1/2 flex flex-col justify-center bg-white relative">
+    <div class="max-w-md mx-auto w-full px-8 slide-up">
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <img src="https://i.postimg.cc/5tnjKtdq/Logo-BGRemoved.png" alt="Logo" class="w-24 h-24 mx-auto mb-4 floating">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+        <p class="text-gray-500 font-light">Please sign in to your account</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="space-y-6">
+        <div class="space-y-4">
+          <div class="group">
+            <label for="emailId" class="block text-sm font-medium text-gray-700 mb-2 transition-colors group-focus-within:text-blue-600">
+              Email Address
+            </label>
+            <div class="relative">
+              <input 
+                type="email" 
+                id="emailId" 
+                class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+                placeholder="Enter your email"
+                required
+              >
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="group">
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2 transition-colors group-focus-within:text-blue-600">
+              Password
+            </label>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="password" 
+                class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+                placeholder="Enter your password"
+                required
+              >
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center">
+            <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            <span class="ml-2 text-gray-600">Remember me</span>
+          </label>
+          <a href="#" class="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+            Forgot password?
+          </a>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 rounded-xl transition-all duration-300 btn-hover transform shadow-lg"
+        >
+          <span class="flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+            </svg>
+            Sign In
+          </span>
+        </button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-gray-600">
+          Don't have an account? 
+          <a href="#" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+            Sign up here
+          </a>
+        </p>
       </div>
     </div>
   </div>
 
-  <div class="w-1/2 p-8 flex flex-col justify-center bg-white">
-    <img src="https://i.postimg.cc/5tnjKtdq/Logo-BGRemoved.png" alt="Logo" class="w-32 mb-6 mx-auto">
-
-    <h2 class="text-3xl font-bold text-center text-gray-700 mb-6">Sign In</h2>
-
-    <form id="loginForm" class="space-y-6">
-      <div class="mb-4">
-        <label for="emailId" class="block text-gray-600 font-medium mb-2">Email ID</label>
-        <input type="email" id="emailId" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+  <!-- Success Popup -->
+  <div id="successPopup" class="fixed inset-0 success-popup flex items-center justify-center hidden">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform transition-all duration-300">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
       </div>
-
-      <div class="mb-4">
-        <label for="password" class="block text-gray-600 font-medium mb-2">Password</label>
-        <input type="password" id="password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">Login Successful!</h3>
+      <p class="text-gray-600 mb-6">Redirecting you to your dashboard...</p>
+      <div class="flex items-center justify-center space-x-1">
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
       </div>
-
-      <button type="submit" class="w-48 bg-[#1e81b0] hover:bg-[#154c79] text-white font-medium py-3 rounded focus:outline-none focus:ring-2 focus:ring-[#1e81b0]">
-        Sign In
-      </button>
-    </form>
-  </div>
-
-  <div id="successPopup" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
-      <h3 class="text-xl font-bold text-green-600 mb-4">Login Successful!</h3>
-      <p class="text-gray-600 mb-6">Redirecting you now...</p>
-      <button onclick="closePopup()" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <button 
+        onclick="closePopup()" 
+        class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200"
+      >
         Close
       </button>
     </div>
   </div>
 
   <script>
-    const loginForm = document.getElementById('loginForm');
-    const successPopup = document.getElementById('successPopup');
+const loginForm = document.getElementById('loginForm');
+const successPopup = document.getElementById('successPopup');
 
-    loginForm.addEventListener('submit', async function (event) {
-      event.preventDefault();
+loginForm.addEventListener('submit', async function (event) {
+  event.preventDefault();
 
-      const email = document.getElementById('emailId').value;
-      const password = document.getElementById('password').value;
+  const email = document.getElementById('emailId').value;
+  const password = document.getElementById('password').value;
 
-      try {
-        const response = await fetch('/loginOwner/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-          },
-          body: JSON.stringify({ email, password })
-        });
-
-        if (response.ok) {
-          successPopup.classList.remove('hidden');
-
-          setTimeout(() => {
-        window.location.href = '/options/';
-      }, 2000);  // Redirect to options page after success
-
-        } else {
-          const errorData = await response.json();
-          alert(`Login failed: ${errorData.error || 'Invalid credentials'}`);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again later.');
-      }
+  try {
+    const response = await fetch('/loginOwner/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ email, password })
     });
 
-    function closePopup() {
-      successPopup.classList.add('hidden');
-    }
+    if (response.ok) {
+      const data = await response.json();
 
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
+      // Store user_id in cookie
+      if (data.user_id) {
+        setCookie('user_id', data.user_id, 1); // Store for 1 day
       }
-      return cookieValue;
+
+      successPopup.classList.remove('hidden');
+
+      setTimeout(() => {
+        window.location.href = '/options/';
+      }, 2000);  // Redirect to options page after success
+    } else {
+      const errorData = await response.json();
+      alert(`Login failed: ${errorData.error || 'Invalid credentials'}`);
     }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('An error occurred. Please try again later.');
+  }
+});
+
+function closePopup() {
+  successPopup.classList.add('hidden');
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Set cookie utility
+function setCookie(name, value, days) {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+}
   </script>
 </body>
 

@@ -6,11 +6,13 @@
   <title>Slotify Options</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
+      font-family: 'Inter', sans-serif;
     }
 
     .overlay {
@@ -19,25 +21,180 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.4); /* Fade overlay */
-      z-index: -10;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%);
+      z-index: 1;
     }
 
-    .glass {
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-radius: 1rem;
-      padding: 2rem;
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
     }
 
-    .option-button {
-      transition: transform 0.2s ease-in-out;
+    .option-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
 
-    .option-button:hover {
-      transform: scale(1.05);
+    .option-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s;
     }
+
+    .option-card:hover::before {
+      left: 100%;
+    }
+
+    .option-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .option-card.register {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(21, 128, 61, 0.2) 100%);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .option-card.register:hover {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(21, 128, 61, 0.3) 100%);
+      box-shadow: 0 20px 40px rgba(34, 197, 94, 0.2);
+    }
+
+    .option-card.dashboard {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(29, 78, 216, 0.2) 100%);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .option-card.dashboard:hover {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(29, 78, 216, 0.3) 100%);
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.2);
+    }
+
+    .option-card.nearby {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+      border-color: rgba(245, 158, 11, 0.3);
+    }
+
+    .option-card.nearby:hover {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.3) 100%);
+      box-shadow: 0 20px 40px rgba(245, 158, 11, 0.2);
+    }
+
+    .option-card.logout {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(185, 28, 28, 0.2) 100%);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .option-card.logout:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(185, 28, 28, 0.3) 100%);
+      box-shadow: 0 20px 40px rgba(239, 68, 68, 0.2);
+    }
+
+    .welcome-text {
+      background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+      }
+      to {
+        filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.5));
+      }
+    }
+
+    .icon-container {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .option-card:hover .icon-container {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .floating-element {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+      width: 80px;
+      height: 80px;
+      top: 10%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+      width: 120px;
+      height: 120px;
+      top: 70%;
+      right: 10%;
+      animation-delay: 2s;
+    }
+
+    .floating-element:nth-child(3) {
+      width: 60px;
+      height: 60px;
+      top: 30%;
+      right: 20%;
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .slide-in {
+      animation: slideIn 0.8s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center relative">
@@ -46,18 +203,107 @@
   <img src="/static/images/caroptionsbackground.gif" 
      class="absolute top-0 left-0 w-full h-full object-cover" /> 
 
-  <!-- Dark overlay for contrast -->
+  <!-- Floating decorative elements -->
+  <div class="floating-element"></div>
+  <div class="floating-element"></div>
+  <div class="floating-element"></div>
+
+  <!-- Enhanced overlay for better contrast -->
   <div class="overlay"></div>
 
   <!-- Main Options Panel -->
-  <div class="glass text-white text-center max-w-xl w-full z-10 shadow-lg">
-    <h1 class="text-4xl font-bold mb-6 text-green-300">Welcome to Slotify ✳️</h1>
+  <div class="glass-card text-white text-center max-w-4xl w-full mx-4 z-10 p-8 slide-in">
+    <!-- Header Section -->
+    <div class="mb-12">
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-2xl flex items-center justify-center mr-4">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+          </svg>
+        </div>
+        <h1 class="text-5xl font-bold welcome-text">Slotify Dashboard</h1>
+      </div>
+      <p class="text-xl text-gray-300 font-light">Choose your parking management option</p>
+    </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <a href="/registerParking/" class="option-button bg-green-600 text-white py-4 rounded-lg hover:bg-green-700">🚘 Register Parking Lot</a>
-      <a href="/ownerDashboard/" class="option-button bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700">📊 Owner Dashboard</a>
-      <a href="/nearbyParking/" class="option-button bg-yellow-500 text-white py-4 rounded-lg hover:bg-yellow-600">📍 Nearby Lots</a>
-      <a href="/logout/" class="option-button bg-red-600 text-white py-4 rounded-lg hover:bg-red-700">🚪 Logout</a>
+    <!-- Options Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Register Parking Lot -->
+      <a href="/registerParking/" class="option-card register p-8 block text-white transition-all duration-300 stagger-1">
+        <div class="icon-container mx-auto">
+          <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold mb-3">Register Parking Lot</h3>
+        <p class="text-gray-300 text-sm leading-relaxed">Add new parking facilities to expand your network and increase revenue opportunities</p>
+        <div class="mt-4 flex items-center justify-center text-green-400">
+          <span class="text-sm font-medium">Get Started</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Owner Dashboard -->
+      <a href="/ownerDashboard/" class="option-card dashboard p-8 block text-white transition-all duration-300 stagger-2">
+        <div class="icon-container mx-auto">
+          <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold mb-3">Owner Dashboard</h3>
+        <p class="text-gray-300 text-sm leading-relaxed">Monitor performance, track analytics, and manage all your parking lots from one central hub</p>
+        <div class="mt-4 flex items-center justify-center text-blue-400">
+          <span class="text-sm font-medium">View Analytics</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+      </a>
+
+      <!-- My Nearby Lots -->
+      <a href="/nearbyParking/" class="option-card nearby p-8 block text-white transition-all duration-300 stagger-3">
+        <div class="icon-container mx-auto">
+          <svg class="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold mb-3">My Nearby Lots</h3>
+        <p class="text-gray-300 text-sm leading-relaxed">Discover and access parking facilities in your immediate vicinity with real-time availability</p>
+        <div class="mt-4 flex items-center justify-center text-yellow-400">
+          <span class="text-sm font-medium">Find Parking</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+      </a>
+
+      <!-- Logout -->
+      <a href="/logout/" class="option-card logout p-8 block text-white transition-all duration-300 stagger-4">
+        <div class="icon-container mx-auto">
+          <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold mb-3">Sign Out</h3>
+        <p class="text-gray-300 text-sm leading-relaxed">Securely log out of your account and return to the login screen</p>
+        <div class="mt-4 flex items-center justify-center text-red-400">
+          <span class="text-sm font-medium">Sign Out</span>
+          <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </div>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-12 pt-8 border-t border-white/10">
+      <p class="text-gray-400 text-sm">
+        Powered by AI • Smart Parking Solutions • 
+        <span class="text-green-400">Slotify 2024</span>
+      </p>
     </div>
   </div>
 

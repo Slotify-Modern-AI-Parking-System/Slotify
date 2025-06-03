@@ -4,139 +4,809 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Slotify Owner Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
-            color: #333;
+        .sidebar-gradient {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         }
-        .container {
-            display: flex;
+        .card-hover {
+            transition: all 0.3s ease;
         }
-        .sidebar {
-            width: 250px;
-            background-color: #004d40;
-            padding: 20px 20px 80px 20px;
-            height: 100vh;
-            color: white;
-            position: relative;
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
-        .sidebar h2 {
-            color: #00e676;
-            margin: 120px 0 2rem 0;
-            text-align: center;
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         }
-        .sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            padding: 10px;
-            margin: 5px 0;
-            cursor: pointer;
-            text-align: center;
+        .revenue-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
-        .sidebar a:hover {
-            background-color: #00796b;
+        .booking-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
-        .profile-picture {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #fff;
+        .occupancy-card {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
-        .main-content {
-            flex: 1;
-            padding: 40px;
-            background-color: white;
-        }
-        .card {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        .statistics {
-            display: flex;
-            justify-content: space-between;
-        }
-        .chart {
-            background: #e8f5e9;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        .id-proof-section {
-            background: #e8f5e9;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .id-proof-section a {
-            color: #004d40;
-            text-decoration: none;
-            font-weight: bold;
+        .profile-avatar {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         }
     </style>
-    <script>
-        function loadSection(section) {
-            const content = document.getElementById("content");
-            if (section === 'revenue') {
-                content.innerHTML = `<h1>Revenue Statistics</h1>
-                                    <div class="card"><h3>Total Earnings</h3><p>$106,720</p></div>
-                                    <div class="card"><h3>Total Bookings</h3><p>250,615</p></div>
-                                    <div class="card"><h3>Occupancy Rate</h3><p>87%</p></div>`;
-            } else if (section === 'profile') {
-                content.innerHTML = `<h1>Profile Information</h1>
-                                    <p><strong>Name:</strong> {{ dashboard_data.firstName }} {{ dashboard_data.lastName }}</p>
-                                    <p><strong>Email:</strong> {{ dashboard_data.emailId }}</p>
-                                    <p><strong>Total Parking Lots:</strong> {{ dashboard_data.totalConfirmedLots }}</p>
-                                    <p><strong>Available Spaces:</strong> {{ dashboard_data.availableSpaces }}</p>
-                                    <div class="id-proof-section">
-                                        <h3>Your ID Proof</h3>
-                                        <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
-                                        <a href="{{ dashboard_data.idProof }}" target="_blank">View ID Proof</a>
-                                    </div>`;
-            } else if (section === 'logout') {
-                alert("Logging out...");
-                window.location.href = "/";
-            } else {
-                content.innerHTML = `<h1>Welcome, {{ dashboard_data.firstName }}</h1>
-                                    <p>You have {{ dashboard_data.totalParkingLots }} parking lots registered.</p>
-                                    <p>Total available spaces: {{ dashboard_data.availableSpaces }}</p>`;
-            }
-        }
-    </script>
 </head>
-<body>
-    <div class="container">
-        <div class="sidebar">
-            {% if dashboard_data.idProof %}
-            <img src="{{ dashboard_data.idProof }}" alt="Profile Picture" class="profile-picture">
-            {% endif %}
-            <h2>Slotify Dashboard</h2>
-            <a onclick="loadSection('home')">Overview</a>
-            <a onclick="loadSection('revenue')">Revenue</a>
-            <a onclick="loadSection('profile')">Profile</a>
-            <a onclick="loadSection('logout')">Logout</a>
+<body class="bg-gray-50 font-sans">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 sidebar-gradient shadow-xl">
+            <div class="p-6">
+                <!-- Profile Section -->
+                <div class="text-center mb-8">
+                    {% if dashboard_data.idProof %}
+                    <img src="{{ dashboard_data.idProof }}" alt="Profile Picture" class="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white shadow-lg object-cover">
+                    {% else %}
+                    <div class="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white shadow-lg profile-avatar flex items-center justify-center">
+                        <i class="fas fa-user text-2xl text-white"></i>
+                    </div>
+                    {% endif %}
+                    <h2 class="text-xl font-bold text-white mb-1">{{ dashboard_data.firstName }} {{ dashboard_data.lastName }}</h2>
+                    <p class="text-slate-300 text-sm">Parking Owner</p>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="space-y-2">
+                    <a onclick="loadSection('home')" class="nav-item flex items-center space-x-3 text-white hover:bg-white/10 p-3 rounded-lg cursor-pointer transition-all duration-200">
+                        <i class="fas fa-home w-5"></i>
+                        <span>Overview</span>
+                    </a>
+                    <a onclick="loadSection('revenue')" class="nav-item flex items-center space-x-3 text-white hover:bg-white/10 p-3 rounded-lg cursor-pointer transition-all duration-200">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Revenue</span>
+                    </a>
+                    <a 
+                    onclick="window.location.href='/registerParking/'" 
+                    class="nav-item flex items-center space-x-3 text-white hover:bg-white/10 p-3 rounded-lg cursor-pointer transition-all duration-200"
+                    >
+                    <i class="fas fa-parking w-5"></i>
+                    <span>My Parking Lots</span>
+                    </a>
+
+                    <a onclick="loadSection('profile')" class="nav-item flex items-center space-x-3 text-white hover:bg-white/10 p-3 rounded-lg cursor-pointer transition-all duration-200">
+                        <i class="fas fa-user-circle w-5"></i>
+                        <span>Profile</span>
+                    </a>
+                    <a onclick="loadSection('settings')" class="nav-item flex items-center space-x-3 text-white hover:bg-white/10 p-3 rounded-lg cursor-pointer transition-all duration-200">
+                        <i class="fas fa-cog w-5"></i>
+                        <span>Settings</span>
+                    </a>
+
+                    <a onclick="loadSection('logout')" class="flex items-center space-x-3 text-white hover:bg-red-500/20 p-3 rounded-lg cursor-pointer transition-all duration-200 border border-white/20">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+
+
+            </div>
         </div>
-        <div class="main-content" id="content">
-            <h1>Welcome, {{ dashboard_data.firstName }}</h1>
-            <p>You have {{ dashboard_data.totalParkingLots }} parking lots registered.</p>
-            <p>Total available spaces: {{ dashboard_data.availableSpaces }}</p>
-            <p><strong>Confirmed Lots:</strong> {{ dashboard_data.totalConfirmedLots }}</p>
-            <div class="id-proof-section">
-                <h3>Your ID Proof</h3>
-                <p>Your ID proof has been uploaded successfully. Click the link below to view it:</p>
-                <a href="{{ dashboard_data.idProof }}" target="_blank">View ID Proof</a>
+
+        <!-- Main Content -->
+        <div class="flex-1">
+            <!-- Header -->
+            <div class="bg-white shadow-sm border-b p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 id="pageTitle" class="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+                        <p class="text-gray-600 text-sm mt-1">Manage your parking business</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <i class="fas fa-bell text-blue-600"></i>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Total Lots</p>
+                            <p class="font-bold text-gray-800">{{ dashboard_data.totalParkingLots }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6" id="content">
+                <!-- Default Overview Content -->
+                <div id="overview-content">
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Total Parking Lots</p>
+                                    <p class="text-3xl font-bold text-gray-800">{{ dashboard_data.totalParkingLots }}</p>
+                                </div>
+                                <div class="bg-blue-100 p-3 rounded-lg">
+                                    <i class="fas fa-parking text-2xl text-blue-600"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Confirmed Lots</p>
+                                    <p class="text-3xl font-bold text-green-600">{{ dashboard_data.totalConfirmedLots }}</p>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-lg">
+                                    <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Available Spaces</p>
+                                    <p class="text-3xl font-bold text-indigo-600">{{ dashboard_data.availableSpaces }}</p>
+                                </div>
+                                <div class="bg-indigo-100 p-3 rounded-lg">
+                                    <i class="fas fa-car text-2xl text-indigo-600"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Occupancy Rate</p>
+                                    <p class="text-3xl font-bold text-orange-600">87%</p>
+                                </div>
+                                <div class="bg-orange-100 p-3 rounded-lg">
+                                    <i class="fas fa-chart-pie text-2xl text-orange-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+                            <div class="space-y-3">
+                                <button 
+                                onclick="window.location.href='/registerParking/'" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                                >
+                                <i class="fas fa-plus"></i>
+                                <span>Add New Parking Lot</span>
+                                </button>
+
+                                <button onclick="loadSection('revenue')" class="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>View Revenue Report</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Activity</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg">
+                                    <div class="bg-green-100 p-2 rounded-full">
+                                        <i class="fas fa-check text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">New booking received</p>
+                                        <p class="text-xs text-gray-500">2 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg">
+                                    <div class="bg-blue-100 p-2 rounded-full">
+                                        <i class="fas fa-parking text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-800">Parking lot approved</p>
+                                        <p class="text-xs text-gray-500">1 day ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ID Proof Section -->
+                    {% if dashboard_data.idProof %}
+                    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-green-100 p-3 rounded-lg">
+                                <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-gray-800">Verified Account</h3>
+                                <p class="text-gray-600">Your ID proof has been uploaded and verified successfully.</p>
+                                <a href="{{ dashboard_data.idProof }}" target="_blank" class="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium mt-2 transition-colors duration-200">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>View ID Proof</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function setActiveNavItem(section) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-white/20');
+            });
+            
+            // Add active class to current item
+            event.target.closest('.nav-item').classList.add('bg-white/20');
+        }
+
+        function loadSection(section) {
+            const content = document.getElementById("content");
+            const pageTitle = document.getElementById("pageTitle");
+            
+            if (section === 'revenue') {
+                pageTitle.textContent = "Revenue Analytics";
+                content.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="revenue-card rounded-xl p-6 text-white shadow-lg card-hover">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-green-100 text-sm font-medium">Total Earnings</p>
+                                        <p class="text-3xl font-bold">$106,720</p>
+                                        <p class="text-green-200 text-sm">↗ +12% from last month</p>
+                                    </div>
+                                    <div class="bg-white/20 p-3 rounded-lg">
+                                        <i class="fas fa-dollar-sign text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-card rounded-xl p-6 text-white shadow-lg card-hover">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-blue-100 text-sm font-medium">Total Bookings</p>
+                                        <p class="text-3xl font-bold">250,615</p>
+                                        <p class="text-blue-200 text-sm">↗ +8% from last month</p>
+                                    </div>
+                                    <div class="bg-white/20 p-3 rounded-lg">
+                                        <i class="fas fa-calendar-check text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="occupancy-card rounded-xl p-6 text-white shadow-lg card-hover">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-orange-100 text-sm font-medium">Occupancy Rate</p>
+                                        <p class="text-3xl font-bold">87%</p>
+                                        <p class="text-orange-200 text-sm">↗ +5% from last month</p>
+                                    </div>
+                                    <div class="bg-white/20 p-3 rounded-lg">
+                                        <i class="fas fa-chart-pie text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Revenue Trend</h3>
+                            <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                                <div class="text-center">
+                                    <i class="fas fa-chart-line text-4xl text-gray-400 mb-4"></i>
+                                    <p class="text-gray-600">Revenue chart will be displayed here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+            
+                
+            } else if (section === 'profile') {
+                pageTitle.textContent = "Profile Information";
+                content.innerHTML = `
+                    <div class="max-w-4xl space-y-6">
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <div class="flex items-center space-x-6 mb-6">
+                                {% if dashboard_data.idProof %}
+                                <img src="{{ dashboard_data.idProof }}" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-gray-200 object-cover">
+                                {% else %}
+                                <div class="w-24 h-24 rounded-full border-4 border-gray-200 profile-avatar flex items-center justify-center">
+                                    <i class="fas fa-user text-3xl text-white"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-800">{{ dashboard_data.firstName }} {{ dashboard_data.lastName }}</h2>
+                                    <p class="text-gray-600">Parking Lot Owner</p>
+                                    <div class="flex items-center space-x-2 mt-2">
+                                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                            <i class="fas fa-shield-alt mr-1"></i>Verified
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Personal Information</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600">Full Name</label>
+                                        <p class="text-gray-800 font-medium">{{ dashboard_data.firstName }} {{ dashboard_data.lastName }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600">Email Address</label>
+                                        <p class="text-gray-800 font-medium">{{ dashboard_data.emailId }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                <h3 class="text-lg font-bold text-gray-800 mb-4">Business Statistics</h3>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Total Parking Lots</span>
+                                        <span class="font-bold text-gray-800">{{ dashboard_data.totalParkingLots }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Confirmed Lots</span>
+                                        <span class="font-bold text-green-600">{{ dashboard_data.totalConfirmedLots }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Available Spaces</span>
+                                        <span class="font-bold text-blue-600">{{ dashboard_data.availableSpaces }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if dashboard_data.idProof %}
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-4">
+                                    <div class="bg-green-100 p-3 rounded-lg">
+                                        <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-800">ID Verification</h3>
+                                        <p class="text-gray-600">Your identity has been verified successfully</p>
+                                    </div>
+                                </div>
+                                <a href="{{ dashboard_data.idProof }}" target="_blank" class="bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>View Document</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                `;
+                
+            } else if (section === 'settings') {
+                pageTitle.textContent = "Account Settings";
+                content.innerHTML = `
+                    <div class="max-w-4xl space-y-6">
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Account Preferences</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Email Notifications</h4>
+                                        <p class="text-sm text-gray-600">Receive booking and payment notifications</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" value="" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">SMS Alerts</h4>
+                                        <p class="text-sm text-gray-600">Get text messages for urgent updates</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" value="" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">Security Settings</h3>
+                            <div class="space-y-4">
+                                <button class="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">Change Password</h4>
+                                            <p class="text-sm text-gray-600">Update your account password</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-400"></i>
+                                    </div>
+                                </button>
+                                <button class="w-full text-left p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">Two-Factor Authentication</h4>
+                                            <p class="text-sm text-gray-600">Add an extra layer of security</p>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-gray-400"></i>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+} else if (section === 'logout') {
+                if (confirm("Are you sure you want to logout?")) {
+                    // Show loading state
+                    content.innerHTML = `
+                        <div class="flex items-center justify-center h-64">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                                <p class="text-gray-600">Logging out...</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Simulate logout delay
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1500);
+                }
+                return;
+                
+            } else {
+                pageTitle.textContent = "Dashboard Overview";
+                content.innerHTML = document.getElementById('overview-content').innerHTML;
+            }
+            
+            // Update active navigation
+            setActiveNavItem(section);
+        }
+
+        // Initialize dashboard with enhanced animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add subtle entrance animations
+            const cards = document.querySelectorAll('.card-hover');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('button, .nav-item');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+            
+            // Auto-refresh stats every 30 seconds
+            setInterval(refreshStats, 30000);
+        });
+
+        function refreshStats() {
+            const statCards = document.querySelectorAll('.stat-card');
+            statCards.forEach(card => {
+                card.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                }, 200);
+            });
+        }
+
+        // Enhanced notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 transform translate-x-full transition-all duration-300 ${
+                type === 'success' ? 'bg-green-50 border-green-400 text-green-800' :
+                type === 'error' ? 'bg-red-50 border-red-400 text-red-800' :
+                type === 'warning' ? 'bg-yellow-50 border-yellow-400 text-yellow-800' :
+                'bg-blue-50 border-blue-400 text-blue-800'
+            }`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        'fa-info-circle'
+                    }"></i>
+                    <span class="font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(full)';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Enhanced modal system for adding parking lots
+        function showAddParkingLotModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-50 overflow-y-auto';
+            modal.innerHTML = `
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeModal()"></div>
+                    
+                    <div class="inline-block w-full max-w-2xl p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900">Add New Parking Lot</h3>
+                            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <form class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Lot Name</label>
+                                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Enter parking lot name">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Total Spaces</label>
+                                    <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Number of spaces">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" rows="3" placeholder="Enter complete address"></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hourly Rate ($)</label>
+                                    <input type="number" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                                        <option>Indoor Parking</option>
+                                        <option>Outdoor Parking</option>
+                                        <option>Covered Parking</option>
+                                        <option>Valet Parking</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-4 pt-6 border-t">
+                                <button type="button" onclick="closeModal()" class="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Add Parking Lot</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.fixed.inset-0.z-50');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Real-time updates simulation
+        function simulateRealTimeUpdates() {
+            const occupancyRate = document.querySelector('.stat-card:last-child .text-3xl');
+            if (occupancyRate) {
+                setInterval(() => {
+                    const currentRate = parseInt(occupancyRate.textContent);
+                    const newRate = Math.max(75, Math.min(95, currentRate + Math.floor(Math.random() * 3) - 1));
+                    occupancyRate.textContent = newRate + '%';
+                    
+                    // Add pulse effect
+                    occupancyRate.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        occupancyRate.style.transform = 'scale(1)';
+                    }, 200);
+                }, 15000);
+            }
+        }
+
+        // Initialize real-time features
+        setTimeout(simulateRealTimeUpdates, 2000);
+
+        // Enhanced search functionality for parking lots
+        function searchParkingLots(query) {
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const matches = text.includes(query.toLowerCase());
+                row.style.display = matches ? '' : 'none';
+                
+                if (matches && query) {
+                    row.style.backgroundColor = '#fef3c7';
+                    setTimeout(() => {
+                        row.style.backgroundColor = '';
+                    }, 1000);
+                }
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        loadSection('home');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        loadSection('revenue');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        loadSection('parking-lots');
+                        break;
+                    case '4':
+                        e.preventDefault();
+                        loadSection('profile');
+                        break;
+                    case '5':
+                        e.preventDefault();
+                        loadSection('settings');
+                        break;
+                }
+            }
+        });
+
+        // Service worker for offline functionality
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(console.error);
+        }
+    </script>
+
+    <style>
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            animation: ripple-animation 0.6s linear;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .nav-item {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card {
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-gradient {
+            position: relative;
+        }
+
+        .sidebar-gradient::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+            opacity: 0.9;
+        }
+
+        .sidebar-gradient > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Loading animation */
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: calc(200px + 100%) 0; }
+        }
+
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        /* Enhanced hover effects */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Pulse animation for stats */
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .stat-pulse {
+            animation: pulse-subtle 2s infinite;
+        }
+    </style>
 </body>
 </html>

@@ -81,7 +81,7 @@ def login_owner(request):
 
             if user is not None:
                 login(request, user)
-                return JsonResponse({'message': 'Login successful'}, status=200)
+                return JsonResponse({'message': 'Login successful', 'user_id': user.id}, status=200)
             else:
                 return JsonResponse({'error': 'Invalid email or password'}, status=401)
 
@@ -98,6 +98,7 @@ def register_parking_lot(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
+            name = data.get("name")
             location = data.get("location")
 
             if not location:
@@ -114,7 +115,7 @@ def register_parking_lot(request):
 
             lot = ParkingLot.objects.create(
                 location=location,
-                name='',
+                name=name,
                 total_spaces=0,
                 available_spaces=0,
                 registered_by=request.user,
@@ -156,9 +157,41 @@ def confirm_parking(request):
     except ParkingLot.DoesNotExist:
         return HttpResponse("❌ Parking lot not found.", status=404)
 
+@csrf_exempt
 def get_parking_lots(request):
-    parking_lots = ParkingLot.objects.all().values("id", "name", "location", "total_spaces", "available_spaces")
-    return JsonResponse(list(parking_lots), safe=False)
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            user_id = data.get('user_id')
+
+            if not user_id:
+                return JsonResponse({'error': 'user_id is required'}, status=400)
+
+            # Get parking lots registered by this user
+            parking_lots = ParkingLot.objects.filter(registered_by_id=user_id).values(
+                "id", "name", "location", "total_spaces", "available_spaces", "confirmed"
+            )
+
+            # Get owner's name
+            try:
+                owner = OwnerProfile.objects.get(user_id=user_id)
+                full_name = f"{owner.firstName} {owner.lastName}"
+            except OwnerProfile.DoesNotExist:
+                full_name = "Unknown Owner"
+
+            response_data = {
+                "name": full_name,
+                "parking_lots": list(parking_lots)
+            }
+
+            return JsonResponse(response_data, safe=False)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
 # @csrf_exempt
 # def register_owner(request):
