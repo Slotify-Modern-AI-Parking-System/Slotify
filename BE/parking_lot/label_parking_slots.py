@@ -861,7 +861,8 @@ def find_image_in_address_folder(address):
         str: Path to the found image file, None if not found
     """
     # Base path for address folders
-    base_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/BE/parking_lot/Address"
+    base_path = r"C:\Users\jigsp\OneDrive\Desktop\Slotify\BE\parking_lot\Address"
+
     
     # Try multiple variations of the address
     address_variations = [

@@ -750,10 +750,12 @@ document.addEventListener('click', async function(event) {
             button.textContent = 'Processing...';
             
             // Then proceed with the original API call
-            const payload = {
-                script_path: '/Users/jainamdoshi/Desktop/Projects/Slotify/BE/parking_lot/label_parking_slots.py',
-                address: address  // Keep original address format
-            };
+       const payload = {
+  script_path: "C:/Users/jigsp/OneDrive/Desktop/Slotify/BE/parking_lot/label_parking_slots.py",
+  address: address
+};
+
+
             
             const response = await fetch('/api/run-script/', {
                 method: 'POST',
