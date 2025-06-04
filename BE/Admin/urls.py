@@ -9,5 +9,6 @@ urlpatterns = [
     path('api/run-script/', views.run_python_script, name='run_python_script'),
     path('api/unconfirmed-parkinglots/', views.unconfirmed_parkinglots, name='unconfirmed_parkinglots'),
     path('upload-image/', views.upload_image, name='upload_image'),
+    path('api/dashboard/counts/', views.dashboard_counts, name='dashboard_counts'),
 ]
 
