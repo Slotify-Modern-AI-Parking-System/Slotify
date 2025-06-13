@@ -41,6 +41,9 @@ logger = logging.getLogger(__name__)
 # Load the credentials
 # credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
+def payment_page(request):
+    return render(request, "payment.html")
+
 def userRegister(request):
     return render(request, "userRegister.html")
 
@@ -55,6 +58,9 @@ def options_page(request):
 
 def nearby_parking(request):
     return render(request, "parkinglist.html")
+
+def admin_reviews(request):
+    return render(request, "adminFeedback.html")
 
 from django.views.decorators.csrf import csrf_exempt  # If you're using fetch, you'll likely need this
 
@@ -92,6 +98,20 @@ def login_owner(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
+def payment_page(request):
+    # Optional: fetch user booking data to pass into the template
+    context = {
+        "location": "Downtown Plaza Parking",
+        "address": "123 Main Street, Downtown",
+        "spot": "A-47",
+        "date_time": "Dec 15, 2024 | 9:00 AM",
+        "duration": "4 hours",
+        "rate": 8.00,
+        "service_fee": 2.50,
+        "total": 34.50
+    }
+    return render(request, "payment.html", context)
 
 @csrf_exempt
 def register_parking_lot(request):

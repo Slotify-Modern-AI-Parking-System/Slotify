@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Reviews - Slotify</title>
+    <meta name="description" content="Admin dashboard for managing user reviews and feedback">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -3;
+        }
+
+        .background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fsweetiq.com%2Fwp-content%2Fuploads%2F2017%2F06%2FiStock-513106144.jpg&f=1&nofb=1&ipt=6a7c00a11908f782801d77ff06449da800090e61ec5ae953bc20acbab2698076&ipo=images') no-repeat center center/cover;
+            opacity: 0.3;
+            z-index: -2;
+        }
+
+        .background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.9) 100%);
+            z-index: -1;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 8px; height: 8px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 12px; height: 12px; left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { width: 6px; height: 6px; left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { width: 10px; height: 10px; left: 70%; animation-delay: 3s; }
+        .particle:nth-child(5) { width: 14px; height: 14px; left: 80%; animation-delay: 4s; }
+        .particle:nth-child(6) { width: 8px; height: 8px; left: 90%; animation-delay: 5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 32px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        /* Main Container */
+        .container {
+            padding: 120px 20px 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        .dashboard-header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-header p {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.8s ease-out 0.4s both;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .section-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header i {
+            color: #ff6b6b;
+            font-size: 24px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-tab.active,
+        .filter-tab:hover {
+            background: rgba(78, 205, 196, 0.3);
+            border-color: #4ecdc4;
+            color: white;
+        }
+
+        .reviews-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .review-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .user-info span {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .review-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            color: #ffd700;
+            font-size: 16px;
+        }
+
+        .rating-number {
+            font-weight: 600;
+            color: white;
+        }
+
+        .review-text {
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+        }
+
+        .review-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-approve {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .btn-approve:hover {
+            background: rgba(76, 175, 80, 0.5);
+            color: white;
+        }
+
+        .btn-flag {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .btn-flag:hover {
+            background: rgba(244, 67, 54, 0.5);
+            color: white;
+        }
+
+        .btn-reply {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+            border: 1px solid rgba(78, 205, 196, 0.5);
+        }
+
+        .btn-reply:hover {
+            background: rgba(78, 205, 196, 0.5);
+            color: white;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .container {
+                padding: 120px 15px 30px;
+            }
+
+            .dashboard-header h1 {
+                font-size: 36px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .review-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .review-actions {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="#" class="logo">
+            <i class="fas fa-parking"></i>
+            Slotify Admin
+        </a>
+        <div class="admin-info">
+            <span>Welcome, Admin</span>
+            <div class="admin-avatar">A</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Reviews Dashboard</h1>
+            <p>Monitor and manage user feedback and reviews</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stat-number">4.8</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="stat-number">247</div>
+                <div class="stat-label">Total Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number">12</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-flag"></i>
+                </div>
+                <div class="stat-number">3</div>
+                <div class="stat-label">Flagged Reviews</div>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-list"></i>
+                    Recent Reviews
+                </h2>
+            </div>
+
+            <div class="filter-tabs">
+                <div class="filter-tab active">All Reviews</div>
+                <div class="filter-tab">Pending</div>
+                <div class="filter-tab">Approved</div>
+                <div class="filter-tab">Flagged</div>
+                <div class="filter-tab">5 Stars</div>
+                <div class="filter-tab">1-2 Stars</div>
+            </div>
+
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <div class="user-avatar">JS</div>
+                            <div class="user-info">
+                                <h4>John Smith</h4>
+                                <span>2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="rating-number">5.0</span>
+                        </div>
+                    </div>
+                    <div class="review-text">
+                        "Excellent service! Found a parking spot right in downtown within minutes. The app is super easy to use and the pricing is very reasonable. Will definitely use Slotify again!"
+                    </div>
+                    <div class="review-actions">
+                        <button class="action-btn btn-approve">
+                            <i class="fas fa-check"></i>
+                            Approve
+                        </button>
+                        <button class="action-btn btn-reply">
+                            <i class="fas fa-reply"></i>
+                            Reply
+                        </button>
+                        <button class="action-btn btn-flag">
+                            <i class="fas fa-flag"></i>
+                            Flag
+                        </button>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <div class="user-avatar">MJ</div>
+                            <div class="user-info">
+                                <h4>Maria Johnson</h4>
+                                <span>5 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="rating-number">4.0</span>
+                        </div>
+                    </div>
+                    <div class="review-text">
+                        "Good app overall. Easy to find parking spots and book them. The only issue I had was with the GPS navigation which took me to the wrong entrance. Other than that, great experience!"
+                    </div>
+                    <div class="review-actions">
+                        <button class="action-btn btn-approve">
+                            <i class="fas fa-check"></i>
+                            Approve
+                        </button>
+                        <button class="action-btn btn-reply">
+                            <i class="fas fa-reply"></i>
+                            Reply
+                        </button>
+                        <button class="action-btn btn-flag">
+                            <i class="fas fa-flag"></i>
+                            Flag
+                        </button>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-user">
+                            <div class="user-avatar">RW</div>
+                            <div class="user-info">
+                                <h4>Robert Wilson</h4>
+                                <span>1 day ago</span>
+                            </div>
+                        </div>
+                        <div class="review-rating">
+                            <div class="stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <span class="rating-number">2.0</span>
+                        </div>
+                    </div>
+                    <div class="review-text">
+                        "Had issues with the payment system. My card was charged twice for the same booking. Customer service was slow to respond. The parking spot itself was fine, but the technical issues were frustrating."
+                    </div>
+                    <div class="review-actions">
+                        <button class="action-btn btn-approve">
+                            <i class="fas fa-check"></i>
+                            Approve
+                        </button>
+                        <button class="action-btn btn-reply">
+                            <i class="fas fa-reply"></i>
+                            Reply
+                        </button>
+                        <button class="action-btn btn-flag">
+                            <i class="fas fa-flag"></i>
+                            Flag
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Particle animation enhancement
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                const randomDelay = Math.random() * 6;
+                particle.style.animationDelay = randomDelay + 's';
+                particle.style.top = '100vh';
+            });
+
+            // Filter tabs functionality
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Here you would filter the reviews based on the selected tab
+                    console.log('Filtering by: ' + this.textContent);
+                });
+            });
+
+            // Action buttons functionality
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.classList.contains('btn-approve') ? 'approved' :
+                                  this.classList.contains('btn-flag') ? 'flagged' : 'replied to';
+                    
+                    // Add visual feedback
+                    this.style.opacity = '0.5';
+                    this.style.pointerEvents = 'none';
+                    
+                    setTimeout(() => {
+                        alert(`Review ${action} successfully!`);
+                        this.style.opacity = '1';
+                        this.style.pointerEvents = 'auto';
+                    }, 500);
+                });
+            });
+
+            // Parallax effect on mouse move
+            document.addEventListener('mousemove', function(e) {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                
+                particles.forEach((particle, index) => {
+                    const speed = (index + 1) * 0.3;
+                    const x = (mouseX - 0.5) * speed;
+                    const y = (mouseY - 0.5) * speed;
+                    particle.style.transform = `translate(${x}px, ${y}px)`;
+                });
+            });
+
+            // Animate stats on load
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                const finalNumber = stat.textContent;
+                if (!isNaN(finalNumber)) {
+                    animateNumber(stat, 0, parseInt(finalNumber));
+                }
+            });
+
+            function animateNumber(element, start, end) {
+                const duration = 2000;
+                const increment = end / (duration / 16);
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= end) {
+                        current = end;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.floor(current);
+                }, 16);
+            }
+        });
+    </script>
+</body>
+</html>

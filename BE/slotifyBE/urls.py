@@ -16,4 +16,6 @@ urlpatterns = [
     path('submitParking/', views.register_parking_lot, name='submit_parking'),
     path('nearbyParking/', views.nearby_parking, name='nearby_parking'),
     path('confirmParking/', views.confirm_parking, name='confirm_parking'),
+    path("payment/", views.payment_page, name="payment"),
+    path("adminfeedback/", views.admin_reviews, name="admin_reviews"), 
 ]
