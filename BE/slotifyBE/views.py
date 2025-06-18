@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
 # =======
-# GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "/Users/jainamdoshi/Desktop/Projects/Slotify/BE/decent-surf-448118-e5-3a45c35c5902.json")
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
+GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "/Users/Ryan_/Downloads/coherent-span-460623-r6-0db248d979a7.json")
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_CREDENTIALS_PATH
 # >>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
 # =======
 
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 # >>>>>>> 627e8a1c (Gitignore)
 
 # Load the credentials
-# credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
+credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
 def payment_page(request):
     return render(request, "payment.html")
@@ -289,6 +289,7 @@ def register_owner(request):
             email_id = request.POST.get('emailId')
             password = request.POST.get('password')
             contact_number = request.POST.get('contactNumber')
+            id_proof_file = request.FILES.get('idProof')
 
             if not all([first_name, last_name, email_id, password, contact_number]):
                 return JsonResponse({'error': 'All fields are required.'}, status=400)
