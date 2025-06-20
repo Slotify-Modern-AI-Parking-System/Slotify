@@ -21,6 +21,9 @@ class ParkingLot(models.Model):
     available_spaces = models.PositiveIntegerField(default=0)
     registered_by = models.ForeignKey(User, on_delete=models.CASCADE)
     confirmed = models.BooleanField(default=False)
+    username = models.CharField(max_length=150, unique=True, null = True, blank = True)
+    password = models.CharField(max_length=128 , null = True, blank = True)
+
 
     def __str__(self):
         return f"{self.location} ({'Confirmed' if self.confirmed else 'Pending'})"

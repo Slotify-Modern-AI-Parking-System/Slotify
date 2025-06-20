@@ -200,6 +200,7 @@ def index(request):
     }
     return render(request, 'entry.html', context)
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def start_detection(request):

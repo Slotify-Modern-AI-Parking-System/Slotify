@@ -146,32 +146,47 @@ def run_python_script(request):
                 'error': 'script_path is required'
             }, status=400)
         
+        # Store original working directory
+        original_cwd = os.getcwd()
+        
+        # Change to the directory where this views.py file is located (BE folder)
+        current_file_dir = os.path.dirname(os.path.realpath(__file__))
+        os.chdir(current_file_dir)
+        print(f"Changed working directory to: {current_file_dir}")
+        
         # Handle both absolute and relative paths
         if os.path.isabs(script_path):
             # Absolute path provided
             full_script_path = os.path.normpath(script_path)
         else:
-            # Relative path - construct full path
-            full_script_path = os.path.normpath(os.path.join(r"C:\Users\jigsp\OneDrive\Desktop\Slotify\BE\parking_lot\Address",script_path))
+            # Relative path - construct full path from current directory (BE folder)
+            full_script_path = os.path.normpath(os.path.join(current_file_dir, script_path))
         
-        # Security check: ensure script is within project directory (only for relative paths)
-        if not os.path.isabs(script_path):
-            if not os.path.abspath(full_script_path).startswith(os.path.abspath(settings.BASE_DIR)):
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Script path not allowed'
-                }, status=403)
+        print(f"Full script path resolved to: {full_script_path}")
+        
+        # Security check: ensure script is within project directory
+        base_dir = os.path.abspath(settings.BASE_DIR)
+        script_abs_path = os.path.abspath(full_script_path)
+        
+        if not script_abs_path.startswith(base_dir):
+            return JsonResponse({
+                'success': False,
+                'error': 'Script path not allowed - must be within project directory',
+                'script_path': script_abs_path,
+                'base_dir': base_dir
+            }, status=403)
         
         # Check if script exists
         if not os.path.exists(full_script_path):
             return JsonResponse({
                 'success': False,
-                'error': f'Script not found: {full_script_path}'
+                'error': f'Script not found: {full_script_path}',
+                'current_dir': os.getcwd(),
+                'files_in_current_dir': os.listdir('.') if os.path.exists('.') else []
             }, status=404)
         
         # Change to script directory to handle relative imports
         script_dir = os.path.dirname(full_script_path)
-        original_cwd = os.getcwd()
         
         try:
             # Validate script file permissions and readability
@@ -194,11 +209,11 @@ def run_python_script(request):
                     'details': str(fe)
                 }, status=400)
             
-            # Change working directory with error handling
-            if script_dir:
+            # Change working directory to script directory with error handling
+            if script_dir and script_dir != os.getcwd():
                 try:
                     os.chdir(script_dir)
-                    print(f"Changed working directory to: {script_dir}")
+                    print(f"Changed working directory to script directory: {script_dir}")
                 except OSError as oe:
                     print(f"Failed to change directory to {script_dir}: {oe}")
                     return JsonResponse({
@@ -347,13 +362,47 @@ def run_python_script(request):
                     )
                     
                     if parking_lots.exists():
-                        # Update all matching parking lots to confirmed
-                        updated_count = parking_lots.update(confirmed=True)
+                        # Import for password generation
+                        import secrets
+                        import string
+                        
+                        updated_lots = []
+                        updated_count = 0
+                        
+                        # Update each parking lot individually to generate unique credentials
+                        for lot in parking_lots:
+                            try:
+                                # Generate username using the specified format
+                                username = f"{lot.name}_{lot.location[:3]}_{lot.registered_by.username}"
+                                
+                                # Generate a secure random password (12 characters)
+                                password_chars = string.ascii_letters + string.digits
+                                password = ''.join(secrets.choice(password_chars) for _ in range(12))
+                                
+                                # Update the parking lot fields
+                                lot.confirmed = True
+                                lot.username = username
+                                lot.password = password
+                                lot.save()
+                                
+                                updated_count += 1
+                                updated_lots.append({
+                                    'location': lot.location,
+                                    'username': username,
+                                    'password': password
+                                })
+                                
+                                print(f"Updated parking lot: {lot.location} with username: {username}")
+                                
+                            except Exception as lot_error:
+                                print(f"Error updating individual lot {lot.id}: {str(lot_error)}")
+                                continue
                         
                         response_data.update({
                             'parking_lot_updated': True,
                             'updated_count': updated_count,
-                            'updated_locations': list(parking_lots.values_list('location', flat=True))
+                            'updated_locations': [lot['location'] for lot in updated_lots],
+                            'generated_credentials': updated_lots
                         })
                     else:
                         response_data.update({
@@ -437,9 +486,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
 # Set your target folder path
-TARGET_FOLDER = r"C:\Users\jigsp\OneDrive\Desktop\Slotify\BE\parking_lot\Address"
+# TARGET_FOLDER = r"C:\Users\jigsp\Desktop\Slotify\BE\parking_lot\Address"
+import os
 
+# Change to the directory where this Python file is located (Admin folder)
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
+# Now construct the relative path to the Address folder
+TARGET_FOLDER = os.path.join("..", "parking_lot", "Address")
 @csrf_exempt
 def upload_image(request):
     if request.method != 'POST':
