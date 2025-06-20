@@ -175,6 +175,8 @@ import logging
 import subprocess
 import sys
 import os
+from Admin.models import *
+from slotifyBE.models import *
 
 # Global variables to manage detection state
 detection_status = {
@@ -199,6 +201,49 @@ def index(request):
         'recent_detections': list(recent_detections)
     }
     return render(request, 'entry.html', context)
+
+def welcome(request):
+    return render(request, "welcome.html")
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def parking_lot_login(request):
+    try:
+        data = json.loads(request.body)
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return JsonResponse({"success": False, "message": "Username and password required"}, status=400)
+
+        try:
+            lot = ParkingLot.objects.get(username=username, password=password)
+        except ParkingLot.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Invalid username or password"}, status=401)
+
+        # Prepare the data to return
+        lot_data = {
+            "id": lot.id,
+            "name": lot.name,
+            "location": lot.location,
+            "total_spaces": lot.total_spaces,
+            "available_spaces": lot.available_spaces,
+            "registered_by": lot.registered_by.id,
+            "confirmed": lot.confirmed,
+            "username": lot.username,
+        }
+
+        return JsonResponse({
+            "success": True,
+            "message": "Login successful",
+            "data": lot_data
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+
 
 
 @require_http_methods(["POST"])

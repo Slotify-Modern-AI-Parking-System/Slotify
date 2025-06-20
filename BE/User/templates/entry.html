@@ -3,523 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parking Entry - License Plate Detection</title>
+    <title>Slotify Login - AI Smart Parking Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @keyframes slideIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .header {
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            color: #333;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .detection-area {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 30px 0;
-            border: 2px dashed #ddd;
-            transition: all 0.3s ease;
-        }
-
-        .detection-area.active {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #667eea20, #764ba220);
-        }
-
-        .camera-icon {
-            font-size: 4rem;
-            color: #ccc;
-            margin-bottom: 20px;
-            transition: color 0.3s ease;
-        }
-
-        .camera-icon.active {
-            color: #667eea;
-            animation: pulse 2s infinite;
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(180deg); }
         }
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.05); }
         }
 
-        .status-text {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 20px;
+        .animate-slideIn {
+            animation: slideIn 0.8s ease-out;
         }
 
-        .status-text.detecting {
-            color: #667eea;
-            font-weight: 600;
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
         }
 
-        .detected-plate {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
+        .animate-pulse-gentle {
+            animation: pulse 3s ease-in-out infinite;
         }
 
-        .detected-plate.show {
-            display: block;
-            animation: slideIn 0.5s ease;
+        .bg-gradient-navy-green {
+            background: linear-gradient(135deg, #001f3f 0%, #2d5a2d 100%);
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .plate-number {
-            font-size: 2rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            margin-bottom: 10px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .confirmation-area {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .confirmation-area.show {
-            display: block;
-        }
-
-        .confirmation-text {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-            color: white;
-        }
-
-        .btn-warning:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(255, 193, 7, 0.3);
-        }
-
-        .correction-input {
-            margin-top: 15px;
-            display: none;
-        }
-
-        .correction-input.show {
-            display: block;
-        }
-
-        .correction-input input {
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            text-align: center;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .correction-input input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .loading-spinner {
-            display: none;
-            margin: 20px auto;
-        }
-
-        .loading-spinner.show {
-            display: block;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .success-message {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-            animation: slideIn 0.5s ease;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .plate-number {
-                font-size: 1.5rem;
-                letter-spacing: 2px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-        }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-1000 { animation-delay: 1s; }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-3000 { animation-delay: 3s; }
+        .delay-4000 { animation-delay: 4s; }
+        .delay-5000 { animation-delay: 5s; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🚗 Parking Entry</h1>
-            <p>Automated License Plate Detection System</p>
-        </div>
+<body class="bg-gradient-navy-green min-h-screen flex items-center justify-center p-4 md:p-6 font-sans">
+    <!-- Background floating icons -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[10%] left-[10%] text-2xl md:text-3xl text-white opacity-10 animate-float">🚗</div>
+        <div class="absolute top-[20%] right-[15%] text-2xl md:text-3xl text-white opacity-10 animate-float delay-1000">🅿️</div>
+        <div class="absolute bottom-[30%] left-[20%] text-2xl md:text-3xl text-white opacity-10 animate-float delay-2000">🚙</div>
+        <div class="absolute bottom-[20%] right-[10%] text-2xl md:text-3xl text-white opacity-10 animate-float delay-3000">🚕</div>
+        <div class="absolute top-[50%] left-[5%] text-2xl md:text-3xl text-white opacity-10 animate-float delay-4000">🚐</div>
+        <div class="absolute top-[60%] right-[5%] text-2xl md:text-3xl text-white opacity-10 animate-float delay-5000">🚓</div>
+    </div>
 
-        <div class="detection-area" id="detectionArea">
-            <div class="camera-icon" id="cameraIcon">📹</div>
-            <div class="status-text" id="statusText">Click "Start Detection" to begin scanning your license plate</div>
-            
-            <div class="loading-spinner" id="loadingSpinner">
-                <div class="spinner"></div>
-                <p style="margin-top: 15px;">Detecting license plate...</p>
-            </div>
-        </div>
-
-        <div class="detected-plate" id="detectedPlate">
-            <h3>License Plate Detected!</h3>
-            <div class="plate-number" id="plateNumber"></div>
-            <p>Detection completed successfully</p>
-        </div>
-
-        <div class="confirmation-area" id="confirmationArea">
-            <div class="confirmation-text">
-                Is this your correct license plate number?
-            </div>
-            <div class="button-group">
-                <button class="btn btn-success" onclick="confirmPlate(true)">
-                    ✅ Yes, Correct
-                </button>
-                <button class="btn btn-warning" onclick="showCorrection()">
-                    ❌ No, Incorrect
-                </button>
+    <!-- Main login container -->
+    <div class="bg-white bg-opacity-95 backdrop-blur-lg rounded-2xl shadow-2xl p-6 md:p-10 w-full max-w-md animate-slideIn relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <!-- Logo -->
+            <div class="w-16 h-16 md:w-20 md:h-20 bg-blue-900 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl md:text-3xl font-bold text-white animate-pulse-gentle shadow-lg">
+                S
             </div>
             
-            <div class="correction-input" id="correctionInput">
-                <p>Please enter the correct license plate:</p>
-                <input type="text" id="correctedPlate" placeholder="Enter correct plate number" maxlength="10">
-                <div class="button-group">
-                    <button class="btn btn-success" onclick="confirmPlate(false)">
-                        Submit Correction
-                    </button>
-                    <button class="btn btn-primary" onclick="hideCorrection()">
-                        Cancel
-                    </button>
+            <!-- Title -->
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+                Welcome Back
+            </h1>
+            <p class="text-gray-600 text-sm md:text-base">
+                Sign in to your Slotify account
+            </p>
+        </div>
+
+        <!-- Login Form -->
+        <form class="space-y-6" id="loginForm" onsubmit="handleLogin(event)">
+            <!-- Username Field -->
+            <div class="space-y-2">
+                <label for="username" class="block text-sm font-semibold text-gray-700">
+                    Username
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-400 text-lg">👤</span>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username"
+                        required
+                        class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 focus:outline-none transition-all duration-300 text-gray-800 placeholder-gray-400"
+                        placeholder="Enter your username"
+                    >
+                </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="space-y-2">
+                <label for="password" class="block text-sm font-semibold text-gray-700">
+                    Password
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-400 text-lg">🔒</span>
+                    </div>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        required
+                        class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 focus:outline-none transition-all duration-300 text-gray-800 placeholder-gray-400"
+                        placeholder="Enter your password"
+                    >
+                </div>
+            </div>
+
+            <!-- Login Button -->
+            <button 
+                type="submit" 
+                class="w-full bg-gradient-to-r from-blue-900 to-green-600 text-white font-bold py-3 px-6 rounded-xl hover:from-blue-800 hover:to-green-500 focus:ring-4 focus:ring-green-200 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                id="loginBtn"
+            >
+                <span id="loginBtnText">🚀 Sign In</span>
+                <div id="loginSpinner" class="hidden flex items-center justify-center">
+                    <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Signing In...
+                </div>
+            </button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="hidden mt-6 p-4 bg-green-100 border border-green-400 rounded-xl">
+            <div class="flex items-center">
+                <span class="text-green-600 text-xl mr-2">✅</span>
+                <div>
+                    <h3 class="text-green-800 font-semibold">Login Successful!</h3>
+                    <p class="text-green-700 text-sm">Redirecting to dashboard...</p>
                 </div>
             </div>
         </div>
 
-        <div class="success-message" id="successMessage">
-            <h3>✅ Entry Confirmed!</h3>
-            <p>Welcome to the parking lot. Your license plate has been recorded.</p>
-            <div style="margin-top: 15px;">
-                <button class="btn btn-primary" onclick="resetSystem()">
-                    Detect Another Vehicle
-                </button>
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden mt-6 p-4 bg-red-100 border border-red-400 rounded-xl">
+            <div class="flex items-center">
+                <span class="text-red-600 text-xl mr-2">❌</span>
+                <div>
+                    <h3 class="text-red-800 font-semibold">Login Failed</h3>
+                    <p class="text-red-700 text-sm" id="errorText">Please check your credentials.</p>
+                </div>
             </div>
         </div>
 
-        <div class="button-group" id="mainButtons">
-            <button class="btn btn-primary" id="startBtn" onclick="startDetection()">
-                🚀 Start Detection
-            </button>
+        <!-- Footer -->
+        <div class="mt-8 text-center">
+            <p class="text-gray-500 text-sm">
+                Slotify - AI Smart Parking Management System
+            </p>
         </div>
     </div>
 
     <script>
-        let sessionId = null;
-        let detectionInterval = null;
-
-        function startDetection() {
-            const detectionArea = document.getElementById('detectionArea');
-            const cameraIcon = document.getElementById('cameraIcon');
-            const statusText = document.getElementById('statusText');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const startBtn = document.getElementById('startBtn');
+        function handleLogin(event) {
+            event.preventDefault();
             
-            // Update UI to show detection in progress
-            detectionArea.classList.add('active');
-            cameraIcon.classList.add('active');
-            statusText.textContent = 'Initializing camera and detection system...';
-            statusText.classList.add('detecting');
-            loadingSpinner.classList.add('show');
-            startBtn.style.display = 'none';
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginSpinner = document.getElementById('loginSpinner');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
             
-            // Start detection via API
-            fetch('/start-detection/', {
+            // Hide any previous messages
+            successMessage.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            
+            // Show loading state
+            loginBtnText.classList.add('hidden');
+            loginSpinner.classList.remove('hidden');
+            loginBtn.disabled = true;
+            
+            // Simulate API call
+            fetch('/parking-lot/login/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    camera_id: 0,  // Default camera
-                    duration: 60   // 60 seconds detection
+                    username: username,
+                    password: password
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    sessionId = data.session_id;
-                    statusText.textContent = 'Scanning for license plate... Please position your vehicle clearly.';
+                    // Show success message
+                    successMessage.classList.remove('hidden');
                     
-                    // Start polling for results
-                    detectionInterval = setInterval(checkDetectionStatus, 2000);
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '/dashboard/';
+                    }, 2000);
                 } else {
-                    showError('Failed to start detection: ' + data.error);
+                    // Show error message
+                    document.getElementById('errorText').textContent = data.message || 'Invalid username or password.';
+                    errorMessage.classList.remove('hidden');
                 }
             })
             .catch(error => {
-                showError('Error starting detection: ' + error.message);
-            });
-        }
-
-        function checkDetectionStatus() {
-            if (!sessionId) return;
-            
-            fetch(`/check-status/${sessionId}/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.detected) {
-                    // Detection complete
-                    clearInterval(detectionInterval);
-                    showDetectedPlate(data.plate_number);
-                } else {
-                    // Still detecting - update status
-                    const statusText = document.getElementById('statusText');
-                    const messages = [
-                        'Scanning for license plate...',
-                        'Analyzing camera feed...',
-                        'Processing image data...',
-                        'Looking for license plate patterns...',
-                        'Applying OCR recognition...'
-                    ];
-                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                    statusText.textContent = randomMessage;
-                }
+                // Handle network errors
+                document.getElementById('errorText').textContent = 'Network error. Please try again.';
+                errorMessage.classList.remove('hidden');
             })
-            .catch(error => {
-                console.error('Error checking status:', error);
+            .finally(() => {
+                // Reset button state
+                loginBtnText.classList.remove('hidden');
+                loginSpinner.classList.add('hidden');
+                loginBtn.disabled = false;
             });
         }
 
-        function showDetectedPlate(plateNumber) {
-            const detectionArea = document.getElementById('detectionArea');
-            const cameraIcon = document.getElementById('cameraIcon');
-            const statusText = document.getElementById('statusText');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const detectedPlate = document.getElementById('detectedPlate');
-            const plateNumberEl = document.getElementById('plateNumber');
-            const confirmationArea = document.getElementById('confirmationArea');
-            
-            // Hide loading state
-            detectionArea.classList.remove('active');
-            cameraIcon.classList.remove('active');
-            statusText.classList.remove('detecting');
-            loadingSpinner.classList.remove('show');
-            
-            // Show detected plate
-            plateNumberEl.textContent = plateNumber;
-            detectedPlate.classList.add('show');
-            confirmationArea.classList.add('show');
-            
-            statusText.textContent = 'License plate detected! Please verify below.';
-        }
-
-        function confirmPlate(isCorrect) {
-            const correctedPlate = document.getElementById('correctedPlate').value.trim().toUpperCase();
-            
-            if (!isCorrect && !correctedPlate) {
-                alert('Please enter the correct license plate number.');
-                return;
+        // Add enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const form = document.getElementById('loginForm');
+                form.dispatchEvent(new Event('submit'));
             }
-            
-            const requestData = {
-                is_correct: isCorrect,
-                corrected_plate: correctedPlate
-            };
-            
-            fetch(`/confirm-plate/${sessionId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSuccessMessage(data.plate_number);
-                } else {
-                    showError('Error confirming plate: ' + data.message);
-                }
-            })
-            .catch(error => {
-                showError('Error confirming plate: ' + error.message);
-            });
-        }
+        });
 
-        function showCorrection() {
-            const correctionInput = document.getElementById('correctionInput');
-            correctionInput.classList.add('show');
-            document.getElementById('correctedPlate').focus();
-        }
-
-        function hideCorrection() {
-            const correctionInput = document.getElementById('correctionInput');
-            correctionInput.classList.remove('show');
-            document.getElementById('correctedPlate').value = '';
-        }
-
-        function showSuccessMessage(plateNumber) {
-            const detectedPlate = document.getElementById('detectedPlate');
-            const confirmationArea = document.getElementById('confirmationArea');
-            const successMessage = document.getElementById('successMessage');
-            
-            detectedPlate.classList.remove('show');
-            confirmationArea.classList.remove('show');
-            successMessage.classList.add('show');
-        }
-
-        function resetSystem() {
-            // Reset all UI elements
-            const elements = [
-                'detectionArea', 'cameraIcon', 'statusText', 'loadingSpinner',
-                'detectedPlate', 'confirmationArea', 'successMessage', 'correctionInput'
-            ];
-            
-            elements.forEach(id => {
-                const el = document.getElementById(id);
-                el.classList.remove('active', 'show', 'detecting');
-            });
-            
-            // Reset content
-            document.getElementById('statusText').textContent = 'Click "Start Detection" to begin scanning your license plate';
-            document.getElementById('correctedPlate').value = '';
-            document.getElementById('startBtn').style.display = 'inline-block';
-            
-            // Clear session
-            sessionId = null;
-            if (detectionInterval) {
-                clearInterval(detectionInterval);
-                detectionInterval = null;
-            }
-        }
-
-        function showError(message) {
-            alert('Error: ' + message);
-            resetSystem();
-        }
-
-        // Auto-uppercase input
-        document.getElementById('correctedPlate').addEventListener('input', function(e) {
-            e.target.value = e.target.value.toUpperCase();
+        // Focus username field on load
+        window.addEventListener('load', function() {
+            document.getElementById('username').focus();
         });
     </script>
 </body>
