@@ -93,6 +93,59 @@ def login_owner(request):
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
+# @csrf_exempt
+# def register_parking_lot(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             name = data.get("name")
+#             location = data.get("location")
+
+#             if not location:
+#                 return JsonResponse({"error": "Location is required"}, status=400)
+
+#             if request.user.is_authenticated:
+#                 try:
+#                     owner_profile = OwnerProfile.objects.get(user=request.user)
+#                     owner_email = owner_profile.emailId or request.user.username
+#                 except OwnerProfile.DoesNotExist:
+#                     owner_email = request.user.username
+#             else:
+#                 owner_email = "Unknown"
+
+#             lot = ParkingLot.objects.create(
+#                 location=location,
+#                 name=name,
+#                 total_spaces=0,
+#                 available_spaces=0,
+#                 registered_by=request.user,
+#                 confirmed=False
+# )
+
+#             confirmation_url = f"http://127.0.0.1:8000/confirmParking?id={lot.id}"
+
+
+#             send_mail(
+#                 subject="New Parking Lot Address Submitted for Confirmation",
+#                 message=(
+#                     f"A new parking lot address was submitted:\n\n"
+#                     f"Address: {location}\n"
+#                     f"Submitted by: {owner_email}\n\n"
+#                     f"Click here to confirm:\n{confirmation_url}"
+#                 ),
+#                 from_email=settings.DEFAULT_FROM_EMAIL,
+#                 recipient_list=["Ryan_Wallace2019@outlook.com"], # update list to send to multiple recipients
+#                 fail_silently=False,
+#             )
+
+#             return JsonResponse({"message": "Address submitted successfully."}, status=200)
+
+#         except Exception as e:
+#             logger.error(f"Error during parking lot submission: {str(e)}")
+#             return JsonResponse({"error": "Server error"}, status=500)
+
+#     return JsonResponse({"error": "Invalid request"}, status=400)
+
 @csrf_exempt
 def register_parking_lot(request):
     if request.method == "POST":
@@ -103,6 +156,13 @@ def register_parking_lot(request):
 
             if not location:
                 return JsonResponse({"error": "Location is required"}, status=400)
+
+            # Check if location already exists in the database
+            if ParkingLot.objects.filter(location__iexact=location).exists():
+                return JsonResponse(
+                    {"error": "Location already registered. Please choose a different location."}, 
+                    status=400
+                )
 
             if request.user.is_authenticated:
                 try:
@@ -120,10 +180,12 @@ def register_parking_lot(request):
                 available_spaces=0,
                 registered_by=request.user,
                 confirmed=False
-)
+            )
 
-            confirmation_url = f"http://127.0.0.1:8000/confirmParking?id={lot.id}"
-
+            # Generate dynamic confirmation URL
+            host = request.get_host()
+            scheme = 'https' if request.is_secure() else 'http'
+            confirmation_url = f"{scheme}://{host}/confirmParking?id={lot.id}"
 
             send_mail(
                 subject="New Parking Lot Address Submitted for Confirmation",
@@ -134,7 +196,7 @@ def register_parking_lot(request):
                     f"Click here to confirm:\n{confirmation_url}"
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=["Ryan_Wallace2019@outlook.com"], # update list to send to multiple recipients
+                recipient_list=["Ryan_Wallace2019@outlook.com"],  # update list to send to multiple recipients
                 fail_silently=False,
             )
 
@@ -169,7 +231,7 @@ def get_parking_lots(request):
 
             # Get parking lots registered by this user
             parking_lots = ParkingLot.objects.filter(registered_by_id=user_id).values(
-                "id", "name", "location", "total_spaces", "available_spaces", "confirmed"
+                "id", "name", "location", "total_spaces", "available_spaces", "confirmed","username", "password"
             )
 
             # Get owner's name

@@ -124,6 +124,7 @@ def dashboard_counts(request):
         return JsonResponse({'error': 'Only GET method allowed'}, status=405)
 
 import sys
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def run_python_script(request):
@@ -304,6 +305,38 @@ def run_python_script(request):
             print(f"Script STDERR: {result.stderr}")
             print(f"Return code: {result.returncode}")
             
+            # Extract total spaces from script output
+            total_spaces = 0
+            if result.returncode == 0 and result.stdout:
+                try:
+                    # Look for the line that contains "Final result: X parking spaces detected"
+                    import re
+                    pattern = r"Final result: (\d+) parking spaces detected"
+                    match = re.search(pattern, result.stdout)
+                    if match:
+                        total_spaces = int(match.group(1))
+                        print(f"Extracted total spaces from output: {total_spaces}")
+                    else:
+                        # Fallback: look for "Total detected parking spaces: X"
+                        pattern_alt = r"Total detected parking spaces: (\d+)"
+                        match_alt = re.search(pattern_alt, result.stdout)
+                        if match_alt:
+                            total_spaces = int(match_alt.group(1))
+                            print(f"Extracted total spaces from alternative pattern: {total_spaces}")
+                        else:
+                            print("Could not extract total spaces from script output")
+                            # Try to parse the last line that might contain just the number
+                            lines = result.stdout.strip().split('\n')
+                            for line in reversed(lines):
+                                line = line.strip()
+                                if line.isdigit():
+                                    total_spaces = int(line)
+                                    print(f"Extracted total spaces from last numeric line: {total_spaces}")
+                                    break
+                except (ValueError, AttributeError) as parse_error:
+                    print(f"Error parsing total spaces from output: {parse_error}")
+                    total_spaces = 0
+            
             # Analyze return code and provide specific error messages
             if result.returncode != 0:
                 print(f"Script execution failed with return code: {result.returncode}")
@@ -335,7 +368,8 @@ def run_python_script(request):
                 'working_directory': os.getcwd(),
                 'python_executable': python_executable,
                 'script_path_used': full_script_path,
-                'script_directory': script_dir
+                'script_directory': script_dir,
+                'total_spaces_detected': total_spaces
             }
             
             # Add interpretation of common error codes
@@ -379,20 +413,24 @@ def run_python_script(request):
                                 password_chars = string.ascii_letters + string.digits
                                 password = ''.join(secrets.choice(password_chars) for _ in range(12))
                                 
-                                # Update the parking lot fields
+                                # Update the parking lot fields including total_spaces
                                 lot.confirmed = True
                                 lot.username = username
                                 lot.password = password
+                                lot.total_spaces = total_spaces  # Update with detected spaces
+                                lot.available_spaces = total_spaces  # Initially all spaces are available
                                 lot.save()
                                 
                                 updated_count += 1
                                 updated_lots.append({
                                     'location': lot.location,
                                     'username': username,
-                                    'password': password
+                                    'password': password,
+                                    'total_spaces': total_spaces,
+                                    'available_spaces': total_spaces
                                 })
                                 
-                                print(f"Updated parking lot: {lot.location} with username: {username}")
+                                print(f"Updated parking lot: {lot.location} with username: {username}, total_spaces: {total_spaces}")
                                 
                             except Exception as lot_error:
                                 print(f"Error updating individual lot {lot.id}: {str(lot_error)}")
@@ -480,6 +518,369 @@ def run_python_script(request):
             'error': f'Internal server error: {str(e)}',
             'error_type': type(e).__name__
         }, status=500)
+
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def run_python_script(request):
+#     """
+#     API endpoint to run Python scripts and update ParkingLot confirmation
+#     Expected JSON payload: {
+#         "script_path": "relative/path/to/script.py OR absolute/path/to/script.py",
+#         "address": "optional address parameter"
+#     }
+#     """
+#     try:
+#         # Parse JSON data from request body
+#         data = json.loads(request.body)
+#         script_path = data.get('script_path')
+#         address = data.get('address', '')  # Optional address field
+        
+#         if not script_path:
+#             return JsonResponse({
+#                 'success': False,
+#                 'error': 'script_path is required'
+#             }, status=400)
+        
+#         # Store original working directory
+#         original_cwd = os.getcwd()
+        
+#         # Change to the directory where this views.py file is located (BE folder)
+#         current_file_dir = os.path.dirname(os.path.realpath(__file__))
+#         os.chdir(current_file_dir)
+#         print(f"Changed working directory to: {current_file_dir}")
+        
+#         # Handle both absolute and relative paths
+#         if os.path.isabs(script_path):
+#             # Absolute path provided
+#             full_script_path = os.path.normpath(script_path)
+#         else:
+#             # Relative path - construct full path from current directory (BE folder)
+#             full_script_path = os.path.normpath(os.path.join(current_file_dir, script_path))
+        
+#         print(f"Full script path resolved to: {full_script_path}")
+        
+#         # Security check: ensure script is within project directory
+#         base_dir = os.path.abspath(settings.BASE_DIR)
+#         script_abs_path = os.path.abspath(full_script_path)
+        
+#         if not script_abs_path.startswith(base_dir):
+#             return JsonResponse({
+#                 'success': False,
+#                 'error': 'Script path not allowed - must be within project directory',
+#                 'script_path': script_abs_path,
+#                 'base_dir': base_dir
+#             }, status=403)
+        
+#         # Check if script exists
+#         if not os.path.exists(full_script_path):
+#             return JsonResponse({
+#                 'success': False,
+#                 'error': f'Script not found: {full_script_path}',
+#                 'current_dir': os.getcwd(),
+#                 'files_in_current_dir': os.listdir('.') if os.path.exists('.') else []
+#             }, status=404)
+        
+#         # Change to script directory to handle relative imports
+#         script_dir = os.path.dirname(full_script_path)
+        
+#         try:
+#             # Validate script file permissions and readability
+#             try:
+#                 with open(full_script_path, 'r') as f:
+#                     first_line = f.readline().strip()
+#                     print(f"Script first line: {first_line}")
+#             except PermissionError as pe:
+#                 print(f"Permission error reading script: {pe}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': f'Permission denied reading script: {full_script_path}',
+#                     'details': str(pe)
+#                 }, status=403)
+#             except Exception as fe:
+#                 print(f"Error reading script file: {fe}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': f'Cannot read script file: {full_script_path}',
+#                     'details': str(fe)
+#                 }, status=400)
+            
+#             # Change working directory to script directory with error handling
+#             if script_dir and script_dir != os.getcwd():
+#                 try:
+#                     os.chdir(script_dir)
+#                     print(f"Changed working directory to script directory: {script_dir}")
+#                 except OSError as oe:
+#                     print(f"Failed to change directory to {script_dir}: {oe}")
+#                     return JsonResponse({
+#                         'success': False,
+#                         'error': f'Cannot access script directory: {script_dir}',
+#                         'details': str(oe)
+#                     }, status=400)
+            
+#             # Use sys.executable to get the correct Python interpreter
+#             python_executable = sys.executable
+#             script_filename = os.path.basename(full_script_path)
+            
+#             # Build command with detailed logging
+#             cmd = [python_executable, script_filename]
+#             if address:
+#                 cmd.extend(['--address', address])
+            
+#             print(f"Python executable: {python_executable}")
+#             print(f"Script filename: {script_filename}")
+#             print(f"Full script path: {full_script_path}")
+#             print(f"Script directory: {script_dir}")
+#             print(f"Current working directory: {os.getcwd()}")
+#             print(f"Executing command: {' '.join(cmd)}")
+#             print(f"Command arguments: {cmd}")
+            
+#             # Check if Python executable exists and is accessible
+#             if not os.path.exists(python_executable):
+#                 print(f"Python executable not found: {python_executable}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': f'Python executable not found: {python_executable}'
+#                 }, status=500)
+            
+#             # Verify script file exists in current directory after chdir
+#             if not os.path.exists(script_filename):
+#                 print(f"Script file not found in current directory: {script_filename}")
+#                 print(f"Files in current directory: {os.listdir('.')}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': f'Script file not accessible: {script_filename}',
+#                     'current_dir': os.getcwd(),
+#                     'files_in_dir': os.listdir('.')
+#                 }, status=404)
+            
+#             try:
+#                 # Run the Python script with comprehensive error handling
+#                 print("Starting subprocess execution...")
+#                 result = subprocess.run(
+#                     cmd,
+#                     capture_output=True,
+#                     text=True,
+#                     timeout=300,  # 5 minute timeout
+#                     shell=False,  # Explicitly set shell=False for security
+#                     cwd=None,  # Use current working directory (already changed above)
+#                     env=os.environ.copy()  # Pass environment variables
+#                 )
+#                 print(f"Subprocess completed with return code: {result.returncode}")
+                
+#             except FileNotFoundError as fnf:
+#                 print(f"FileNotFoundError during subprocess execution: {fnf}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': 'Python executable or script not found during execution',
+#                     'details': str(fnf),
+#                     'command': ' '.join(cmd)
+#                 }, status=404)
+                
+#             except PermissionError as pe:
+#                 print(f"PermissionError during subprocess execution: {pe}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': 'Permission denied executing script',
+#                     'details': str(pe),
+#                     'command': ' '.join(cmd)
+#                 }, status=403)
+                
+#             except OSError as oe:
+#                 print(f"OSError during subprocess execution: {oe}")
+#                 return JsonResponse({
+#                     'success': False,
+#                     'error': 'Operating system error during script execution',
+#                     'details': str(oe),
+#                     'command': ' '.join(cmd)
+#                 }, status=500)
+            
+#             # Log subprocess output for debugging
+#             print(f"Script STDOUT: {result.stdout}")
+#             print(f"Script STDERR: {result.stderr}")
+#             print(f"Return code: {result.returncode}")
+            
+#             # Analyze return code and provide specific error messages
+#             if result.returncode != 0:
+#                 print(f"Script execution failed with return code: {result.returncode}")
+#                 if result.stderr:
+#                     print(f"Error details from stderr: {result.stderr}")
+#                 if result.returncode == 1:
+#                     error_msg = "Script execution failed - General error"
+#                 elif result.returncode == 2:
+#                     error_msg = "Script execution failed - Invalid arguments or usage"
+#                 elif result.returncode == 126:
+#                     error_msg = "Script execution failed - Permission denied or not executable"
+#                 elif result.returncode == 127:
+#                     error_msg = "Script execution failed - Command not found"
+#                 elif result.returncode == -9:
+#                     error_msg = "Script execution failed - Process was killed (possibly out of memory)"
+#                 else:
+#                     error_msg = f"Script execution failed with return code: {result.returncode}"
+                
+#                 print(f"Interpreted error: {error_msg}")
+            
+#             # Prepare base response
+#             response_data = {
+#                 'success': result.returncode == 0,
+#                 'stdout': result.stdout,
+#                 'stderr': result.stderr,
+#                 'return_code': result.returncode,
+#                 'address_used': address,
+#                 'command_executed': ' '.join(cmd),
+#                 'working_directory': os.getcwd(),
+#                 'python_executable': python_executable,
+#                 'script_path_used': full_script_path,
+#                 'script_directory': script_dir
+#             }
+            
+#             # Add interpretation of common error codes
+#             if result.returncode != 0:
+#                 if result.returncode == 1:
+#                     response_data['error_interpretation'] = "General script error - check script logic and stderr"
+#                 elif result.returncode == 2:
+#                     response_data['error_interpretation'] = "Invalid arguments passed to script"
+#                 elif result.returncode == 126:
+#                     response_data['error_interpretation'] = "Permission denied or script not executable"
+#                 elif result.returncode == 127:
+#                     response_data['error_interpretation'] = "Command not found - check Python path"
+#                 elif result.returncode == -9:
+#                     response_data['error_interpretation'] = "Process killed - possibly out of memory"
+#                 else:
+#                     response_data['error_interpretation'] = f"Unknown error code: {result.returncode}"
+            
+#             # If script executed successfully and address is provided, update ParkingLot
+#             if result.returncode == 0 and address:
+#                 try:
+#                     # Find parking lots matching the address (case-insensitive partial match)
+#                     parking_lots = ParkingLot.objects.filter(
+#                         location__icontains=address
+#                     )
+                    
+#                     if parking_lots.exists():
+#                         # Import for password generation
+#                         import secrets
+#                         import string
+                        
+#                         updated_lots = []
+#                         updated_count = 0
+                        
+#                         # Update each parking lot individually to generate unique credentials
+#                         for lot in parking_lots:
+#                             try:
+#                                 # Generate username using the specified format
+#                                 username = f"{lot.name}_{lot.location[:3]}_{lot.registered_by.username}"
+                                
+#                                 # Generate a secure random password (12 characters)
+#                                 password_chars = string.ascii_letters + string.digits
+#                                 password = ''.join(secrets.choice(password_chars) for _ in range(12))
+                                
+#                                 # Update the parking lot fields
+#                                 lot.confirmed = True
+#                                 lot.username = username
+#                                 lot.password = password
+#                                 lot.save()
+                                
+#                                 updated_count += 1
+#                                 updated_lots.append({
+#                                     'location': lot.location,
+#                                     'username': username,
+#                                     'password': password
+#                                 })
+                                
+#                                 print(f"Updated parking lot: {lot.location} with username: {username}")
+                                
+#                             except Exception as lot_error:
+#                                 print(f"Error updating individual lot {lot.id}: {str(lot_error)}")
+#                                 continue
+                        
+#                         response_data.update({
+#                             'parking_lot_updated': True,
+#                             'updated_count': updated_count,
+#                             'updated_locations': [lot['location'] for lot in updated_lots],
+#                             'generated_credentials': updated_lots
+#                         })
+#                     else:
+#                         response_data.update({
+#                             'parking_lot_updated': False,
+#                             'message': f'No parking lots found matching address: {address}'
+#                         })
+                        
+#                 except Exception as db_error:
+#                     response_data.update({
+#                         'parking_lot_updated': False,
+#                         'db_error': f'Error updating parking lot: {str(db_error)}'
+#                     })
+#             elif result.returncode == 0 and not address:
+#                 response_data.update({
+#                     'parking_lot_updated': False,
+#                     'message': 'No address provided for parking lot confirmation'
+#                 })
+#             else:
+#                 response_data.update({
+#                     'parking_lot_updated': False,
+#                     'message': 'Script execution failed, parking lot not updated'
+#                 })
+            
+#             return JsonResponse(response_data)
+            
+#         except subprocess.TimeoutExpired as te:
+#             print(f"Subprocess timeout expired: {te}")
+#             print(f"Command that timed out: {' '.join(cmd)}")
+#             return JsonResponse({
+#                 'success': False,
+#                 'error': 'Script execution timed out (300 seconds)',
+#                 'parking_lot_updated': False,
+#                 'command': ' '.join(cmd),
+#                 'timeout_details': str(te)
+#             }, status=408)
+            
+#         except Exception as subprocess_error:
+#             print(f"Unexpected error during subprocess execution: {subprocess_error}")
+#             print(f"Error type: {type(subprocess_error).__name__}")
+#             import traceback
+#             print(f"Traceback: {traceback.format_exc()}")
+#             return JsonResponse({
+#                 'success': False,
+#                 'error': f'Script execution error: {str(subprocess_error)}',
+#                 'error_type': type(subprocess_error).__name__,
+#                 'parking_lot_updated': False,
+#                 'command': ' '.join(cmd) if 'cmd' in locals() else 'Command not constructed'
+#             }, status=500)
+            
+#         finally:
+#             # Restore original working directory with error handling
+#             try:
+#                 os.chdir(original_cwd)
+#                 print(f"Restored working directory to: {original_cwd}")
+#             except OSError as oe:
+#                 print(f"Warning: Failed to restore original working directory: {oe}")
+#                 # Don't fail the request for this, just log it
+            
+#     except json.JSONDecodeError as jde:
+#         print(f"JSON decode error: {jde}")
+#         print(f"Request body: {request.body}")
+#         return JsonResponse({
+#             'success': False,
+#             'error': 'Invalid JSON in request body',
+#             'details': str(jde)
+#         }, status=400)
+        
+#     except Exception as e:
+#         print(f"Unexpected error in run_python_script: {e}")
+#         print(f"Error type: {type(e).__name__}")
+#         import traceback
+#         print(f"Full traceback: {traceback.format_exc()}")
+#         return JsonResponse({
+#             'success': False,
+#             'error': f'Internal server error: {str(e)}',
+#             'error_type': type(e).__name__
+#         }, status=500)
+
+
+
+
+
+
 import os
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
