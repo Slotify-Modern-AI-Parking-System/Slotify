@@ -239,20 +239,22 @@
     </div>
 
     <script>
-        // Simulate API call to get car number
-        async function fetchCarNumber() {
-            // This would be your actual API call
-            // const response = await fetch('/api/detect-plate');
-            // const data = await response.json();
-            // return data.plateNumber;
-            
-            // For now, return static number
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    resolve("DAVC600");
-                }, 2000); // Simulate 2 second API delay
-            });
+    // Fetch license plate from backend API
+    async function fetchCarNumber() {
+        try {
+            const response = await fetch('/api/license-plate/');
+            const data = await response.json();
+
+            if (response.ok && data.success && data.license_plate) {
+                return data.license_plate;
+            } else {
+                throw new Error(data.message || "License plate detection failed");
+            }
+        } catch (error) {
+            console.error("API error:", error);
+            throw error; // Let initializeDashboard handle it
         }
+    }
 
         // Initialize dashboard
         async function initializeDashboard() {

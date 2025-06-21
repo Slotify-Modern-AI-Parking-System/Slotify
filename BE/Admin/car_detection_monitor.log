@@ -4,3 +4,10 @@
 2025-06-21 01:14:52,652 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-21 01:19:08,921 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-21 01:20:26,597 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 02:29:03,391 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 02:29:57,397 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 02:32:16,980 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 02:33:45,180 - INFO - License plate detected and returned: BSKA248
+2025-06-21 02:34:08,933 - INFO - License plate detected and returned: BSKA248
+2025-06-21 02:34:34,326 - INFO - License plate detected and returned: BSKA248
+2025-06-21 02:34:38,058 - INFO - License plate detected and returned: BSKA248

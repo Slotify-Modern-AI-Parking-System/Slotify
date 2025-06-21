@@ -270,3 +270,69 @@ def parking_lot_logout(request):
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
+
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_license_plate(request):
+    """
+    GET API to read license plate detection from file and clear it
+    """
+    file_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/detection.txt"
+    
+    try:
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return JsonResponse({
+                'success': False,
+                'message': 'Detection file not found',
+                'license_plate': None
+            }, status=404)
+        
+        # Read the file content
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read().strip()
+        
+        # Check if file has content
+        if not content:
+            return JsonResponse({
+                'success': True,
+                'message': 'No license plate detected',
+                'license_plate': None
+            }, status=200)
+        
+        # Clear the file after reading
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write('')
+        
+        logger.info(f"License plate detected and returned: {content}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'License plate detected successfully',
+            'license_plate': content
+        }, status=200)
+        
+    except FileNotFoundError:
+        logger.error(f"Detection file not found: {file_path}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Detection file not found',
+            'license_plate': None
+        }, status=404)
+        
+    except PermissionError:
+        logger.error(f"Permission denied accessing file: {file_path}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Permission denied accessing detection file',
+            'license_plate': None
+        }, status=403)
+        
+    except Exception as e:
+        logger.error(f"Error reading detection file: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error reading detection file: {str(e)}',
+            'license_plate': None
+        }, status=500)
+

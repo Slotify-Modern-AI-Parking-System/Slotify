@@ -9,6 +9,7 @@ urlpatterns = [
     path('parking-lot/login/', views.parking_lot_login, name="ParkingLotLogin"),
     path('parking-lot/logout/', views.parking_lot_logout, name="ParkingLotLogout"),
     path('dashboard/', views.dashboard, name="DashboardPage"),
-    path('destination/',views.destination,name="DestinationPage")
+    path('destination/',views.destination,name="DestinationPage"),
+    path('api/license-plate/', views.get_license_plate, name='get_license_plate'),
 
 ]
