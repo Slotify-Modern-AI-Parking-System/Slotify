@@ -47,6 +47,7 @@ class ParkingLotCoordinate(models.Model):
     is_regular = models.BooleanField(default=False)
     is_accessible = models.BooleanField(default=False)
     is_reservation = models.BooleanField(default=False)
+    is_Entry = models.BooleanField(default=False)
 
     def __str__(self):
         return (
