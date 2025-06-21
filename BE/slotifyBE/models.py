@@ -34,3 +34,13 @@ class ParkingLot(models.Model):
 
     def __str__(self):
         return f"{self.location} ({'Confirmed' if self.confirmed else 'Pending'})"
+
+class ParkingLotCoordinate(models.Model):
+    lotId = models.ForeignKey('ParkingLot', on_delete=models.CASCADE, related_name='coordinates')
+    x_coordinate = models.FloatField()
+    y_coordinate = models.FloatField()
+    entry_x = models.FloatField()
+    entry_y = models.FloatField()
+
+    def __str__(self):
+        return f"Lot {self.lotId.id} - Point ({self.x_coordinate}, {self.y_coordinate}) | Entry ({self.entry_x}, {self.entry_y})"
