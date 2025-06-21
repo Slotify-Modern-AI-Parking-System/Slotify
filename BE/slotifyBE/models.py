@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class OwnerProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='owner_profile')
@@ -10,6 +11,12 @@ class OwnerProfile(models.Model):
     contactNumber = models.CharField(max_length=10, unique=True, null=False)
     idProof = models.URLField(max_length=500, blank=True, null=True)
     verified = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    
+    # New fields
+    role = models.CharField(max_length=50, default="Owner")
+    created_at = models.DateTimeField(default=timezone.now, null=True)
+    updated_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.firstName} {self.lastName} ({self.emailId})"

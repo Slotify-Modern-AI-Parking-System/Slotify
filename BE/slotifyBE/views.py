@@ -279,71 +279,6 @@ def get_parking_lots(request):
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
-# @csrf_exempt
-# def register_owner(request):
-#     if request.method == 'POST':
-#         try:
-#             # Get data from the request
-#             first_name = request.POST.get('firstName')
-#             last_name = request.POST.get('lastName')
-#             email_id = request.POST.get('emailId')
-#             password = request.POST.get('password')
-#             contact_number = request.POST.get('contactNumber')
-#             id_proof_file = request.FILES.get('idProof')  # The file uploaded
-
-#             if not all([first_name, last_name, email_id, password, contact_number]):
-#                 return JsonResponse({'error': 'All fields except idProof are required.'}, status=400)
-
-#             if User.objects.filter(username=email_id).exists():
-#                 return JsonResponse({'error': 'Email ID already exists.'}, status=400)
-#             if OwnerProfile.objects.filter(contactNumber=contact_number).exists():
-#                 return JsonResponse({'error': 'Contact Number already exists.'}, status=400)
-
-#             user = User.objects.create_user(
-#                 username=email_id,
-#                 password=password
-#             )
-
-#             hashed_password = make_password(password)
-
-#             owner = OwnerProfile.objects.create(
-#                 user=user, 
-#                 firstName=first_name,
-#                 lastName=last_name,
-#                 emailId=email_id,
-#                 password=hashed_password, 
-#                 contactNumber=contact_number,
-#                 verified=False
-#             )
-
-#             if id_proof_file:
-#                 storage_client = storage.Client()
-#                 bucket_name = "slotifydocuments"  # Your Google Cloud Storage bucket
-#                 bucket = storage_client.bucket(bucket_name)
-
-#                 new_file_name = f"{owner.id}_{first_name}_{last_name}".replace(" ", "_")
-#                 blob = bucket.blob(f"id_proofs/{new_file_name}")
-
-
-#                 blob.upload_from_file(id_proof_file, content_type=id_proof_file.content_type)
-
-#                 signed_url = blob.generate_signed_url(
-#                     expiration=timedelta(hours=1),
-#                     method='GET'
-#                 )
-
-#                 owner.idProof = signed_url
-#                 owner.save()
-
-#             login(request, user)
-
-#             return JsonResponse({'message': 'Owner registered successfully!'}, status=201)
-
-#         except Exception as e:
-#             logger.error(f"Error during registration: {str(e)}")
-#             return JsonResponse({'error': str(e)}, status=500)
-
-#     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
 @csrf_exempt
 def register_owner(request):
@@ -451,3 +386,24 @@ def get_owner_dashboard(request):
     except Exception as e:
         logger.error(f"Error fetching owner dashboard: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def user_summary(request):
+    if request.method == "GET":
+        # ✅ Active owners (role = "Owner", active = True)
+        active_owners = OwnerProfile.objects.filter(role="Owner", active=True)
+
+        # ✅ Active users (role = "User", active = True)
+        active_users = OwnerProfile.objects.filter(role="User", active=True)
+
+        # ✅ Inactive users or owners (active = False)
+        inactive_profiles = OwnerProfile.objects.filter(active=False)
+
+        return JsonResponse({
+            "total_active_users": active_users.count() + active_owners.count(),
+            "total_active_owners": active_owners.count(),
+            "total_active_users_only": active_users.count(),
+            "total_inactive_owners_and_users": inactive_profiles.count(),
+        })
+    else:
+        return JsonResponse({"error": "Only GET method allowed."}, status=405)
