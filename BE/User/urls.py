@@ -8,5 +8,7 @@ urlpatterns = [
     path('welcome/', views.welcome,name="WelcomePage"),
     path('parking-lot/login/', views.parking_lot_login, name="ParkingLotLogin"),
     path('parking-lot/logout/', views.parking_lot_logout, name="ParkingLotLogout"),
+    path('dashboard/', views.dashboard, name="DashboardPage"),
+    path('destination/',views.destination,name="DestinationPage")
 
 ]

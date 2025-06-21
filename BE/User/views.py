@@ -41,6 +41,12 @@ def index(request):
 def welcome(request):
     return render(request, "welcome.html")
 
+def dashboard(request):
+    return render(request, "dashboard.html")
+
+def destination(request):
+    return render(request, "destination.html")
+
 import json
 import subprocess
 from django.http import JsonResponse
