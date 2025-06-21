@@ -699,7 +699,10 @@ def detect_parking_slots_all_colors(image_path, visualize=True):
             combined_mask = masks[0]
         
         # Detect individual parking slots for this color
-        slots = detect_slots_for_color(combined_mask, category, config, result_img)
+        if category == 'Entry':  # Special handling for red boxes
+            slots = detect_red_slots(combined_mask, category, config, result_img)
+        else:
+            slots = detect_slots_for_color(combined_mask, category, config, result_img)
         all_parking_slots[category] = slots
         
         print(f"Detected {len(slots)} {category} parking slots")
@@ -770,6 +773,51 @@ def detect_parking_slots_all_colors(image_path, visualize=True):
         plt.show()
     
     return all_parking_slots
+
+def detect_red_slots(color_mask, category, config, result_img):
+    """
+    Special detection for red slots to ensure one box = one slot
+    """
+    parking_slots = []
+    
+    # Find external contours only
+    contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        print(f"No {category} contours found in the image")
+        return parking_slots
+    
+    # Process each contour as a separate slot - no merging
+    slot_id = 1
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        
+        # Filter by minimum area only (remove size restrictions)
+        if area > 50:  # Minimum area threshold to filter noise
+            rx, ry, rw, rh = cv2.boundingRect(contour)
+            
+            slot_info = {
+                "id": slot_id,
+                "label": f"{config['prefix']}{slot_id}",
+                "x": rx,
+                "y": ry,
+                "width": rw,
+                "height": rh,
+                "center_x": rx + rw // 2,
+                "center_y": ry + rh // 2,
+                "area": area,
+                "category": category
+            }
+            parking_slots.append(slot_info)
+            
+            # Draw rectangle and label on result image
+            cv2.rectangle(result_img, (rx, ry), (rx+rw, ry+rh), config['color'], 2)
+            cv2.putText(result_img, slot_info['label'], (rx+5, ry+20), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, config['color'], 2)
+            
+            slot_id += 1
+    
+    return parking_slots
 
 def detect_slots_for_color(color_mask, category, config, result_img):
     """
@@ -1000,5 +1048,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
