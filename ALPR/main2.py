@@ -1134,7 +1134,7 @@ def detect_license_plates_for_duration(camera_id, duration=60):
         logging.info(f"Camera {camera_id} connection verified")
         
         # Load license plate detection model
-        license_plate_model = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/license_plate_detector.pt"
+        license_plate_model = "license_plate_detector.pt"
         
         if not os.path.isfile(license_plate_model):
             logging.error(f"Model file not found at: {license_plate_model}")
