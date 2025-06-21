@@ -19,5 +19,6 @@ urlpatterns = [
     path('status/', views.get_status, name='get_status'),
     path('stream/', views.detection_stream, name='detection_stream'),
     path('parking-lot/login/', views.parking_lot_login, name="ParkingLotLogin"),
+    path('parking-lot/logout/', views.parking_lot_logout, name="ParkingLotLogout"),
 
 ]

@@ -1,0 +1,6 @@
+2025-06-21 01:06:07,173 - WARNING - Not Found: /dashboard/
+2025-06-21 01:13:30,634 - WARNING - Failed to read frame, retrying...
+2025-06-21 01:13:30,915 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 01:14:52,652 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 01:19:08,921 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-21 01:20:26,597 - ERROR - Main function error: Unknown C++ exception from OpenCV code
