@@ -523,6 +523,7 @@
 
 
 
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -531,23 +532,343 @@ import sys
 import argparse
 import glob
 import csv
-from parking_lot import detect_parking_slots_by_color
 
-def label_parking_slots_by_category(slots_data, image_path, visualize=True):
+def detect_parking_slots_all_colors(image_path, visualize=True):
     """
-    Create visualizations for categorized parking slots with improved labeling
+    Detect individual parking slots from an image with different colored rectangular outlines
+    - Red: Entry slots
+    - Purple: Accessible slots  
+    - Yellow: Reservation slots
+    - Blue: Regular parking slots
     
     Args:
-        slots_data (dict): Dictionary containing slots by category from detect_parking_slots_by_color
+        image_path (str): Path to the image with colored parking slots
+        visualize (bool): Whether to visualize the results
+    
+    Returns:
+        dict: Dictionary containing information about each parking slot by color category
+    """
+    # Load image
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError(f"Could not read image from {image_path}")
+    
+    # Create a copy for visualization
+    result_img = image.copy()
+    
+    # Convert to HSV color space for better color detection
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    
+    # Define color ranges for each parking type
+    color_configs = {
+        'Entry': {
+            'lower': [np.array([0, 100, 100]), np.array([170, 100, 100])],  # Two ranges for red
+            'upper': [np.array([10, 255, 255]), np.array([180, 255, 255])],
+            'color': (0, 0, 255),  # Red for visualization
+            'prefix': 'E'
+        },
+        'Accessible': {
+            'lower': [np.array([120, 100, 100])],  # Purple/Magenta
+            'upper': [np.array([160, 255, 255])],
+            'color': (128, 0, 128),  # Purple for visualization
+            'prefix': 'A'
+        },
+        'Reservation': {
+            'lower': [np.array([20, 100, 100])],  # Yellow
+            'upper': [np.array([30, 255, 255])],
+            'color': (0, 255, 255),  # Yellow for visualization
+            'prefix': 'R'
+        },
+        'Regular': {
+            'lower': [np.array([90, 100, 100])],  # Blue
+            'upper': [np.array([130, 255, 255])],
+            'color': (255, 0, 0),  # Blue for visualization
+            'prefix': 'P'
+        }
+    }
+    
+    # Dictionary to store all parking slots by category
+    all_parking_slots = {
+        'Entry': [],
+        'Accessible': [],
+        'Reservation': [],
+        'Regular': []
+    }
+    
+    # Process each color category
+    for category, config in color_configs.items():
+        print(f"Processing {category} parking slots...")
+        
+        # Create mask for this color
+        masks = []
+        for i, lower in enumerate(config['lower']):
+            upper = config['upper'][i]
+            mask = cv2.inRange(hsv, lower, upper)
+            masks.append(mask)
+        
+        # Combine masks if multiple ranges (like for red)
+        if len(masks) > 1:
+            combined_mask = cv2.bitwise_or(masks[0], masks[1])
+        else:
+            combined_mask = masks[0]
+        
+        # Detect individual parking slots for this color
+        slots = detect_slots_for_color(combined_mask, category, config, result_img)
+        all_parking_slots[category] = slots
+        
+        print(f"Detected {len(slots)} {category} parking slots")
+    
+    # Calculate totals
+    total_slots = sum(len(slots) for slots in all_parking_slots.values())
+    
+    # Visualization
+    if visualize:
+        plt.figure(figsize=(20, 15))
+        
+        # Original image
+        plt.subplot(3, 3, 1)
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        plt.title("Original Image")
+        plt.axis('off')
+        
+        # Final result with all slots
+        plt.subplot(3, 3, 2)
+        plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
+        plt.title(f"All Detected Slots (Total: {total_slots})")
+        plt.axis('off')
+        
+        # Individual color masks and results
+        subplot_idx = 3
+        for category, config in color_configs.items():
+            if subplot_idx > 9:
+                break
+                
+            # Create mask for visualization
+            masks = []
+            for i, lower in enumerate(config['lower']):
+                upper = config['upper'][i]
+                mask = cv2.inRange(hsv, lower, upper)
+                masks.append(mask)
+            
+            if len(masks) > 1:
+                combined_mask = cv2.bitwise_or(masks[0], masks[1])
+            else:
+                combined_mask = masks[0]
+            
+            # Show mask
+            plt.subplot(3, 3, subplot_idx)
+            plt.imshow(combined_mask, cmap='gray')
+            plt.title(f"{category} Mask")
+            plt.axis('off')
+            subplot_idx += 1
+            
+            # Show detected slots for this category
+            if subplot_idx <= 9:
+                category_img = image.copy()
+                slots = all_parking_slots[category]
+                for slot in slots:
+                    cv2.rectangle(category_img, (slot['x'], slot['y']), 
+                                (slot['x'] + slot['width'], slot['y'] + slot['height']), 
+                                config['color'], 2)
+                    cv2.putText(category_img, slot['label'], 
+                              (slot['x'] + 5, slot['y'] + 20), 
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, config['color'], 2)
+                
+                plt.subplot(3, 3, subplot_idx)
+                plt.imshow(cv2.cvtColor(category_img, cv2.COLOR_BGR2RGB))
+                plt.title(f"{category} Slots ({len(slots)})")
+                plt.axis('off')
+                subplot_idx += 1
+        
+        plt.tight_layout()
+        plt.show()
+    
+    return all_parking_slots
+
+def detect_slots_for_color(color_mask, category, config, result_img):
+    """
+    Detect individual parking slots for a specific color using the same approach as blue slots
+    """
+    parking_slots = []
+    
+    # Find the region of interest - the entire colored area
+    contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        print(f"No {category} contours found in the image")
+        return parking_slots
+    
+    # Combine all contours to get the overall area
+    all_cnts = np.vstack([cnt for cnt in contours if cv2.contourArea(cnt) > 50])
+    if len(all_cnts) == 0:
+        return parking_slots
+        
+    x, y, w, h = cv2.boundingRect(all_cnts)
+    print(f"Found overall {category} area: x={x}, y={y}, width={w}, height={h}")
+    
+    # Method 1: Direct detection of colored rectangles
+    contours, _ = cv2.findContours(color_mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    
+    slot_id = 1
+    rectangle_contours = []
+    
+    for contour in contours:
+        # Get the bounding rectangle
+        rx, ry, rw, rh = cv2.boundingRect(contour)
+        area = cv2.contourArea(contour)
+        
+        # Filter by size - exclude very small or very large contours
+        if area > 50 and area < 5000:
+            rect_area = rw * rh
+            # Check if the shape is roughly rectangular
+            if area / rect_area > 0.2:
+                rectangle_contours.append(contour)
+                
+                # Add to parking slots
+                slot_info = {
+                    "id": slot_id,
+                    "label": f"{config['prefix']}{slot_id}",
+                    "x": rx,
+                    "y": ry,
+                    "width": rw,
+                    "height": rh,
+                    "center_x": rx + rw // 2,
+                    "center_y": ry + rh // 2,
+                    "area": area,
+                    "category": category
+                }
+                parking_slots.append(slot_info)
+                slot_id += 1
+                
+                # Draw rectangle and label on result image
+                cv2.rectangle(result_img, (rx, ry), (rx+rw, ry+rh), config['color'], 2)
+                cv2.putText(result_img, slot_info['label'], (rx+5, ry+20), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, config['color'], 2)
+    
+    # Method 2: If we don't have many slots, try contour hierarchy approach
+    if len(parking_slots) < 5:  # Threshold can be adjusted
+        print(f"Using hierarchy approach for {category}...")
+        
+        contours, hierarchy = cv2.findContours(color_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # Reset if we're trying a different approach
+        additional_slots = []
+        
+        if hierarchy is not None:
+            hierarchy = hierarchy[0]
+            for i, contour in enumerate(contours):
+                if cv2.contourArea(contour) < 50:
+                    continue
+                
+                rx, ry, rw, rh = cv2.boundingRect(contour)
+                
+                # Check if this contour has a parent or is a reasonable size
+                if hierarchy[i][3] != -1 or cv2.contourArea(contour) > 200:
+                    # Avoid duplicates by checking if we already have a slot in this area
+                    duplicate = False
+                    for existing_slot in parking_slots:
+                        if (abs(existing_slot['x'] - rx) < 20 and 
+                            abs(existing_slot['y'] - ry) < 20):
+                            duplicate = True
+                            break
+                    
+                    if not duplicate:
+                        slot_info = {
+                            "id": slot_id,
+                            "label": f"{config['prefix']}{slot_id}",
+                            "x": rx,
+                            "y": ry,
+                            "width": rw,
+                            "height": rh,
+                            "center_x": rx + rw // 2,
+                            "center_y": ry + rh // 2,
+                            "area": cv2.contourArea(contour),
+                            "category": category
+                        }
+                        additional_slots.append(slot_info)
+                        slot_id += 1
+                        
+                        # Draw rectangle and label
+                        cv2.rectangle(result_img, (rx, ry), (rx+rw, ry+rh), config['color'], 2)
+                        cv2.putText(result_img, slot_info['label'], (rx+5, ry+20), 
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, config['color'], 2)
+        
+        # Add additional slots if they provide more coverage
+        if len(additional_slots) > len(parking_slots):
+            parking_slots = additional_slots
+    
+    # Method 3: Grid-based approach if still not enough slots
+    if len(parking_slots) < 3 and w > 100 and h > 100:  # Only if the area is significant
+        print(f"Using grid approach for {category}...")
+        
+        # Reset the parking slots list
+        parking_slots = []
+        slot_id = 1
+        
+        # Estimate grid dimensions based on area size
+        avg_slot_width = 80
+        avg_slot_height = 60
+        
+        num_cols = max(1, w // avg_slot_width)
+        num_rows = max(1, h // avg_slot_height)
+        
+        # Calculate cell dimensions
+        cell_width = w // num_cols
+        cell_height = h // num_rows
+        
+        # Create a grid of cells
+        for row in range(num_rows):
+            for col in range(num_cols):
+                rx = x + col * cell_width
+                ry = y + row * cell_height
+                
+                # Check if this area actually contains colored pixels
+                roi_mask = color_mask[ry:ry+cell_height, rx:rx+cell_width]
+                if np.sum(roi_mask) > cell_width * cell_height * 0.1:  # At least 10% colored
+                    slot_info = {
+                        "id": slot_id,
+                        "label": f"{config['prefix']}{slot_id}",
+                        "x": rx,
+                        "y": ry,
+                        "width": cell_width,
+                        "height": cell_height,
+                        "center_x": rx + cell_width // 2,
+                        "center_y": ry + cell_height // 2,
+                        "area": cell_width * cell_height,
+                        "category": category,
+                        "row": row + 1,
+                        "column": col + 1
+                    }
+                    parking_slots.append(slot_info)
+                    slot_id += 1
+                    
+                    # Draw rectangle and label
+                    cv2.rectangle(result_img, (rx, ry), (rx+cell_width, ry+cell_height), config['color'], 2)
+                    cv2.putText(result_img, slot_info['label'], (rx+5, ry+20), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, config['color'], 2)
+    
+    return parking_slots
+
+def label_parking_slots_sequential_improved(all_slots, image_path, visualize=True):
+    """
+    Assign sequential labels to detected parking slots with improved visualization
+    
+    Args:
+        all_slots (dict): Dictionary containing slots by category
         image_path (str): Path to the original image
         visualize (bool): Whether to visualize the results
     
     Returns:
-        tuple: (labeled_image, summary_stats)
+        tuple: (result_image, flat_slots_list)
     """
-    if not slots_data or slots_data['total_slots'] == 0:
+    # Flatten all slots into a single list
+    flat_slots = []
+    for category, slots in all_slots.items():
+        flat_slots.extend(slots)
+    
+    if not flat_slots:
         print("No slots to label")
-        return None, None
+        return None, []
     
     # Load the image for visualization
     image = cv2.imread(image_path)
@@ -559,202 +880,126 @@ def label_parking_slots_by_category(slots_data, image_path, visualize=True):
     enlarged_img = cv2.resize(image.copy(), (image.shape[1]*2, image.shape[0]*2))
     schematic_img = np.ones((1500, 2000, 3), dtype=np.uint8) * 255  # White background
     
-    # Color mapping for categories
-    category_colors = {
-        'Entry': (0, 0, 255),      # Red
-        'Accessible': (128, 0, 128), # Purple
-        'Reservation': (0, 255, 255), # Yellow
-        'Regular': (255, 0, 0)     # Blue
-    }
+    # Extract coordinates for sorting (left-to-right, top-to-bottom)
+    slot_coordinates = [(slot['id'], slot['x'], slot['y'], slot['category']) for slot in flat_slots]
+    slot_coordinates.sort(key=lambda coord: (coord[2], coord[1]))
     
-    # Process each category
-    all_labeled_slots = []
+    # Assign sequential labels while preserving category information
+    labeled_slots = []
+    for i, (slot_id, _, _, category) in enumerate(slot_coordinates):
+        # Find the original slot by ID and category
+        for slot in flat_slots:
+            if slot['id'] == slot_id and slot['category'] == category:
+                # Create a copy of the slot with the sequential label added
+                labeled_slot = slot.copy()
+                labeled_slot['sequential_label'] = f"S{i + 1}"  # Sequential label
+                labeled_slots.append(labeled_slot)
+                
+                # Get color for this category
+                color_map = {
+                    'Entry': (0, 0, 255),      # Red
+                    'Accessible': (128, 0, 128), # Purple
+                    'Reservation': (0, 255, 255), # Yellow
+                    'Regular': (255, 0, 0)     # Blue
+                }
+                color = color_map.get(category, (0, 255, 0))
+                
+                # Method 1: Original image with smaller font
+                text_pos = (slot['x'] + 5, slot['y'] + 20)
+                cv2.putText(result_img, f"{labeled_slot['label']}/{labeled_slot['sequential_label']}", text_pos,
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+                cv2.rectangle(result_img, 
+                             (slot['x'], slot['y']), 
+                             (slot['x'] + slot['width'], slot['y'] + slot['height']), 
+                             color, 1)
+                
+                # Method 2: Enlarged image
+                cv2.putText(enlarged_img, f"{labeled_slot['label']}/{labeled_slot['sequential_label']}", 
+                            (slot['x']*2 + 10, slot['y']*2 + 40),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+                cv2.rectangle(enlarged_img, 
+                             (slot['x']*2, slot['y']*2), 
+                             ((slot['x'] + slot['width'])*2, (slot['y'] + slot['height'])*2), 
+                             color, 2)
+                
+                # Method 3: Schematic view with normalized spacing
+                scale_x = 1800 / image.shape[1]
+                scale_y = 1300 / image.shape[0]
+                
+                sch_x = int(slot['x'] * scale_x) + 100
+                sch_y = int(slot['y'] * scale_y) + 100
+                sch_w = max(int(slot['width'] * scale_x), 40)
+                sch_h = max(int(slot['height'] * scale_y), 40)
+                
+                cv2.rectangle(schematic_img, 
+                             (sch_x, sch_y), 
+                             (sch_x + sch_w, sch_y + sch_h), 
+                             color, 2)
+                cv2.putText(schematic_img, labeled_slot['sequential_label'], 
+                            (sch_x + sch_w//4, sch_y + sch_h//2),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+                break
     
-    for category, slots in slots_data['slots_by_category'].items():
-        if not slots:
-            continue
-            
-        print(f"Processing {len(slots)} {category} slots...")
+    # Create a lookup table/index for easier verification
+    lookup_img = np.ones((1000, 1200, 3), dtype=np.uint8) * 255
+    columns = 4
+    rows = (len(labeled_slots) // columns) + (1 if len(labeled_slots) % columns > 0 else 0)
+    
+    for i, slot in enumerate(labeled_slots):
+        row = i // columns
+        col = i % columns
         
-        # Sort slots within category (left-to-right, top-to-bottom)
-        slots.sort(key=lambda slot: (slot['y'], slot['x']))
+        x = col * 300 + 20
+        y = row * 25 + 40
         
-        # Re-label slots within category
-        for i, slot in enumerate(slots):
-            # Update the label to be sequential within category
-            prefix = slot['label'][0]  # Keep original prefix (E, A, R, P)
-            slot['label'] = f"{prefix}{i + 1}"
-            
-            color = category_colors[category]
-            
-            # Method 1: Original image
-            text_pos = (slot['x'] + 5, slot['y'] + 20)
-            cv2.putText(result_img, slot['label'], text_pos,
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            cv2.rectangle(result_img, 
-                         (slot['x'], slot['y']), 
-                         (slot['x'] + slot['width'], slot['y'] + slot['height']), 
-                         color, 2)
-            
-            # Method 2: Enlarged image
-            cv2.putText(enlarged_img, slot['label'], 
-                        (slot['x']*2 + 10, slot['y']*2 + 40),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
-            cv2.rectangle(enlarged_img, 
-                         (slot['x']*2, slot['y']*2), 
-                         ((slot['x'] + slot['width'])*2, (slot['y'] + slot['height'])*2), 
-                         color, 2)
-            
-            # Method 3: Schematic view
-            scale_x = 1800 / image.shape[1]
-            scale_y = 1300 / image.shape[0]
-            
-            sch_x = int(slot['x'] * scale_x) + 100
-            sch_y = int(slot['y'] * scale_y) + 100
-            sch_w = max(int(slot['width'] * scale_x), 60)
-            sch_h = max(int(slot['height'] * scale_y), 40)
-            
-            cv2.rectangle(schematic_img, 
-                         (sch_x, sch_y), 
-                         (sch_x + sch_w, sch_y + sch_h), 
-                         color, 2)
-            cv2.putText(schematic_img, slot['label'], 
-                        (sch_x + sch_w//4, sch_y + sch_h//2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-            
-            all_labeled_slots.append(slot)
-    
-    # Create summary statistics image
-    summary_img = np.ones((600, 800, 3), dtype=np.uint8) * 255
-    
-    # Add title
-    cv2.putText(summary_img, "PARKING SLOT SUMMARY", (200, 50), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-    
-    # Add category summaries
-    y_pos = 100
-    total_slots = 0
-    
-    for category, slots in slots_data['slots_by_category'].items():
-        if slots:
-            count = len(slots)
-            total_slots += count
-            color = category_colors[category]
-            
-            # Category name and count
-            text = f"{category}: {count} slots"
-            cv2.putText(summary_img, text, (50, y_pos), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-            
-            # List labels
-            labels = [slot['label'] for slot in slots]
-            label_text = ", ".join(labels)
-            
-            # Split long label text into multiple lines
-            max_chars_per_line = 50
-            if len(label_text) > max_chars_per_line:
-                words = label_text.split(", ")
-                lines = []
-                current_line = ""
-                
-                for word in words:
-                    if len(current_line + word + ", ") <= max_chars_per_line:
-                        current_line += word + ", "
-                    else:
-                        if current_line:
-                            lines.append(current_line.rstrip(", "))
-                        current_line = word + ", "
-                
-                if current_line:
-                    lines.append(current_line.rstrip(", "))
-                
-                for i, line in enumerate(lines):
-                    cv2.putText(summary_img, line, (70, y_pos + 25 + i*20), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
-                y_pos += 25 + len(lines) * 20 + 10
-            else:
-                cv2.putText(summary_img, label_text, (70, y_pos + 25), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 0), 1)
-                y_pos += 60
-    
-    # Add total
-    cv2.putText(summary_img, f"TOTAL: {total_slots} slots", (50, y_pos + 30), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+        color_map = {
+            'Entry': (0, 0, 255),
+            'Accessible': (128, 0, 128),
+            'Reservation': (0, 255, 255),
+            'Regular': (255, 0, 0)
+        }
+        color = color_map.get(slot['category'], (0, 0, 0))
+        
+        text = f"{slot['sequential_label']}: {slot['label']} ({slot['category']}) at ({slot['x']},{slot['y']})"
+        cv2.putText(lookup_img, text, (x, y), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, color, 1)
     
     # Visualization
     if visualize:
         plt.figure(figsize=(20, 16))
         
-        plt.subplot(2, 3, 1)
+        plt.subplot(2, 2, 1)
         plt.imshow(cv2.cvtColor(result_img, cv2.COLOR_BGR2RGB))
-        plt.title(f"Labeled Parking Slots (Total: {slots_data['total_slots']})")
+        plt.title(f"Original with Labels (S1-S{len(labeled_slots)})")
         plt.axis('off')
         
-        plt.subplot(2, 3, 2)
+        plt.subplot(2, 2, 2)
         plt.imshow(cv2.cvtColor(enlarged_img, cv2.COLOR_BGR2RGB))
         plt.title("Enlarged View (2x)")
         plt.axis('off')
         
-        plt.subplot(2, 3, 3)
+        plt.subplot(2, 2, 3)
         plt.imshow(cv2.cvtColor(schematic_img, cv2.COLOR_BGR2RGB))
         plt.title("Schematic View")
         plt.axis('off')
         
-        plt.subplot(2, 3, 4)
-        plt.imshow(cv2.cvtColor(summary_img, cv2.COLOR_BGR2RGB))
-        plt.title("Summary Statistics")
+        plt.subplot(2, 2, 4)
+        plt.imshow(cv2.cvtColor(lookup_img, cv2.COLOR_BGR2RGB))
+        plt.title("Label Index")
         plt.axis('off')
         
-        # Create a detailed breakdown chart
-        plt.subplot(2, 3, 5)
-        categories = []
-        counts = []
-        colors_for_plot = []
-        
-        for category, slots in slots_data['slots_by_category'].items():
-            if slots:
-                categories.append(category)
-                counts.append(len(slots))
-                # Convert BGR to RGB for matplotlib
-                bgr_color = category_colors[category]
-                rgb_color = (bgr_color[2]/255, bgr_color[1]/255, bgr_color[0]/255)
-                colors_for_plot.append(rgb_color)
-        
-        if categories:
-            plt.bar(categories, counts, color=colors_for_plot)
-            plt.title("Parking Slots by Category")
-            plt.ylabel("Number of Slots")
-            plt.xticks(rotation=45)
-            
-            # Add count labels on bars
-            for i, count in enumerate(counts):
-                plt.text(i, count + 0.1, str(count), ha='center', va='bottom')
-        
-        # Create pie chart
-        plt.subplot(2, 3, 6)
-        if categories:
-            plt.pie(counts, labels=categories, colors=colors_for_plot, autopct='%1.1f%%')
-            plt.title("Distribution of Parking Slots")
-        
         plt.tight_layout()
-        plt.savefig("parking_visualization_categorized.png", dpi=300, bbox_inches='tight')
+        plt.savefig("parking_visualization_multi_color.png", dpi=300, bbox_inches='tight')
         plt.show()
     
-    # Create summary statistics
-    summary_stats = {
-        'total_slots': slots_data['total_slots'],
-        'categories': slots_data['counts'],
-        'all_slots': all_labeled_slots
-    }
-    
-    return result_img, summary_stats
+    return result_img, labeled_slots
 
-def generate_categorized_html(slots_data, image_path):
+def generate_interactive_html(labeled_slots, image_path):
     """
-    Generate an interactive HTML file for categorized parking slots
+    Generate an interactive HTML file to better visualize the parking slots
     
     Args:
-        slots_data (dict): Dictionary containing slots by category
+        labeled_slots (list): List of dictionaries containing labeled slot information
         image_path (str): Path to the original image
     """
     # Load image dimensions
@@ -764,95 +1009,87 @@ def generate_categorized_html(slots_data, image_path):
     
     img_height, img_width = image.shape[:2]
     
-    # Color mapping for HTML
-    html_colors = {
-        'Entry': '#FF0000',      # Red
-        'Accessible': '#800080', # Purple
-        'Reservation': '#FFFF00', # Yellow
-        'Regular': '#0000FF'     # Blue
-    }
-    
     # Create HTML content
     html_content = f'''
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Categorized Parking Slot Visualization</title>
+        <title>Multi-Color Parking Slot Visualization</title>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; }}
             .container {{ display: flex; flex-direction: column; }}
             .image-container {{ position: relative; margin-bottom: 20px; 
                               width: {img_width}px; height: {img_height}px; }}
             .image-container img {{ width: 100%; height: 100%; }}
-            .slot {{ position: absolute; border: 2px solid; 
-                   display: flex; justify-content: center; align-items: center; }}
-            .slot-label {{ font-weight: bold; 
-                         background-color: rgba(255,255,255,0.8); 
-                         padding: 2px; border-radius: 3px; font-size: 12px; }}
+            .slot {{ position: absolute; display: flex; justify-content: center; align-items: center; }}
+            .slot-label {{ font-weight: bold; background-color: rgba(255,255,255,0.8); 
+                         padding: 2px; border-radius: 3px; font-size: 10px; }}
+            .entry {{ border: 2px solid red; }}
+            .accessible {{ border: 2px solid purple; }}
+            .reservation {{ border: 2px solid #FFD700; }}
+            .regular {{ border: 2px solid blue; }}
             .controls {{ margin-bottom: 20px; }}
-            .category-controls {{ margin-bottom: 10px; }}
-            .category-button {{ margin: 5px; padding: 8px 16px; border: none; 
-                              border-radius: 4px; cursor: pointer; font-weight: bold; }}
-            .summary-stats {{ background-color: #f5f5f5; padding: 15px; 
-                            border-radius: 5px; margin-bottom: 20px; }}
-            .slot-table {{ border-collapse: collapse; width: 100%; }}
+            .slot-table {{ border-collapse: collapse; width: 100%; max-width: 1200px; }}
             .slot-table th, .slot-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
             .slot-table tr:nth-child(even) {{ background-color: #f2f2f2; }}
             .slot-table th {{ padding-top: 12px; padding-bottom: 12px; background-color: #4CAF50; color: white; }}
             .highlight {{ background-color: yellow !important; }}
             .search-container {{ margin-bottom: 10px; }}
+            .category-filter {{ margin-bottom: 10px; }}
+            .category-stats {{ margin-bottom: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 5px; }}
         </style>
     </head>
     <body>
-        <h1>Categorized Parking Slot Visualization</h1>
+        <h1>Multi-Color Parking Slot Visualization</h1>
         
-        <div class="summary-stats">
-            <h3>Summary Statistics</h3>
-            <p><strong>Total Parking Slots: {slots_data['total_slots']}</strong></p>
+        <div class="category-stats">
+            <h3>Parking Statistics by Category:</h3>
     '''
     
     # Add category statistics
-    for category, count in slots_data['counts'].items():
-        if count > 0:
-            color = html_colors[category]
-            slots = slots_data['slots_by_category'][category]
-            labels = [slot['label'] for slot in slots]
-            html_content += f'''
-            <p><span style="color: {color}; font-weight: bold;">{category}:</span> {count} slots ({', '.join(labels)})</p>
-            '''
+    category_counts = {}
+    for slot in labeled_slots:
+        category = slot['category']
+        category_counts[category] = category_counts.get(category, 0) + 1
     
+    for category, count in category_counts.items():
+        color_map = {
+            'Entry': 'red',
+            'Accessible': 'purple', 
+            'Reservation': '#FFD700',
+            'Regular': 'blue'
+        }
+        color = color_map.get(category, 'black')
+        html_content += f'<span style="color: {color}; font-weight: bold;">{category}: {count} slots</span> | '
+    
+    html_content += f'<span style="font-weight: bold;">Total: {len(labeled_slots)} slots</span>'
     html_content += '''
         </div>
         
         <div class="controls">
-            <div class="category-controls">
-                <label>Toggle Categories: </label>
-    '''
-    
-    # Add category toggle buttons
-    for category, count in slots_data['counts'].items():
-        if count > 0:
-            color = html_colors[category]
-            html_content += f'''
-                <button class="category-button" style="background-color: {color}; color: white;" 
-                        onclick="toggleCategory('{category}')">{category} ({count})</button>
-            '''
-    
-    html_content += '''
-            </div>
-            
             <div class="search-container">
                 <label for="slot-search">Search for slot: </label>
-                <input type="text" id="slot-search" placeholder="Enter slot label (e.g. P1, A1, E1, R1)">
+                <input type="text" id="slot-search" placeholder="Enter slot label (e.g. S1, P1, E1)">
                 <button onclick="searchSlot()">Find</button>
             </div>
             
-            <label for="label-size">Label Size: </label>
-            <input type="range" id="label-size" min="8" max="20" value="12" 
-                   oninput="updateLabelSize(this.value)">
-            <span id="size-value">12px</span>
+            <div class="category-filter">
+                <label>Filter by category: </label>
+                <select id="category-filter" onchange="filterByCategory()">
+                    <option value="all">All Categories</option>
+                    <option value="Entry">Entry Slots</option>
+                    <option value="Accessible">Accessible Slots</option>
+                    <option value="Reservation">Reservation Slots</option>
+                    <option value="Regular">Regular Slots</option>
+                </select>
+            </div>
             
-            <button onclick="toggleLabels()">Toggle All Labels</button>
+            <label for="label-size">Label Size: </label>
+            <input type="range" id="label-size" min="8" max="20" value="10" 
+                   oninput="updateLabelSize(this.value)">
+            <span id="size-value">10px</span>
+            
+            <button onclick="toggleLabels()">Toggle Labels</button>
         </div>
         
         <div class="container">
@@ -861,25 +1098,20 @@ def generate_categorized_html(slots_data, image_path):
     '''
     
     # Add each parking slot as a div
-    for category, slots in slots_data['slots_by_category'].items():
-        if not slots:
-            continue
-            
-        color = html_colors[category]
-        for slot in slots:
-            html_content += f'''
-                <div class="slot {category.lower()}-slot" id="{slot['label']}" 
+    for slot in labeled_slots:
+        category_class = slot['category'].lower()
+        html_content += f'''
+                <div class="slot {category_class}" id="{slot['sequential_label']}" data-category="{slot['category']}"
                      style="left: {slot['x']}px; top: {slot['y']}px; 
-                            width: {slot['width']}px; height: {slot['height']}px;
-                            border-color: {color};">
-                    <span class="slot-label" style="color: {color};">{slot['label']}</span>
+                            width: {slot['width']}px; height: {slot['height']}px;">
+                    <span class="slot-label">{slot['sequential_label']}<br>{slot['label']}</span>
                 </div>
-            '''
+        '''
     
     html_content += '''
             </div>
             
-            <h2>Categorized Parking Slot Data</h2>
+            <h2>Parking Slot Data</h2>
             <div class="search-container">
                 <label for="table-search">Filter table: </label>
                 <input type="text" id="table-search" placeholder="Filter by any column" 
@@ -889,7 +1121,8 @@ def generate_categorized_html(slots_data, image_path):
             <table class="slot-table" id="slot-table">
                 <thead>
                     <tr>
-                        <th>Label</th>
+                        <th>Sequential</th>
+                        <th>Category Label</th>
                         <th>Category</th>
                         <th>X Position</th>
                         <th>Y Position</th>
@@ -901,23 +1134,24 @@ def generate_categorized_html(slots_data, image_path):
                 <tbody>
     '''
     
-    # Add table rows for each slot
-    for category, slots in slots_data['slots_by_category'].items():
-        if not slots:
-            continue
-            
-        for slot in slots:
-            html_content += f'''
-                    <tr id="row-{slot['label']}" class="{category.lower()}-row">
+# Add table rows for each slot
+    for slot in labeled_slots:
+        # Define color mapping outside the f-string
+        color_map = {'Entry': 'red', 'Accessible': 'purple', 'Reservation': '#B8860B', 'Regular': 'blue'}
+        slot_color = color_map.get(slot['category'], 'black')
+        
+        html_content += f'''
+                    <tr id="row-{slot['sequential_label']}" data-category="{slot['category']}">
+                        <td>{slot['sequential_label']}</td>
                         <td>{slot['label']}</td>
-                        <td style="color: {html_colors[category]}; font-weight: bold;">{category}</td>
+                        <td style="color: {slot_color}">{slot['category']}</td>
                         <td>{slot['x']}</td>
                         <td>{slot['y']}</td>
                         <td>{slot['width']}</td>
                         <td>{slot['height']}</td>
                         <td>{slot['area']}</td>
                     </tr>
-            '''
+        '''
     
     html_content += '''
                 </tbody>
@@ -925,118 +1159,191 @@ def generate_categorized_html(slots_data, image_path):
         </div>
         
         <script>
-            let labelsVisible = true;
-            let currentHighlight = null;
+            function searchSlot() {
+                // Reset highlighting
+                const slots = document.querySelectorAll('.slot');
+                slots.forEach(slot => {
+                    slot.style.backgroundColor = 'transparent';
+                    slot.style.zIndex = 1;
+                });
+                
+                const rows = document.querySelectorAll('.slot-table tr');
+                rows.forEach(row => {
+                    row.classList.remove('highlight');
+                });
+                
+                // Get search value
+                const searchValue = document.getElementById('slot-search').value.trim().toUpperCase();
+                if (!searchValue) return;
+                
+                // Find and highlight the slot
+                const slot = document.getElementById(searchValue);
+                if (slot) {
+                    slot.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                    slot.style.zIndex = 100;
+                    slot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Highlight the table row
+                    const row = document.getElementById('row-' + searchValue);
+                    if (row) {
+                        row.classList.add('highlight');
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } else {
+                    // Try searching by category label
+                    let found = false;
+                    slots.forEach(slotEl => {
+                        const label = slotEl.querySelector('.slot-label').textContent;
+                        if (label.includes(searchValue)) {
+                            slotEl.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                            slotEl.style.zIndex = 100;
+                            slotEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            found = true;
+                        }
+                    });
+                    
+                    if (!found) {
+                        alert('Slot ' + searchValue + ' not found!');
+                    }
+                }
+            }
             
-            function toggleCategory(category) {
-                const slots = document.querySelectorAll('.' + category.toLowerCase() + '-slot');
-                const rows = document.querySelectorAll('.' + category.toLowerCase() + '-row');
-                const button = event.target;
+function filterByCategory() {
+                const selectedCategory = document.getElementById('category-filter').value;
+                const slots = document.querySelectorAll('.slot');
+                const rows = document.querySelectorAll('.slot-table tbody tr');
                 
                 slots.forEach(slot => {
-                    if (slot.style.display === 'none') {
+                    if (selectedCategory === 'all' || slot.dataset.category === selectedCategory) {
                         slot.style.display = 'flex';
-                        button.style.opacity = '1';
                     } else {
                         slot.style.display = 'none';
-                        button.style.opacity = '0.5';
                     }
                 });
                 
                 rows.forEach(row => {
-                    if (row.style.display === 'none') {
-                        row.style.display = 'table-row';
+                    if (selectedCategory === 'all' || row.dataset.category === selectedCategory) {
+                        row.style.display = '';
                     } else {
                         row.style.display = 'none';
                     }
                 });
             }
             
-            function toggleLabels() {
-                const labels = document.querySelectorAll('.slot-label');
-                labelsVisible = !labelsVisible;
-                
-                labels.forEach(label => {
-                    label.style.display = labelsVisible ? 'block' : 'none';
-                });
-            }
-            
             function updateLabelSize(size) {
-                const labels = document.querySelectorAll('.slot-label');
                 document.getElementById('size-value').textContent = size + 'px';
-                
+                const labels = document.querySelectorAll('.slot-label');
                 labels.forEach(label => {
                     label.style.fontSize = size + 'px';
                 });
             }
             
-            function searchSlot() {
-                const searchTerm = document.getElementById('slot-search').value.toUpperCase();
-                const slot = document.getElementById(searchTerm);
-                
-                // Remove previous highlight
-                if (currentHighlight) {
-                    currentHighlight.classList.remove('highlight');
-                    const prevRow = document.getElementById('row-' + currentHighlight.id);
-                    if (prevRow) prevRow.classList.remove('highlight');
-                }
-                
-                if (slot) {
-                    slot.classList.add('highlight');
-                    slot.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    currentHighlight = slot;
-                    
-                    // Highlight corresponding table row
-                    const row = document.getElementById('row-' + searchTerm);
-                    if (row) row.classList.add('highlight');
-                    
-                    alert('Found slot: ' + searchTerm);
-                } else {
-                    alert('Slot not found: ' + searchTerm);
-                }
+            function toggleLabels() {
+                const labels = document.querySelectorAll('.slot-label');
+                labels.forEach(label => {
+                    label.style.display = label.style.display === 'none' ? '' : 'none';
+                });
             }
             
             function filterTable() {
                 const filter = document.getElementById('table-search').value.toLowerCase();
-                const table = document.getElementById('slot-table');
-                const rows = table.getElementsByTagName('tr');
+                const rows = document.getElementById('slot-table').getElementsByTagName('tbody')[0].rows;
                 
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    const cells = row.getElementsByTagName('td');
-                    let found = false;
+                for (let i = 0; i < rows.length; i++) {
+                    let visible = false;
+                    const cells = rows[i].getElementsByTagName('td');
                     
                     for (let j = 0; j < cells.length; j++) {
-                        if (cells[j].textContent.toLowerCase().includes(filter)) {
-                            found = true;
+                        const cell = cells[j];
+                        if (cell.textContent.toLowerCase().indexOf(filter) > -1) {
+                            visible = true;
                             break;
                         }
                     }
                     
-                    row.style.display = found ? '' : 'none';
+                    rows[i].style.display = visible ? '' : 'none';
                 }
             }
             
-            // Add click event to table rows to highlight corresponding slot
+            // Add hover effects for better interactivity
             document.addEventListener('DOMContentLoaded', function() {
-                const rows = document.querySelectorAll('#slot-table tbody tr');
+                const slots = document.querySelectorAll('.slot');
+                const rows = document.querySelectorAll('.slot-table tbody tr');
+                
+                // Add hover effect to slots
+                slots.forEach(slot => {
+                    slot.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                        this.style.transform = 'scale(1.05)';
+                        this.style.transition = 'all 0.2s ease';
+                        
+                        // Highlight corresponding table row
+                        const slotId = this.id;
+                        const correspondingRow = document.getElementById('row-' + slotId);
+                        if (correspondingRow) {
+                            correspondingRow.style.backgroundColor = '#e6f3ff';
+                        }
+                    });
+                    
+                    slot.addEventListener('mouseleave', function() {
+                        if (!this.style.backgroundColor.includes('255, 255, 0')) { // Don't reset if highlighted by search
+                            this.style.backgroundColor = 'transparent';
+                        }
+                        this.style.transform = 'scale(1)';
+                        
+                        // Remove highlight from table row
+                        const slotId = this.id;
+                        const correspondingRow = document.getElementById('row-' + slotId);
+                        if (correspondingRow && !correspondingRow.classList.contains('highlight')) {
+                            correspondingRow.style.backgroundColor = '';
+                        }
+                    });
+                    
+                    // Click to highlight permanently
+                    slot.addEventListener('click', function() {
+                        // Remove previous permanent highlights
+                        slots.forEach(s => {
+                            if (s !== this) {
+                                s.style.backgroundColor = 'transparent';
+                                s.style.zIndex = 1;
+                            }
+                        });
+                        rows.forEach(r => r.classList.remove('highlight'));
+                        
+                        // Highlight this slot
+                        this.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                        this.style.zIndex = 100;
+                        
+                        // Highlight corresponding table row
+                        const slotId = this.id;
+                        const correspondingRow = document.getElementById('row-' + slotId);
+                        if (correspondingRow) {
+                            correspondingRow.classList.add('highlight');
+                            correspondingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                });
+                
+                // Add click effect to table rows
                 rows.forEach(row => {
                     row.addEventListener('click', function() {
-                        const label = this.cells[0].textContent;
-                        const slot = document.getElementById(label);
+                        // Remove previous highlights
+                        slots.forEach(s => {
+                            s.style.backgroundColor = 'transparent';
+                            s.style.zIndex = 1;
+                        });
+                        rows.forEach(r => r.classList.remove('highlight'));
                         
-                        if (slot) {
-                            // Remove previous highlight
-                            if (currentHighlight) {
-                                currentHighlight.classList.remove('highlight');
-                                const prevRow = document.getElementById('row-' + currentHighlight.id);
-                                if (prevRow) prevRow.classList.remove('highlight');
-                            }
-                            
-                            slot.classList.add('highlight');
-                            slot.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            currentHighlight = slot;
-                            this.classList.add('highlight');
+                        // Highlight this row
+                        this.classList.add('highlight');
+                        
+                        // Find and highlight corresponding slot
+                        const rowId = this.id.replace('row-', '');
+                        const correspondingSlot = document.getElementById(rowId);
+                        if (correspondingSlot) {
+                            correspondingSlot.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                            correspondingSlot.style.zIndex = 100;
+                            correspondingSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                     });
                 });
@@ -1046,161 +1353,132 @@ def generate_categorized_html(slots_data, image_path):
     </html>
     '''
     
-    # Convert image to base64 for embedding
-    import base64
-    with open(image_path, "rb") as img_file:
-        img_base64 = base64.b64encode(img_file.read()).decode('utf-8')
-    
-    # Replace placeholder with actual base64 image
-    html_content = html_content.replace('PLACEHOLDER_FOR_BASE64_IMAGE', img_base64)
-    
-    # Save HTML file
-    output_file = "categorized_parking_visualization.html"
-    with open(output_file, 'w') as f:
+    # Save the HTML file
+    with open("multi_color_parking_visualization.html", "w") as f:
         f.write(html_content)
     
-    print(f"Interactive HTML visualization saved as: {output_file}")
+    print("Interactive HTML visualization saved as 'multi_color_parking_visualization.html'")
+    print("Note: The image placeholder needs to be replaced with the actual base64 encoded image.")
 
-def save_categorized_csv(slots_data, output_file="categorized_parking_slots.csv"):
+def save_slots_to_csv(all_slots, filename="multi_color_parking_slots.csv"):
     """
-    Save categorized parking slot data to CSV file
+    Save all parking slots data to a CSV file
     
     Args:
-        slots_data (dict): Dictionary containing slots by category
-        output_file (str): Output CSV filename
+        all_slots (dict): Dictionary containing slots by category
+        filename (str): Output CSV filename
     """
-    import csv
+    # Flatten all slots into a single list
+    flat_slots = []
+    for category, slots in all_slots.items():
+        flat_slots.extend(slots)
     
-    with open(output_file, 'w', newline='') as csvfile:
-        fieldnames = ['Label', 'Category', 'X', 'Y', 'Width', 'Height', 'Area']
+    if not flat_slots:
+        print("No slots to save")
+        return
+    
+    # Sort slots by position (top-to-bottom, left-to-right)
+    flat_slots.sort(key=lambda slot: (slot['y'], slot['x']))
+    
+    # Add sequential labels
+    for i, slot in enumerate(flat_slots):
+        slot['sequential_label'] = f"S{i + 1}"
+    
+    # Save to CSV
+    fieldnames = ["sequential_label", "category_label", "category", "x", "y", "width", "height", "area", "center_x", "center_y"]
+    
+    with open(filename, "w", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        
         writer.writeheader()
         
-        for category, slots in slots_data['slots_by_category'].items():
-            for slot in slots:
-                writer.writerow({
-                    'Label': slot['label'],
-                    'Category': category,
-                    'X': slot['x'],
-                    'Y': slot['y'],
-                    'Width': slot['width'],
-                    'Height': slot['height'],
-                    'Area': slot['area']
-                })
+        for slot in flat_slots:
+            writer.writerow({
+                "sequential_label": slot.get('sequential_label', ''),
+                "category_label": slot.get('label', ''),
+                "category": slot['category'],
+                "x": slot['x'],
+                "y": slot['y'],
+                "width": slot['width'],
+                "height": slot['height'],
+                "area": slot['area'],
+                "center_x": slot['center_x'],
+                "center_y": slot['center_y']
+            })
     
-    print(f"CSV data saved as: {output_file}")
+    print(f"Slot data saved to '{filename}'")
+    return flat_slots
 
 def main():
     """
-    Main function to run the complete categorized parking slot detection and visualization
+    Main function to process multi-color parking slot detection
     """
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Detect and categorize parking slots by color')
-    parser.add_argument('image_path', help='Path to the parking lot image')
-    parser.add_argument('--no-visualize', action='store_true', help='Skip matplotlib visualization')
-    parser.add_argument('--output-csv', default='parking_slots.csv', help='Output CSV filename')
-    parser.add_argument('--output-html', default='parking_visualization.html', help='Output HTML filename')
+    parser = argparse.ArgumentParser(description='Process parking lot images with multi-color slot detection')
+    parser.add_argument('--image', type=str, help='Path to the parking lot image')
+    parser.add_argument('--address', type=str, help='Address to look for in the Address folder')
     
     args = parser.parse_args()
     
+    # Determine image path
+    if args.image:
+        image_path = args.image
+    elif args.address:
+        # You can implement address-based lookup here if needed
+        print(f"Address-based lookup not implemented yet for: {args.address}")
+        sys.exit(1)
+    else:
+        # Default image path
+        image_path = "Modified_Parking_Lot.png"
+    
+    # Check if image exists
+    if not os.path.exists(image_path):
+        print(f"Error: Image not found: {image_path}")
+        sys.exit(1)
+    
     try:
-        # Step 1: Detect parking slots by color
-        print("Step 1: Detecting parking slots by color...")
-        slots_data = detect_parking_slots_by_color(args.image_path, visualize=not args.no_visualize)
+        print(f"Processing image: {image_path}")
         
-        if slots_data['total_slots'] == 0:
-            print("No parking slots detected. Please check your image and color ranges.")
-            return
+        # Detect parking slots for all colors
+        all_slots = detect_parking_slots_all_colors(image_path, visualize=True)
         
-        # Step 2: Create detailed labels and visualizations
-        print("Step 2: Creating detailed labels and visualizations...")
-        labeled_image, summary_stats = label_parking_slots_by_category(
-            slots_data, args.image_path, visualize=not args.no_visualize
-        )
+        # Calculate total slots
+        total_slots = sum(len(slots) for slots in all_slots.values())
         
-        # Step 3: Generate interactive HTML
-        print("Step 3: Generating interactive HTML visualization...")
-        generate_categorized_html(slots_data, args.image_path)
+        if total_slots == 0:
+            print("No parking slots detected in the image")
+            sys.exit(1)
         
-        # Step 4: Save CSV data
-        print("Step 4: Saving CSV data...")
-        save_categorized_csv(slots_data, args.output_csv)
+        # Label slots with sequential labels and improved visualization
+        result_img, labeled_slots = label_parking_slots_sequential_improved(all_slots, image_path, visualize=True)
         
-        # Step 5: Print final summary
-        print(f"\n{'='*70}")
-        print("FINAL PARKING SLOT DETECTION SUMMARY")
-        print(f"{'='*70}")
-        
-        print(f"Total parking slots detected: {slots_data['total_slots']}")
-        print(f"\nDetailed breakdown by category:")
-        print(f"{'Category':<15} {'Count':<8} {'Labels'}")
-        print(f"{'-'*60}")
-        
-        for category, slots in slots_data['slots_by_category'].items():
-            if slots:
-                count = len(slots)
-                labels = [slot['label'] for slot in slots]
-                labels_str = ', '.join(labels)
-                
-                # Handle long label strings
-                if len(labels_str) > 40:
-                    labels_str = labels_str[:37] + "..."
-                
-                print(f"{category:<15} {count:<8} {labels_str}")
-        
-        # Print category-specific details
-        print(f"\n{'='*70}")
-        print("CATEGORY DETAILS")
-        print(f"{'='*70}")
-        
-        for category, slots in slots_data['slots_by_category'].items():
-            if slots:
-                print(f"\n{category.upper()} PARKING SLOTS ({len(slots)} total):")
-                print(f"{'Label':<8} {'Position':<12} {'Size':<10} {'Area':<8}")
-                print(f"{'-'*40}")
-                
-                for slot in slots:
-                    pos = f"({slot['x']},{slot['y']})"
-                    size = f"{slot['width']}×{slot['height']}"
-                    print(f"{slot['label']:<8} {pos:<12} {size:<10} {slot['area']:<8.0f}")
-        
-        print(f"\nFiles generated:")
-        print(f"- Interactive HTML: categorized_parking_visualization.html")
-        print(f"- CSV data: {args.output_csv}")
-        print(f"- Visualization image: parking_visualization_categorized.png")
-        
-        return slots_data
-        
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
-if __name__ == "__main__":
-    # If running without command line arguments, use default image
-    import sys
-    if len(sys.argv) == 1:
-        # Default usage for testing
-        image_path = "Modified_Parking_Lot.png"  # Change this to your image path
-        
-        print("Running with default image path. Use command line arguments for custom paths.")
-        print(f"Usage: python {sys.argv[0]} <image_path> [--no-visualize] [--output-csv filename.csv]")
-        print(f"Using default image: {image_path}\n")
-        
-        # Run with default parameters
-        slots_data = detect_parking_slots_by_color(image_path, visualize=True)
-        
-        if slots_data['total_slots'] > 0:
-            labeled_image, summary_stats = label_parking_slots_by_category(slots_data, image_path, visualize=True)
-            generate_categorized_html(slots_data, image_path)
-            save_categorized_csv(slots_data)
+        if result_img is not None and labeled_slots:
+            # Generate interactive HTML visualization
+            generate_interactive_html(labeled_slots, image_path)
+            
+            # Save slot data to CSV
+            csv_filename = f"parking_slots_{os.path.splitext(os.path.basename(image_path))[0]}.csv"
+            save_slots_to_csv(all_slots, csv_filename)
             
             # Print summary
-            print(f"\nSUMMARY:")
-            print(f"Total slots: {slots_data['total_slots']}")
-            for category, count in slots_data['counts'].items():
-                if count > 0:
-                    print(f"{category}: {count} slots")
-    else:
-        main()
+            print("\n" + "="*50)
+            print("PARKING SLOT DETECTION SUMMARY")
+            print("="*50)
+            
+            for category, slots in all_slots.items():
+                if slots:
+                    print(f"{category} slots: {len(slots)}")
+            
+            print(f"Total parking slots detected: {total_slots}")
+            print("="*50)
+            
+            return total_slots
+        else:
+            print("Failed to process parking slots")
+            sys.exit(1)
+            
+    except Exception as e:
+        print(f"Error during processing: {str(e)}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    total_spaces = main()
+    print(f"Final result: {total_spaces} parking spaces detected")

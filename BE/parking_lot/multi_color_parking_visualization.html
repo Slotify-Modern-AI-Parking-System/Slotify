@@ -1,0 +1,4624 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Multi-Color Parking Slot Visualization</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+            .container { display: flex; flex-direction: column; }
+            .image-container { position: relative; margin-bottom: 20px; 
+                              width: 650px; height: 706px; }
+            .image-container img { width: 100%; height: 100%; }
+            .slot { position: absolute; display: flex; justify-content: center; align-items: center; }
+            .slot-label { font-weight: bold; background-color: rgba(255,255,255,0.8); 
+                         padding: 2px; border-radius: 3px; font-size: 10px; }
+            .entry { border: 2px solid red; }
+            .accessible { border: 2px solid purple; }
+            .reservation { border: 2px solid #FFD700; }
+            .regular { border: 2px solid blue; }
+            .controls { margin-bottom: 20px; }
+            .slot-table { border-collapse: collapse; width: 100%; max-width: 1200px; }
+            .slot-table th, .slot-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            .slot-table tr:nth-child(even) { background-color: #f2f2f2; }
+            .slot-table th { padding-top: 12px; padding-bottom: 12px; background-color: #4CAF50; color: white; }
+            .highlight { background-color: yellow !important; }
+            .search-container { margin-bottom: 10px; }
+            .category-filter { margin-bottom: 10px; }
+            .category-stats { margin-bottom: 20px; padding: 10px; background-color: #f9f9f9; border-radius: 5px; }
+        </style>
+    </head>
+    <body>
+        <h1>Multi-Color Parking Slot Visualization</h1>
+        
+        <div class="category-stats">
+            <h3>Parking Statistics by Category:</h3>
+    <span style="color: blue; font-weight: bold;">Regular: 245 slots</span> | <span style="color: red; font-weight: bold;">Entry: 2 slots</span> | <span style="color: purple; font-weight: bold;">Accessible: 5 slots</span> | <span style="color: #FFD700; font-weight: bold;">Reservation: 3 slots</span> | <span style="font-weight: bold;">Total: 255 slots</span>
+        </div>
+        
+        <div class="controls">
+            <div class="search-container">
+                <label for="slot-search">Search for slot: </label>
+                <input type="text" id="slot-search" placeholder="Enter slot label (e.g. S1, P1, E1)">
+                <button onclick="searchSlot()">Find</button>
+            </div>
+            
+            <div class="category-filter">
+                <label>Filter by category: </label>
+                <select id="category-filter" onchange="filterByCategory()">
+                    <option value="all">All Categories</option>
+                    <option value="Entry">Entry Slots</option>
+                    <option value="Accessible">Accessible Slots</option>
+                    <option value="Reservation">Reservation Slots</option>
+                    <option value="Regular">Regular Slots</option>
+                </select>
+            </div>
+            
+            <label for="label-size">Label Size: </label>
+            <input type="range" id="label-size" min="8" max="20" value="10" 
+                   oninput="updateLabelSize(this.value)">
+            <span id="size-value">10px</span>
+            
+            <button onclick="toggleLabels()">Toggle Labels</button>
+        </div>
+        
+        <div class="container">
+            <div class="image-container">
+                <img src="data:image/jpeg;base64,PLACEHOLDER_FOR_BASE64_IMAGE" alt="Parking Lot">
+    
+                <div class="slot regular" id="S1" data-category="Regular"
+                     style="left: 198px; top: 27px; 
+                            width: 13px; height: 23px;">
+                    <span class="slot-label">S1<br>P245</span>
+                </div>
+        
+                <div class="slot regular" id="S2" data-category="Regular"
+                     style="left: 210px; top: 30px; 
+                            width: 17px; height: 25px;">
+                    <span class="slot-label">S2<br>P244</span>
+                </div>
+        
+                <div class="slot regular" id="S3" data-category="Regular"
+                     style="left: 226px; top: 35px; 
+                            width: 13px; height: 23px;">
+                    <span class="slot-label">S3<br>P243</span>
+                </div>
+        
+                <div class="slot regular" id="S4" data-category="Regular"
+                     style="left: 238px; top: 37px; 
+                            width: 16px; height: 25px;">
+                    <span class="slot-label">S4<br>P242</span>
+                </div>
+        
+                <div class="slot regular" id="S5" data-category="Regular"
+                     style="left: 252px; top: 40px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S5<br>P241</span>
+                </div>
+        
+                <div class="slot regular" id="S6" data-category="Regular"
+                     style="left: 267px; top: 43px; 
+                            width: 16px; height: 27px;">
+                    <span class="slot-label">S6<br>P240</span>
+                </div>
+        
+                <div class="slot regular" id="S7" data-category="Regular"
+                     style="left: 282px; top: 47px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S7<br>P239</span>
+                </div>
+        
+                <div class="slot regular" id="S8" data-category="Regular"
+                     style="left: 297px; top: 51px; 
+                            width: 14px; height: 27px;">
+                    <span class="slot-label">S8<br>P238</span>
+                </div>
+        
+                <div class="slot regular" id="S9" data-category="Regular"
+                     style="left: 311px; top: 54px; 
+                            width: 14px; height: 27px;">
+                    <span class="slot-label">S9<br>P237</span>
+                </div>
+        
+                <div class="slot regular" id="S10" data-category="Regular"
+                     style="left: 191px; top: 55px; 
+                            width: 11px; height: 25px;">
+                    <span class="slot-label">S10<br>P236</span>
+                </div>
+        
+                <div class="slot regular" id="S11" data-category="Regular"
+                     style="left: 203px; top: 58px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S11<br>P235</span>
+                </div>
+        
+                <div class="slot regular" id="S12" data-category="Regular"
+                     style="left: 325px; top: 58px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S12<br>P234</span>
+                </div>
+        
+                <div class="slot regular" id="S13" data-category="Regular"
+                     style="left: 217px; top: 61px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S13<br>P233</span>
+                </div>
+        
+                <div class="slot regular" id="S14" data-category="Regular"
+                     style="left: 336px; top: 61px; 
+                            width: 18px; height: 27px;">
+                    <span class="slot-label">S14<br>P232</span>
+                </div>
+        
+                <div class="slot regular" id="S15" data-category="Regular"
+                     style="left: 231px; top: 65px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S15<br>P231</span>
+                </div>
+        
+                <div class="slot regular" id="S16" data-category="Regular"
+                     style="left: 352px; top: 65px; 
+                            width: 18px; height: 27px;">
+                    <span class="slot-label">S16<br>P230</span>
+                </div>
+        
+                <div class="slot regular" id="S17" data-category="Regular"
+                     style="left: 245px; top: 68px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S17<br>P229</span>
+                </div>
+        
+                <div class="slot regular" id="S18" data-category="Regular"
+                     style="left: 89px; top: 71px; 
+                            width: 32px; height: 12px;">
+                    <span class="slot-label">S18<br>P228</span>
+                </div>
+        
+                <div class="slot regular" id="S19" data-category="Regular"
+                     style="left: 261px; top: 72px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S19<br>P227</span>
+                </div>
+        
+                <div class="slot regular" id="S20" data-category="Regular"
+                     style="left: 275px; top: 76px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S20<br>P226</span>
+                </div>
+        
+                <div class="slot regular" id="S21" data-category="Regular"
+                     style="left: 290px; top: 79px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S21<br>P225</span>
+                </div>
+        
+                <div class="slot regular" id="S22" data-category="Regular"
+                     style="left: 303px; top: 83px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S22<br>P224</span>
+                </div>
+        
+                <div class="slot regular" id="S23" data-category="Regular"
+                     style="left: 87px; top: 84px; 
+                            width: 31px; height: 14px;">
+                    <span class="slot-label">S23<br>P223</span>
+                </div>
+        
+                <div class="slot regular" id="S24" data-category="Regular"
+                     style="left: 317px; top: 87px; 
+                            width: 13px; height: 22px;">
+                    <span class="slot-label">S24<br>P222</span>
+                </div>
+        
+                <div class="slot regular" id="S25" data-category="Regular"
+                     style="left: 329px; top: 90px; 
+                            width: 17px; height: 24px;">
+                    <span class="slot-label">S25<br>P221</span>
+                </div>
+        
+                <div class="slot regular" id="S26" data-category="Regular"
+                     style="left: 346px; top: 93px; 
+                            width: 15px; height: 24px;">
+                    <span class="slot-label">S26<br>P220</span>
+                </div>
+        
+                <div class="slot regular" id="S27" data-category="Regular"
+                     style="left: 85px; top: 100px; 
+                            width: 31px; height: 13px;">
+                    <span class="slot-label">S27<br>P219</span>
+                </div>
+        
+                <div class="slot regular" id="S28" data-category="Regular"
+                     style="left: 84px; top: 114px; 
+                            width: 29px; height: 11px;">
+                    <span class="slot-label">S28<br>P218</span>
+                </div>
+        
+                <div class="slot regular" id="S29" data-category="Regular"
+                     style="left: 171px; top: 115px; 
+                            width: 15px; height: 20px;">
+                    <span class="slot-label">S29<br>P217</span>
+                </div>
+        
+                <div class="slot regular" id="S30" data-category="Regular"
+                     style="left: 187px; top: 118px; 
+                            width: 15px; height: 22px;">
+                    <span class="slot-label">S30<br>P216</span>
+                </div>
+        
+                <div class="slot regular" id="S31" data-category="Regular"
+                     style="left: 204px; top: 123px; 
+                            width: 12px; height: 21px;">
+                    <span class="slot-label">S31<br>P215</span>
+                </div>
+        
+                <div class="slot regular" id="S32" data-category="Regular"
+                     style="left: 216px; top: 125px; 
+                            width: 16px; height: 23px;">
+                    <span class="slot-label">S32<br>P214</span>
+                </div>
+        
+                <div class="slot regular" id="S33" data-category="Regular"
+                     style="left: 82px; top: 126px; 
+                            width: 30px; height: 13px;">
+                    <span class="slot-label">S33<br>P213</span>
+                </div>
+        
+                <div class="slot regular" id="S34" data-category="Regular"
+                     style="left: 232px; top: 129px; 
+                            width: 13px; height: 23px;">
+                    <span class="slot-label">S34<br>P212</span>
+                </div>
+        
+                <div class="slot regular" id="S35" data-category="Regular"
+                     style="left: 244px; top: 133px; 
+                            width: 15px; height: 22px;">
+                    <span class="slot-label">S35<br>P211</span>
+                </div>
+        
+                <div class="slot regular" id="S36" data-category="Regular"
+                     style="left: 259px; top: 136px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S36<br>P210</span>
+                </div>
+        
+                <div class="slot regular" id="S37" data-category="Regular"
+                     style="left: 161px; top: 139px; 
+                            width: 19px; height: 29px;">
+                    <span class="slot-label">S37<br>P209</span>
+                </div>
+        
+                <div class="slot regular" id="S38" data-category="Regular"
+                     style="left: 80px; top: 140px; 
+                            width: 29px; height: 14px;">
+                    <span class="slot-label">S38<br>P208</span>
+                </div>
+        
+                <div class="slot regular" id="S39" data-category="Regular"
+                     style="left: 273px; top: 140px; 
+                            width: 15px; height: 23px;">
+                    <span class="slot-label">S39<br>P207</span>
+                </div>
+        
+                <div class="slot regular" id="S40" data-category="Regular"
+                     style="left: 177px; top: 143px; 
+                            width: 20px; height: 30px;">
+                    <span class="slot-label">S40<br>P206</span>
+                </div>
+        
+                <div class="slot regular" id="S41" data-category="Regular"
+                     style="left: 287px; top: 143px; 
+                            width: 15px; height: 24px;">
+                    <span class="slot-label">S41<br>P205</span>
+                </div>
+        
+                <div class="slot regular" id="S42" data-category="Regular"
+                     style="left: 196px; top: 147px; 
+                            width: 15px; height: 29px;">
+                    <span class="slot-label">S42<br>P204</span>
+                </div>
+        
+                <div class="slot regular" id="S43" data-category="Regular"
+                     style="left: 302px; top: 148px; 
+                            width: 14px; height: 22px;">
+                    <span class="slot-label">S43<br>P203</span>
+                </div>
+        
+                <div class="slot regular" id="S44" data-category="Regular"
+                     style="left: 210px; top: 150px; 
+                            width: 15px; height: 29px;">
+                    <span class="slot-label">S44<br>P202</span>
+                </div>
+        
+                <div class="slot regular" id="S45" data-category="Regular"
+                     style="left: 316px; top: 151px; 
+                            width: 12px; height: 22px;">
+                    <span class="slot-label">S45<br>P201</span>
+                </div>
+        
+                <div class="slot regular" id="S46" data-category="Regular"
+                     style="left: 224px; top: 154px; 
+                            width: 15px; height: 28px;">
+                    <span class="slot-label">S46<br>P200</span>
+                </div>
+        
+                <div class="slot regular" id="S47" data-category="Regular"
+                     style="left: 329px; top: 154px; 
+                            width: 11px; height: 23px;">
+                    <span class="slot-label">S47<br>P199</span>
+                </div>
+        
+                <div class="slot regular" id="S48" data-category="Regular"
+                     style="left: 79px; top: 155px; 
+                            width: 27px; height: 14px;">
+                    <span class="slot-label">S48<br>P198</span>
+                </div>
+        
+                <div class="slot regular" id="S49" data-category="Regular"
+                     style="left: 237px; top: 157px; 
+                            width: 16px; height: 30px;">
+                    <span class="slot-label">S49<br>P197</span>
+                </div>
+        
+                <div class="slot regular" id="S50" data-category="Regular"
+                     style="left: 252px; top: 162px; 
+                            width: 15px; height: 28px;">
+                    <span class="slot-label">S50<br>P196</span>
+                </div>
+        
+                <div class="slot regular" id="S51" data-category="Regular"
+                     style="left: 264px; top: 165px; 
+                            width: 17px; height: 28px;">
+                    <span class="slot-label">S51<br>P195</span>
+                </div>
+        
+                <div class="slot regular" id="S52" data-category="Regular"
+                     style="left: 279px; top: 169px; 
+                            width: 16px; height: 27px;">
+                    <span class="slot-label">S52<br>P194</span>
+                </div>
+        
+                <div class="slot regular" id="S53" data-category="Regular"
+                     style="left: 77px; top: 170px; 
+                            width: 27px; height: 13px;">
+                    <span class="slot-label">S53<br>P193</span>
+                </div>
+        
+                <div class="slot regular" id="S54" data-category="Regular"
+                     style="left: 294px; top: 173px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S54<br>P192</span>
+                </div>
+        
+                <div class="slot regular" id="S55" data-category="Regular"
+                     style="left: 309px; top: 176px; 
+                            width: 13px; height: 27px;">
+                    <span class="slot-label">S55<br>P191</span>
+                </div>
+        
+                <div class="slot regular" id="S56" data-category="Regular"
+                     style="left: 320px; top: 179px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S56<br>P190</span>
+                </div>
+        
+                <div class="slot regular" id="S57" data-category="Regular"
+                     style="left: 75px; top: 186px; 
+                            width: 26px; height: 11px;">
+                    <span class="slot-label">S57<br>P189</span>
+                </div>
+        
+                <div class="slot regular" id="S58" data-category="Regular"
+                     style="left: 73px; top: 200px; 
+                            width: 26px; height: 11px;">
+                    <span class="slot-label">S58<br>P188</span>
+                </div>
+        
+                <div class="slot regular" id="S59" data-category="Regular"
+                     style="left: 150px; top: 205px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S59<br>P187</span>
+                </div>
+        
+                <div class="slot regular" id="S60" data-category="Regular"
+                     style="left: 164px; top: 208px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S60<br>P186</span>
+                </div>
+        
+                <div class="slot regular" id="S61" data-category="Regular"
+                     style="left: 178px; top: 212px; 
+                            width: 16px; height: 24px;">
+                    <span class="slot-label">S61<br>P185</span>
+                </div>
+        
+                <div class="slot regular" id="S62" data-category="Regular"
+                     style="left: 71px; top: 213px; 
+                            width: 26px; height: 12px;">
+                    <span class="slot-label">S62<br>P184</span>
+                </div>
+        
+                <div class="slot regular" id="S63" data-category="Regular"
+                     style="left: 193px; top: 215px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S63<br>P183</span>
+                </div>
+        
+                <div class="slot regular" id="S64" data-category="Regular"
+                     style="left: 207px; top: 218px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S64<br>P182</span>
+                </div>
+        
+                <div class="slot regular" id="S65" data-category="Regular"
+                     style="left: 221px; top: 222px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S65<br>P181</span>
+                </div>
+        
+                <div class="slot regular" id="S66" data-category="Regular"
+                     style="left: 234px; top: 224px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S66<br>P180</span>
+                </div>
+        
+                <div class="slot regular" id="S67" data-category="Regular"
+                     style="left: 69px; top: 227px; 
+                            width: 26px; height: 14px;">
+                    <span class="slot-label">S67<br>P179</span>
+                </div>
+        
+                <div class="slot regular" id="S68" data-category="Regular"
+                     style="left: 248px; top: 228px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S68<br>P178</span>
+                </div>
+        
+                <div class="slot regular" id="S69" data-category="Regular"
+                     style="left: 263px; top: 232px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S69<br>P177</span>
+                </div>
+        
+                <div class="slot regular" id="S70" data-category="Regular"
+                     style="left: 143px; top: 233px; 
+                            width: 13px; height: 22px;">
+                    <span class="slot-label">S70<br>P176</span>
+                </div>
+        
+                <div class="slot regular" id="S71" data-category="Regular"
+                     style="left: 277px; top: 235px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S71<br>P175</span>
+                </div>
+        
+                <div class="slot regular" id="S72" data-category="Regular"
+                     style="left: 157px; top: 236px; 
+                            width: 15px; height: 22px;">
+                    <span class="slot-label">S72<br>P174</span>
+                </div>
+        
+                <div class="slot regular" id="S73" data-category="Regular"
+                     style="left: 290px; top: 239px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S73<br>P173</span>
+                </div>
+        
+                <div class="slot regular" id="S74" data-category="Regular"
+                     style="left: 172px; top: 240px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S74<br>P172</span>
+                </div>
+        
+                <div class="slot regular" id="S75" data-category="Regular"
+                     style="left: 68px; top: 242px; 
+                            width: 23px; height: 13px;">
+                    <span class="slot-label">S75<br>P171</span>
+                </div>
+        
+                <div class="slot regular" id="S76" data-category="Regular"
+                     style="left: 187px; top: 242px; 
+                            width: 12px; height: 24px;">
+                    <span class="slot-label">S76<br>P170</span>
+                </div>
+        
+                <div class="slot regular" id="S77" data-category="Regular"
+                     style="left: 305px; top: 243px; 
+                            width: 16px; height: 24px;">
+                    <span class="slot-label">S77<br>P169</span>
+                </div>
+        
+                <div class="slot regular" id="S78" data-category="Regular"
+                     style="left: 200px; top: 247px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S78<br>P168</span>
+                </div>
+        
+                <div class="slot regular" id="S79" data-category="Regular"
+                     style="left: 214px; top: 249px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S79<br>P167</span>
+                </div>
+        
+                <div class="slot regular" id="S80" data-category="Regular"
+                     style="left: 228px; top: 252px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S80<br>P166</span>
+                </div>
+        
+                <div class="slot regular" id="S81" data-category="Regular"
+                     style="left: 242px; top: 256px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S81<br>P165</span>
+                </div>
+        
+                <div class="slot regular" id="S82" data-category="Regular"
+                     style="left: 66px; top: 257px; 
+                            width: 24px; height: 14px;">
+                    <span class="slot-label">S82<br>P164</span>
+                </div>
+        
+                <div class="slot regular" id="S83" data-category="Regular"
+                     style="left: 257px; top: 259px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S83<br>P163</span>
+                </div>
+        
+                <div class="slot regular" id="S84" data-category="Regular"
+                     style="left: 270px; top: 263px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S84<br>P162</span>
+                </div>
+        
+                <div class="slot regular" id="S85" data-category="Regular"
+                     style="left: 283px; top: 266px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S85<br>P161</span>
+                </div>
+        
+                <div class="slot regular" id="S86" data-category="Regular"
+                     style="left: 298px; top: 270px; 
+                            width: 16px; height: 25px;">
+                    <span class="slot-label">S86<br>P160</span>
+                </div>
+        
+                <div class="slot regular" id="S87" data-category="Regular"
+                     style="left: 65px; top: 273px; 
+                            width: 23px; height: 11px;">
+                    <span class="slot-label">S87<br>P159</span>
+                </div>
+        
+                <div class="slot regular" id="S88" data-category="Regular"
+                     style="left: 63px; top: 285px; 
+                            width: 22px; height: 14px;">
+                    <span class="slot-label">S88<br>P158</span>
+                </div>
+        
+                <div class="slot regular" id="S89" data-category="Regular"
+                     style="left: 154px; top: 298px; 
+                            width: 16px; height: 23px;">
+                    <span class="slot-label">S89<br>P157</span>
+                </div>
+        
+                <div class="slot regular" id="S90" data-category="Regular"
+                     style="left: 171px; top: 301px; 
+                            width: 12px; height: 24px;">
+                    <span class="slot-label">S90<br>P156</span>
+                </div>
+        
+                <div class="slot regular" id="S91" data-category="Regular"
+                     style="left: 61px; top: 302px; 
+                            width: 22px; height: 11px;">
+                    <span class="slot-label">S91<br>P155</span>
+                </div>
+        
+                <div class="slot regular" id="S92" data-category="Regular"
+                     style="left: 184px; top: 304px; 
+                            width: 12px; height: 24px;">
+                    <span class="slot-label">S92<br>P154</span>
+                </div>
+        
+                <div class="slot regular" id="S93" data-category="Regular"
+                     style="left: 197px; top: 308px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S93<br>P153</span>
+                </div>
+        
+                <div class="slot regular" id="S94" data-category="Regular"
+                     style="left: 212px; top: 311px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S94<br>P152</span>
+                </div>
+        
+                <div class="slot regular" id="S95" data-category="Regular"
+                     style="left: 226px; top: 315px; 
+                            width: 13px; height: 24px;">
+                    <span class="slot-label">S95<br>P151</span>
+                </div>
+        
+                <div class="slot regular" id="S96" data-category="Regular"
+                     style="left: 238px; top: 318px; 
+                            width: 16px; height: 24px;">
+                    <span class="slot-label">S96<br>P150</span>
+                </div>
+        
+                <div class="slot regular" id="S97" data-category="Regular"
+                     style="left: 254px; top: 322px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S97<br>P149</span>
+                </div>
+        
+                <div class="slot entry" id="S98" data-category="Entry"
+                     style="left: 23px; top: 323px; 
+                            width: 90px; height: 68px;">
+                    <span class="slot-label">S98<br>E2</span>
+                </div>
+        
+                <div class="slot regular" id="S99" data-category="Regular"
+                     style="left: 147px; top: 324px; 
+                            width: 17px; height: 23px;">
+                    <span class="slot-label">S99<br>P148</span>
+                </div>
+        
+                <div class="slot regular" id="S100" data-category="Regular"
+                     style="left: 269px; top: 325px; 
+                            width: 13px; height: 23px;">
+                    <span class="slot-label">S100<br>P147</span>
+                </div>
+        
+                <div class="slot regular" id="S101" data-category="Regular"
+                     style="left: 282px; top: 328px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S101<br>P146</span>
+                </div>
+        
+                <div class="slot entry" id="S102" data-category="Entry"
+                     style="left: 28px; top: 329px; 
+                            width: 80px; height: 58px;">
+                    <span class="slot-label">S102<br>E1</span>
+                </div>
+        
+                <div class="slot regular" id="S103" data-category="Regular"
+                     style="left: 164px; top: 329px; 
+                            width: 12px; height: 20px;">
+                    <span class="slot-label">S103<br>P145</span>
+                </div>
+        
+                <div class="slot regular" id="S104" data-category="Regular"
+                     style="left: 177px; top: 332px; 
+                            width: 14px; height: 21px;">
+                    <span class="slot-label">S104<br>P144</span>
+                </div>
+        
+                <div class="slot regular" id="S105" data-category="Regular"
+                     style="left: 191px; top: 334px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S105<br>P143</span>
+                </div>
+        
+                <div class="slot regular" id="S106" data-category="Regular"
+                     style="left: 205px; top: 338px; 
+                            width: 15px; height: 22px;">
+                    <span class="slot-label">S106<br>P142</span>
+                </div>
+        
+                <div class="slot regular" id="S107" data-category="Regular"
+                     style="left: 220px; top: 341px; 
+                            width: 12px; height: 22px;">
+                    <span class="slot-label">S107<br>P141</span>
+                </div>
+        
+                <div class="slot regular" id="S108" data-category="Regular"
+                     style="left: 231px; top: 344px; 
+                            width: 16px; height: 23px;">
+                    <span class="slot-label">S108<br>P140</span>
+                </div>
+        
+                <div class="slot regular" id="S109" data-category="Regular"
+                     style="left: 247px; top: 347px; 
+                            width: 15px; height: 23px;">
+                    <span class="slot-label">S109<br>P139</span>
+                </div>
+        
+                <div class="slot regular" id="S110" data-category="Regular"
+                     style="left: 262px; top: 352px; 
+                            width: 13px; height: 21px;">
+                    <span class="slot-label">S110<br>P138</span>
+                </div>
+        
+                <div class="slot regular" id="S111" data-category="Regular"
+                     style="left: 275px; top: 355px; 
+                            width: 16px; height: 21px;">
+                    <span class="slot-label">S111<br>P137</span>
+                </div>
+        
+                <div class="slot accessible" id="S112" data-category="Accessible"
+                     style="left: 322px; top: 362px; 
+                            width: 118px; height: 59px;">
+                    <span class="slot-label">S112<br>A5</span>
+                </div>
+        
+                <div class="slot accessible" id="S113" data-category="Accessible"
+                     style="left: 328px; top: 366px; 
+                            width: 27px; height: 29px;">
+                    <span class="slot-label">S113<br>A4</span>
+                </div>
+        
+                <div class="slot accessible" id="S114" data-category="Accessible"
+                     style="left: 351px; top: 371px; 
+                            width: 26px; height: 30px;">
+                    <span class="slot-label">S114<br>A3</span>
+                </div>
+        
+                <div class="slot accessible" id="S115" data-category="Accessible"
+                     style="left: 373px; top: 377px; 
+                            width: 26px; height: 30px;">
+                    <span class="slot-label">S115<br>A2</span>
+                </div>
+        
+                <div class="slot regular" id="S116" data-category="Regular"
+                     style="left: 115px; top: 383px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S116<br>P136</span>
+                </div>
+        
+                <div class="slot accessible" id="S117" data-category="Accessible"
+                     style="left: 398px; top: 383px; 
+                            width: 29px; height: 31px;">
+                    <span class="slot-label">S117<br>A1</span>
+                </div>
+        
+                <div class="slot regular" id="S118" data-category="Regular"
+                     style="left: 129px; top: 387px; 
+                            width: 14px; height: 23px;">
+                    <span class="slot-label">S118<br>P135</span>
+                </div>
+        
+                <div class="slot regular" id="S119" data-category="Regular"
+                     style="left: 23px; top: 389px; 
+                            width: 57px; height: 165px;">
+                    <span class="slot-label">S119<br>P134</span>
+                </div>
+        
+                <div class="slot regular" id="S120" data-category="Regular"
+                     style="left: 143px; top: 390px; 
+                            width: 15px; height: 23px;">
+                    <span class="slot-label">S120<br>P133</span>
+                </div>
+        
+                <div class="slot regular" id="S121" data-category="Regular"
+                     style="left: 158px; top: 393px; 
+                            width: 12px; height: 24px;">
+                    <span class="slot-label">S121<br>P132</span>
+                </div>
+        
+                <div class="slot regular" id="S122" data-category="Regular"
+                     style="left: 172px; top: 396px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S122<br>P131</span>
+                </div>
+        
+                <div class="slot regular" id="S123" data-category="Regular"
+                     style="left: 50px; top: 397px; 
+                            width: 20px; height: 13px;">
+                    <span class="slot-label">S123<br>P130</span>
+                </div>
+        
+                <div class="slot regular" id="S124" data-category="Regular"
+                     style="left: 187px; top: 400px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S124<br>P129</span>
+                </div>
+        
+                <div class="slot regular" id="S125" data-category="Regular"
+                     style="left: 200px; top: 403px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S125<br>P128</span>
+                </div>
+        
+                <div class="slot regular" id="S126" data-category="Regular"
+                     style="left: 215px; top: 406px; 
+                            width: 13px; height: 26px;">
+                    <span class="slot-label">S126<br>P127</span>
+                </div>
+        
+                <div class="slot regular" id="S127" data-category="Regular"
+                     style="left: 228px; top: 409px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S127<br>P126</span>
+                </div>
+        
+                <div class="slot regular" id="S128" data-category="Regular"
+                     style="left: 48px; top: 411px; 
+                            width: 21px; height: 10px;">
+                    <span class="slot-label">S128<br>P125</span>
+                </div>
+        
+                <div class="slot regular" id="S129" data-category="Regular"
+                     style="left: 108px; top: 411px; 
+                            width: 15px; height: 22px;">
+                    <span class="slot-label">S129<br>P124</span>
+                </div>
+        
+                <div class="slot regular" id="S130" data-category="Regular"
+                     style="left: 123px; top: 413px; 
+                            width: 13px; height: 24px;">
+                    <span class="slot-label">S130<br>P123</span>
+                </div>
+        
+                <div class="slot regular" id="S131" data-category="Regular"
+                     style="left: 242px; top: 413px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S131<br>P122</span>
+                </div>
+        
+                <div class="slot regular" id="S132" data-category="Regular"
+                     style="left: 256px; top: 416px; 
+                            width: 16px; height: 27px;">
+                    <span class="slot-label">S132<br>P121</span>
+                </div>
+        
+                <div class="slot regular" id="S133" data-category="Regular"
+                     style="left: 137px; top: 418px; 
+                            width: 13px; height: 22px;">
+                    <span class="slot-label">S133<br>P120</span>
+                </div>
+        
+                <div class="slot regular" id="S134" data-category="Regular"
+                     style="left: 271px; top: 420px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S134<br>P119</span>
+                </div>
+        
+                <div class="slot regular" id="S135" data-category="Regular"
+                     style="left: 152px; top: 421px; 
+                            width: 13px; height: 22px;">
+                    <span class="slot-label">S135<br>P118</span>
+                </div>
+        
+                <div class="slot regular" id="S136" data-category="Regular"
+                     style="left: 285px; top: 422px; 
+                            width: 14px; height: 29px;">
+                    <span class="slot-label">S136<br>P117</span>
+                </div>
+        
+                <div class="slot regular" id="S137" data-category="Regular"
+                     style="left: 46px; top: 423px; 
+                            width: 20px; height: 13px;">
+                    <span class="slot-label">S137<br>P116</span>
+                </div>
+        
+                <div class="slot regular" id="S138" data-category="Regular"
+                     style="left: 166px; top: 425px; 
+                            width: 13px; height: 23px;">
+                    <span class="slot-label">S138<br>P115</span>
+                </div>
+        
+                <div class="slot regular" id="S139" data-category="Regular"
+                     style="left: 299px; top: 426px; 
+                            width: 12px; height: 28px;">
+                    <span class="slot-label">S139<br>P114</span>
+                </div>
+        
+                <div class="slot regular" id="S140" data-category="Regular"
+                     style="left: 179px; top: 429px; 
+                            width: 14px; height: 22px;">
+                    <span class="slot-label">S140<br>P113</span>
+                </div>
+        
+                <div class="slot regular" id="S141" data-category="Regular"
+                     style="left: 193px; top: 431px; 
+                            width: 15px; height: 23px;">
+                    <span class="slot-label">S141<br>P112</span>
+                </div>
+        
+                <div class="slot regular" id="S142" data-category="Regular"
+                     style="left: 208px; top: 436px; 
+                            width: 13px; height: 22px;">
+                    <span class="slot-label">S142<br>P111</span>
+                </div>
+        
+                <div class="slot regular" id="S143" data-category="Regular"
+                     style="left: 43px; top: 439px; 
+                            width: 22px; height: 10px;">
+                    <span class="slot-label">S143<br>P110</span>
+                </div>
+        
+                <div class="slot regular" id="S144" data-category="Regular"
+                     style="left: 222px; top: 440px; 
+                            width: 13px; height: 21px;">
+                    <span class="slot-label">S144<br>P109</span>
+                </div>
+        
+                <div class="slot regular" id="S145" data-category="Regular"
+                     style="left: 348px; top: 441px; 
+                            width: 14px; height: 21px;">
+                    <span class="slot-label">S145<br>P108</span>
+                </div>
+        
+                <div class="slot regular" id="S146" data-category="Regular"
+                     style="left: 235px; top: 443px; 
+                            width: 12px; height: 22px;">
+                    <span class="slot-label">S146<br>P107</span>
+                </div>
+        
+                <div class="slot regular" id="S147" data-category="Regular"
+                     style="left: 363px; top: 445px; 
+                            width: 12px; height: 21px;">
+                    <span class="slot-label">S147<br>P106</span>
+                </div>
+        
+                <div class="slot regular" id="S148" data-category="Regular"
+                     style="left: 248px; top: 446px; 
+                            width: 16px; height: 22px;">
+                    <span class="slot-label">S148<br>P105</span>
+                </div>
+        
+                <div class="slot regular" id="S149" data-category="Regular"
+                     style="left: 377px; top: 448px; 
+                            width: 14px; height: 21px;">
+                    <span class="slot-label">S149<br>P104</span>
+                </div>
+        
+                <div class="slot regular" id="S150" data-category="Regular"
+                     style="left: 266px; top: 451px; 
+                            width: 12px; height: 21px;">
+                    <span class="slot-label">S150<br>P103</span>
+                </div>
+        
+                <div class="slot regular" id="S151" data-category="Regular"
+                     style="left: 41px; top: 452px; 
+                            width: 21px; height: 13px;">
+                    <span class="slot-label">S151<br>P102</span>
+                </div>
+        
+                <div class="slot regular" id="S152" data-category="Regular"
+                     style="left: 393px; top: 452px; 
+                            width: 12px; height: 21px;">
+                    <span class="slot-label">S152<br>P101</span>
+                </div>
+        
+                <div class="slot regular" id="S153" data-category="Regular"
+                     style="left: 281px; top: 455px; 
+                            width: 12px; height: 20px;">
+                    <span class="slot-label">S153<br>P100</span>
+                </div>
+        
+                <div class="slot regular" id="S154" data-category="Regular"
+                     style="left: 407px; top: 456px; 
+                            width: 12px; height: 20px;">
+                    <span class="slot-label">S154<br>P99</span>
+                </div>
+        
+                <div class="slot regular" id="S155" data-category="Regular"
+                     style="left: 421px; top: 459px; 
+                            width: 16px; height: 21px;">
+                    <span class="slot-label">S155<br>P98</span>
+                </div>
+        
+                <div class="slot regular" id="S156" data-category="Regular"
+                     style="left: 437px; top: 463px; 
+                            width: 15px; height: 20px;">
+                    <span class="slot-label">S156<br>P97</span>
+                </div>
+        
+                <div class="slot regular" id="S157" data-category="Regular"
+                     style="left: 39px; top: 465px; 
+                            width: 21px; height: 14px;">
+                    <span class="slot-label">S157<br>P96</span>
+                </div>
+        
+                <div class="slot regular" id="S158" data-category="Regular"
+                     style="left: 103px; top: 466px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S158<br>P95</span>
+                </div>
+        
+                <div class="slot regular" id="S159" data-category="Regular"
+                     style="left: 341px; top: 466px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S159<br>P94</span>
+                </div>
+        
+                <div class="slot regular" id="S160" data-category="Regular"
+                     style="left: 117px; top: 470px; 
+                            width: 19px; height: 25px;">
+                    <span class="slot-label">S160<br>P93</span>
+                </div>
+        
+                <div class="slot regular" id="S161" data-category="Regular"
+                     style="left: 357px; top: 470px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S161<br>P92</span>
+                </div>
+        
+                <div class="slot regular" id="S162" data-category="Regular"
+                     style="left: 371px; top: 473px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S162<br>P91</span>
+                </div>
+        
+                <div class="slot regular" id="S163" data-category="Regular"
+                     style="left: 135px; top: 474px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S163<br>P90</span>
+                </div>
+        
+                <div class="slot regular" id="S164" data-category="Regular"
+                     style="left: 387px; top: 476px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S164<br>P89</span>
+                </div>
+        
+                <div class="slot regular" id="S165" data-category="Regular"
+                     style="left: 148px; top: 478px; 
+                            width: 15px; height: 24px;">
+                    <span class="slot-label">S165<br>P88</span>
+                </div>
+        
+                <div class="slot regular" id="S166" data-category="Regular"
+                     style="left: 400px; top: 479px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S166<br>P87</span>
+                </div>
+        
+                <div class="slot regular" id="S167" data-category="Regular"
+                     style="left: 36px; top: 481px; 
+                            width: 22px; height: 11px;">
+                    <span class="slot-label">S167<br>P86</span>
+                </div>
+        
+                <div class="slot regular" id="S168" data-category="Regular"
+                     style="left: 162px; top: 482px; 
+                            width: 15px; height: 24px;">
+                    <span class="slot-label">S168<br>P85</span>
+                </div>
+        
+                <div class="slot regular" id="S169" data-category="Regular"
+                     style="left: 415px; top: 482px; 
+                            width: 17px; height: 25px;">
+                    <span class="slot-label">S169<br>P84</span>
+                </div>
+        
+                <div class="slot regular" id="S170" data-category="Regular"
+                     style="left: 175px; top: 485px; 
+                            width: 15px; height: 24px;">
+                    <span class="slot-label">S170<br>P83</span>
+                </div>
+        
+                <div class="slot regular" id="S171" data-category="Regular"
+                     style="left: 430px; top: 485px; 
+                            width: 17px; height: 27px;">
+                    <span class="slot-label">S171<br>P82</span>
+                </div>
+        
+                <div class="slot regular" id="S172" data-category="Regular"
+                     style="left: 190px; top: 488px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S172<br>P81</span>
+                </div>
+        
+                <div class="slot regular" id="S173" data-category="Regular"
+                     style="left: 205px; top: 492px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S173<br>P80</span>
+                </div>
+        
+                <div class="slot regular" id="S174" data-category="Regular"
+                     style="left: 34px; top: 493px; 
+                            width: 22px; height: 12px;">
+                    <span class="slot-label">S174<br>P79</span>
+                </div>
+        
+                <div class="slot regular" id="S175" data-category="Regular"
+                     style="left: 97px; top: 493px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S175<br>P78</span>
+                </div>
+        
+                <div class="slot regular" id="S176" data-category="Regular"
+                     style="left: 218px; top: 495px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S176<br>P77</span>
+                </div>
+        
+                <div class="slot regular" id="S177" data-category="Regular"
+                     style="left: 111px; top: 497px; 
+                            width: 18px; height: 25px;">
+                    <span class="slot-label">S177<br>P76</span>
+                </div>
+        
+                <div class="slot regular" id="S178" data-category="Regular"
+                     style="left: 230px; top: 499px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S178<br>P75</span>
+                </div>
+        
+                <div class="slot regular" id="S179" data-category="Regular"
+                     style="left: 128px; top: 501px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S179<br>P74</span>
+                </div>
+        
+                <div class="slot regular" id="S180" data-category="Regular"
+                     style="left: 244px; top: 502px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S180<br>P73</span>
+                </div>
+        
+                <div class="slot regular" id="S181" data-category="Regular"
+                     style="left: 139px; top: 505px; 
+                            width: 17px; height: 25px;">
+                    <span class="slot-label">S181<br>P72</span>
+                </div>
+        
+                <div class="slot regular" id="S182" data-category="Regular"
+                     style="left: 257px; top: 506px; 
+                            width: 17px; height: 25px;">
+                    <span class="slot-label">S182<br>P71</span>
+                </div>
+        
+                <div class="slot regular" id="S183" data-category="Regular"
+                     style="left: 31px; top: 507px; 
+                            width: 23px; height: 15px;">
+                    <span class="slot-label">S183<br>P70</span>
+                </div>
+        
+                <div class="slot regular" id="S184" data-category="Regular"
+                     style="left: 155px; top: 508px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S184<br>P69</span>
+                </div>
+        
+                <div class="slot regular" id="S185" data-category="Regular"
+                     style="left: 273px; top: 509px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S185<br>P68</span>
+                </div>
+        
+                <div class="slot regular" id="S186" data-category="Regular"
+                     style="left: 169px; top: 511px; 
+                            width: 15px; height: 28px;">
+                    <span class="slot-label">S186<br>P67</span>
+                </div>
+        
+                <div class="slot regular" id="S187" data-category="Regular"
+                     style="left: 286px; top: 513px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S187<br>P66</span>
+                </div>
+        
+                <div class="slot regular" id="S188" data-category="Regular"
+                     style="left: 184px; top: 516px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S188<br>P65</span>
+                </div>
+        
+                <div class="slot regular" id="S189" data-category="Regular"
+                     style="left: 300px; top: 517px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S189<br>P64</span>
+                </div>
+        
+                <div class="slot regular" id="S190" data-category="Regular"
+                     style="left: 199px; top: 519px; 
+                            width: 13px; height: 26px;">
+                    <span class="slot-label">S190<br>P63</span>
+                </div>
+        
+                <div class="slot regular" id="S191" data-category="Regular"
+                     style="left: 314px; top: 520px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S191<br>P62</span>
+                </div>
+        
+                <div class="slot regular" id="S192" data-category="Regular"
+                     style="left: 211px; top: 523px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S192<br>P61</span>
+                </div>
+        
+                <div class="slot regular" id="S193" data-category="Regular"
+                     style="left: 329px; top: 524px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S193<br>P60</span>
+                </div>
+        
+                <div class="slot regular" id="S194" data-category="Regular"
+                     style="left: 223px; top: 526px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S194<br>P59</span>
+                </div>
+        
+                <div class="slot regular" id="S195" data-category="Regular"
+                     style="left: 343px; top: 527px; 
+                            width: 17px; height: 27px;">
+                    <span class="slot-label">S195<br>P58</span>
+                </div>
+        
+                <div class="slot regular" id="S196" data-category="Regular"
+                     style="left: 237px; top: 530px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S196<br>P57</span>
+                </div>
+        
+                <div class="slot regular" id="S197" data-category="Regular"
+                     style="left: 360px; top: 532px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S197<br>P56</span>
+                </div>
+        
+                <div class="slot regular" id="S198" data-category="Regular"
+                     style="left: 250px; top: 533px; 
+                            width: 17px; height: 27px;">
+                    <span class="slot-label">S198<br>P55</span>
+                </div>
+        
+                <div class="slot regular" id="S199" data-category="Regular"
+                     style="left: 373px; top: 535px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S199<br>P54</span>
+                </div>
+        
+                <div class="slot regular" id="S200" data-category="Regular"
+                     style="left: 267px; top: 537px; 
+                            width: 13px; height: 26px;">
+                    <span class="slot-label">S200<br>P53</span>
+                </div>
+        
+                <div class="slot regular" id="S201" data-category="Regular"
+                     style="left: 386px; top: 539px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S201<br>P52</span>
+                </div>
+        
+                <div class="slot regular" id="S202" data-category="Regular"
+                     style="left: 279px; top: 541px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S202<br>P51</span>
+                </div>
+        
+                <div class="slot regular" id="S203" data-category="Regular"
+                     style="left: 401px; top: 542px; 
+                            width: 16px; height: 27px;">
+                    <span class="slot-label">S203<br>P50</span>
+                </div>
+        
+                <div class="slot regular" id="S204" data-category="Regular"
+                     style="left: 293px; top: 544px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S204<br>P49</span>
+                </div>
+        
+                <div class="slot regular" id="S205" data-category="Regular"
+                     style="left: 415px; top: 546px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S205<br>P48</span>
+                </div>
+        
+                <div class="slot regular" id="S206" data-category="Regular"
+                     style="left: 49px; top: 549px; 
+                            width: 98px; height: 53px;">
+                    <span class="slot-label">S206<br>P47</span>
+                </div>
+        
+                <div class="slot regular" id="S207" data-category="Regular"
+                     style="left: 308px; top: 549px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S207<br>P46</span>
+                </div>
+        
+                <div class="slot regular" id="S208" data-category="Regular"
+                     style="left: 429px; top: 549px; 
+                            width: 16px; height: 27px;">
+                    <span class="slot-label">S208<br>P45</span>
+                </div>
+        
+                <div class="slot regular" id="S209" data-category="Regular"
+                     style="left: 322px; top: 552px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S209<br>P44</span>
+                </div>
+        
+                <div class="slot regular" id="S210" data-category="Regular"
+                     style="left: 443px; top: 553px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S210<br>P43</span>
+                </div>
+        
+                <div class="slot regular" id="S211" data-category="Regular"
+                     style="left: 55px; top: 555px; 
+                            width: 16px; height: 23px;">
+                    <span class="slot-label">S211<br>P42</span>
+                </div>
+        
+                <div class="slot regular" id="S212" data-category="Regular"
+                     style="left: 338px; top: 556px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S212<br>P41</span>
+                </div>
+        
+                <div class="slot regular" id="S213" data-category="Regular"
+                     style="left: 457px; top: 557px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S213<br>P40</span>
+                </div>
+        
+                <div class="slot regular" id="S214" data-category="Regular"
+                     style="left: 72px; top: 559px; 
+                            width: 13px; height: 22px;">
+                    <span class="slot-label">S214<br>P39</span>
+                </div>
+        
+                <div class="slot regular" id="S215" data-category="Regular"
+                     style="left: 352px; top: 560px; 
+                            width: 14px; height: 26px;">
+                    <span class="slot-label">S215<br>P38</span>
+                </div>
+        
+                <div class="slot regular" id="S216" data-category="Regular"
+                     style="left: 471px; top: 560px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S216<br>P37</span>
+                </div>
+        
+                <div class="slot regular" id="S217" data-category="Regular"
+                     style="left: 84px; top: 562px; 
+                            width: 15px; height: 22px;">
+                    <span class="slot-label">S217<br>P36</span>
+                </div>
+        
+                <div class="slot regular" id="S218" data-category="Regular"
+                     style="left: 364px; top: 564px; 
+                            width: 16px; height: 25px;">
+                    <span class="slot-label">S218<br>P35</span>
+                </div>
+        
+                <div class="slot regular" id="S219" data-category="Regular"
+                     style="left: 485px; top: 564px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S219<br>P34</span>
+                </div>
+        
+                <div class="slot regular" id="S220" data-category="Regular"
+                     style="left: 98px; top: 565px; 
+                            width: 15px; height: 23px;">
+                    <span class="slot-label">S220<br>P33</span>
+                </div>
+        
+                <div class="slot regular" id="S221" data-category="Regular"
+                     style="left: 378px; top: 567px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S221<br>P32</span>
+                </div>
+        
+                <div class="slot regular" id="S222" data-category="Regular"
+                     style="left: 500px; top: 567px; 
+                            width: 15px; height: 28px;">
+                    <span class="slot-label">S222<br>P31</span>
+                </div>
+        
+                <div class="slot regular" id="S223" data-category="Regular"
+                     style="left: 112px; top: 568px; 
+                            width: 16px; height: 24px;">
+                    <span class="slot-label">S223<br>P30</span>
+                </div>
+        
+                <div class="slot regular" id="S224" data-category="Regular"
+                     style="left: 147px; top: 570px; 
+                            width: 61px; height: 45px;">
+                    <span class="slot-label">S224<br>P29</span>
+                </div>
+        
+                <div class="slot regular" id="S225" data-category="Regular"
+                     style="left: 127px; top: 571px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S225<br>P28</span>
+                </div>
+        
+                <div class="slot regular" id="S226" data-category="Regular"
+                     style="left: 393px; top: 571px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S226<br>P27</span>
+                </div>
+        
+                <div class="slot regular" id="S227" data-category="Regular"
+                     style="left: 514px; top: 571px; 
+                            width: 13px; height: 27px;">
+                    <span class="slot-label">S227<br>P26</span>
+                </div>
+        
+                <div class="slot regular" id="S228" data-category="Regular"
+                     style="left: 526px; top: 574px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S228<br>P25</span>
+                </div>
+        
+                <div class="slot regular" id="S229" data-category="Regular"
+                     style="left: 407px; top: 575px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S229<br>P24</span>
+                </div>
+        
+                <div class="slot regular" id="S230" data-category="Regular"
+                     style="left: 153px; top: 576px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S230<br>P23</span>
+                </div>
+        
+                <div class="slot regular" id="S231" data-category="Regular"
+                     style="left: 539px; top: 578px; 
+                            width: 15px; height: 27px;">
+                    <span class="slot-label">S231<br>P22</span>
+                </div>
+        
+                <div class="slot regular" id="S232" data-category="Regular"
+                     style="left: 421px; top: 579px; 
+                            width: 15px; height: 25px;">
+                    <span class="slot-label">S232<br>P21</span>
+                </div>
+        
+                <div class="slot regular" id="S233" data-category="Regular"
+                     style="left: 168px; top: 581px; 
+                            width: 14px; height: 24px;">
+                    <span class="slot-label">S233<br>P20</span>
+                </div>
+        
+                <div class="slot regular" id="S234" data-category="Regular"
+                     style="left: 554px; top: 581px; 
+                            width: 17px; height: 29px;">
+                    <span class="slot-label">S234<br>P19</span>
+                </div>
+        
+                <div class="slot regular" id="S235" data-category="Regular"
+                     style="left: 435px; top: 582px; 
+                            width: 16px; height: 27px;">
+                    <span class="slot-label">S235<br>P18</span>
+                </div>
+        
+                <div class="slot regular" id="S236" data-category="Regular"
+                     style="left: 182px; top: 585px; 
+                            width: 15px; height: 24px;">
+                    <span class="slot-label">S236<br>P17</span>
+                </div>
+        
+                <div class="slot regular" id="S237" data-category="Regular"
+                     style="left: 449px; top: 586px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S237<br>P16</span>
+                </div>
+        
+                <div class="slot regular" id="S238" data-category="Regular"
+                     style="left: 463px; top: 590px; 
+                            width: 17px; height: 26px;">
+                    <span class="slot-label">S238<br>P15</span>
+                </div>
+        
+                <div class="slot reservation" id="S239" data-category="Reservation"
+                     style="left: 216px; top: 591px; 
+                            width: 48px; height: 42px;">
+                    <span class="slot-label">S239<br>R3</span>
+                </div>
+        
+                <div class="slot reservation" id="S240" data-category="Reservation"
+                     style="left: 222px; top: 593px; 
+                            width: 23px; height: 31px;">
+                    <span class="slot-label">S240<br>R2</span>
+                </div>
+        
+                <div class="slot regular" id="S241" data-category="Regular"
+                     style="left: 566px; top: 594px; 
+                            width: 79px; height: 106px;">
+                    <span class="slot-label">S241<br>P14</span>
+                </div>
+        
+                <div class="slot regular" id="S242" data-category="Regular"
+                     style="left: 479px; top: 595px; 
+                            width: 14px; height: 25px;">
+                    <span class="slot-label">S242<br>P13</span>
+                </div>
+        
+                <div class="slot reservation" id="S243" data-category="Reservation"
+                     style="left: 240px; top: 597px; 
+                            width: 17px; height: 28px;">
+                    <span class="slot-label">S243<br>R1</span>
+                </div>
+        
+                <div class="slot regular" id="S244" data-category="Regular"
+                     style="left: 492px; top: 598px; 
+                            width: 15px; height: 26px;">
+                    <span class="slot-label">S244<br>P12</span>
+                </div>
+        
+                <div class="slot regular" id="S245" data-category="Regular"
+                     style="left: 619px; top: 600px; 
+                            width: 21px; height: 14px;">
+                    <span class="slot-label">S245<br>P11</span>
+                </div>
+        
+                <div class="slot regular" id="S246" data-category="Regular"
+                     style="left: 507px; top: 601px; 
+                            width: 13px; height: 26px;">
+                    <span class="slot-label">S246<br>P10</span>
+                </div>
+        
+                <div class="slot regular" id="S247" data-category="Regular"
+                     style="left: 520px; top: 605px; 
+                            width: 13px; height: 25px;">
+                    <span class="slot-label">S247<br>P9</span>
+                </div>
+        
+                <div class="slot regular" id="S248" data-category="Regular"
+                     style="left: 532px; top: 608px; 
+                            width: 16px; height: 26px;">
+                    <span class="slot-label">S248<br>P8</span>
+                </div>
+        
+                <div class="slot regular" id="S249" data-category="Regular"
+                     style="left: 548px; top: 612px; 
+                            width: 17px; height: 28px;">
+                    <span class="slot-label">S249<br>P7</span>
+                </div>
+        
+                <div class="slot regular" id="S250" data-category="Regular"
+                     style="left: 616px; top: 616px; 
+                            width: 19px; height: 11px;">
+                    <span class="slot-label">S250<br>P6</span>
+                </div>
+        
+                <div class="slot regular" id="S251" data-category="Regular"
+                     style="left: 613px; top: 628px; 
+                            width: 19px; height: 13px;">
+                    <span class="slot-label">S251<br>P5</span>
+                </div>
+        
+                <div class="slot regular" id="S252" data-category="Regular"
+                     style="left: 405px; top: 639px; 
+                            width: 11px; height: 26px;">
+                    <span class="slot-label">S252<br>P4</span>
+                </div>
+        
+                <div class="slot regular" id="S253" data-category="Regular"
+                     style="left: 609px; top: 641px; 
+                            width: 19px; height: 15px;">
+                    <span class="slot-label">S253<br>P3</span>
+                </div>
+        
+                <div class="slot regular" id="S254" data-category="Regular"
+                     style="left: 606px; top: 657px; 
+                            width: 19px; height: 14px;">
+                    <span class="slot-label">S254<br>P2</span>
+                </div>
+        
+                <div class="slot regular" id="S255" data-category="Regular"
+                     style="left: 603px; top: 671px; 
+                            width: 18px; height: 12px;">
+                    <span class="slot-label">S255<br>P1</span>
+                </div>
+        
+            </div>
+            
+            <h2>Parking Slot Data</h2>
+            <div class="search-container">
+                <label for="table-search">Filter table: </label>
+                <input type="text" id="table-search" placeholder="Filter by any column" 
+                       oninput="filterTable()">
+            </div>
+            
+            <table class="slot-table" id="slot-table">
+                <thead>
+                    <tr>
+                        <th>Sequential</th>
+                        <th>Category Label</th>
+                        <th>Category</th>
+                        <th>X Position</th>
+                        <th>Y Position</th>
+                        <th>Width</th>
+                        <th>Height</th>
+                        <th>Area</th>
+                    </tr>
+                </thead>
+                <tbody>
+    
+                    <tr id="row-S1" data-category="Regular">
+                        <td>S1</td>
+                        <td>P245</td>
+                        <td style="color: blue">Regular</td>
+                        <td>198</td>
+                        <td>27</td>
+                        <td>13</td>
+                        <td>23</td>
+                        <td>140.0</td>
+                    </tr>
+        
+                    <tr id="row-S2" data-category="Regular">
+                        <td>S2</td>
+                        <td>P244</td>
+                        <td style="color: blue">Regular</td>
+                        <td>210</td>
+                        <td>30</td>
+                        <td>17</td>
+                        <td>25</td>
+                        <td>211.5</td>
+                    </tr>
+        
+                    <tr id="row-S3" data-category="Regular">
+                        <td>S3</td>
+                        <td>P243</td>
+                        <td style="color: blue">Regular</td>
+                        <td>226</td>
+                        <td>35</td>
+                        <td>13</td>
+                        <td>23</td>
+                        <td>156.5</td>
+                    </tr>
+        
+                    <tr id="row-S4" data-category="Regular">
+                        <td>S4</td>
+                        <td>P242</td>
+                        <td style="color: blue">Regular</td>
+                        <td>238</td>
+                        <td>37</td>
+                        <td>16</td>
+                        <td>25</td>
+                        <td>221.5</td>
+                    </tr>
+        
+                    <tr id="row-S5" data-category="Regular">
+                        <td>S5</td>
+                        <td>P241</td>
+                        <td style="color: blue">Regular</td>
+                        <td>252</td>
+                        <td>40</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>236.5</td>
+                    </tr>
+        
+                    <tr id="row-S6" data-category="Regular">
+                        <td>S6</td>
+                        <td>P240</td>
+                        <td style="color: blue">Regular</td>
+                        <td>267</td>
+                        <td>43</td>
+                        <td>16</td>
+                        <td>27</td>
+                        <td>246.5</td>
+                    </tr>
+        
+                    <tr id="row-S7" data-category="Regular">
+                        <td>S7</td>
+                        <td>P239</td>
+                        <td style="color: blue">Regular</td>
+                        <td>282</td>
+                        <td>47</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>226.0</td>
+                    </tr>
+        
+                    <tr id="row-S8" data-category="Regular">
+                        <td>S8</td>
+                        <td>P238</td>
+                        <td style="color: blue">Regular</td>
+                        <td>297</td>
+                        <td>51</td>
+                        <td>14</td>
+                        <td>27</td>
+                        <td>207.0</td>
+                    </tr>
+        
+                    <tr id="row-S9" data-category="Regular">
+                        <td>S9</td>
+                        <td>P237</td>
+                        <td style="color: blue">Regular</td>
+                        <td>311</td>
+                        <td>54</td>
+                        <td>14</td>
+                        <td>27</td>
+                        <td>213.0</td>
+                    </tr>
+        
+                    <tr id="row-S10" data-category="Regular">
+                        <td>S10</td>
+                        <td>P236</td>
+                        <td style="color: blue">Regular</td>
+                        <td>191</td>
+                        <td>55</td>
+                        <td>11</td>
+                        <td>25</td>
+                        <td>134.0</td>
+                    </tr>
+        
+                    <tr id="row-S11" data-category="Regular">
+                        <td>S11</td>
+                        <td>P235</td>
+                        <td style="color: blue">Regular</td>
+                        <td>203</td>
+                        <td>58</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>208.0</td>
+                    </tr>
+        
+                    <tr id="row-S12" data-category="Regular">
+                        <td>S12</td>
+                        <td>P234</td>
+                        <td style="color: blue">Regular</td>
+                        <td>325</td>
+                        <td>58</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>179.0</td>
+                    </tr>
+        
+                    <tr id="row-S13" data-category="Regular">
+                        <td>S13</td>
+                        <td>P233</td>
+                        <td style="color: blue">Regular</td>
+                        <td>217</td>
+                        <td>61</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>189.5</td>
+                    </tr>
+        
+                    <tr id="row-S14" data-category="Regular">
+                        <td>S14</td>
+                        <td>P232</td>
+                        <td style="color: blue">Regular</td>
+                        <td>336</td>
+                        <td>61</td>
+                        <td>18</td>
+                        <td>27</td>
+                        <td>245.5</td>
+                    </tr>
+        
+                    <tr id="row-S15" data-category="Regular">
+                        <td>S15</td>
+                        <td>P231</td>
+                        <td style="color: blue">Regular</td>
+                        <td>231</td>
+                        <td>65</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>217.0</td>
+                    </tr>
+        
+                    <tr id="row-S16" data-category="Regular">
+                        <td>S16</td>
+                        <td>P230</td>
+                        <td style="color: blue">Regular</td>
+                        <td>352</td>
+                        <td>65</td>
+                        <td>18</td>
+                        <td>27</td>
+                        <td>264.0</td>
+                    </tr>
+        
+                    <tr id="row-S17" data-category="Regular">
+                        <td>S17</td>
+                        <td>P229</td>
+                        <td style="color: blue">Regular</td>
+                        <td>245</td>
+                        <td>68</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>232.5</td>
+                    </tr>
+        
+                    <tr id="row-S18" data-category="Regular">
+                        <td>S18</td>
+                        <td>P228</td>
+                        <td style="color: blue">Regular</td>
+                        <td>89</td>
+                        <td>71</td>
+                        <td>32</td>
+                        <td>12</td>
+                        <td>249.5</td>
+                    </tr>
+        
+                    <tr id="row-S19" data-category="Regular">
+                        <td>S19</td>
+                        <td>P227</td>
+                        <td style="color: blue">Regular</td>
+                        <td>261</td>
+                        <td>72</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>216.0</td>
+                    </tr>
+        
+                    <tr id="row-S20" data-category="Regular">
+                        <td>S20</td>
+                        <td>P226</td>
+                        <td style="color: blue">Regular</td>
+                        <td>275</td>
+                        <td>76</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>220.0</td>
+                    </tr>
+        
+                    <tr id="row-S21" data-category="Regular">
+                        <td>S21</td>
+                        <td>P225</td>
+                        <td style="color: blue">Regular</td>
+                        <td>290</td>
+                        <td>79</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>195.5</td>
+                    </tr>
+        
+                    <tr id="row-S22" data-category="Regular">
+                        <td>S22</td>
+                        <td>P224</td>
+                        <td style="color: blue">Regular</td>
+                        <td>303</td>
+                        <td>83</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>178.5</td>
+                    </tr>
+        
+                    <tr id="row-S23" data-category="Regular">
+                        <td>S23</td>
+                        <td>P223</td>
+                        <td style="color: blue">Regular</td>
+                        <td>87</td>
+                        <td>84</td>
+                        <td>31</td>
+                        <td>14</td>
+                        <td>266.0</td>
+                    </tr>
+        
+                    <tr id="row-S24" data-category="Regular">
+                        <td>S24</td>
+                        <td>P222</td>
+                        <td style="color: blue">Regular</td>
+                        <td>317</td>
+                        <td>87</td>
+                        <td>13</td>
+                        <td>22</td>
+                        <td>146.0</td>
+                    </tr>
+        
+                    <tr id="row-S25" data-category="Regular">
+                        <td>S25</td>
+                        <td>P221</td>
+                        <td style="color: blue">Regular</td>
+                        <td>329</td>
+                        <td>90</td>
+                        <td>17</td>
+                        <td>24</td>
+                        <td>234.5</td>
+                    </tr>
+        
+                    <tr id="row-S26" data-category="Regular">
+                        <td>S26</td>
+                        <td>P220</td>
+                        <td style="color: blue">Regular</td>
+                        <td>346</td>
+                        <td>93</td>
+                        <td>15</td>
+                        <td>24</td>
+                        <td>211.0</td>
+                    </tr>
+        
+                    <tr id="row-S27" data-category="Regular">
+                        <td>S27</td>
+                        <td>P219</td>
+                        <td style="color: blue">Regular</td>
+                        <td>85</td>
+                        <td>100</td>
+                        <td>31</td>
+                        <td>13</td>
+                        <td>234.5</td>
+                    </tr>
+        
+                    <tr id="row-S28" data-category="Regular">
+                        <td>S28</td>
+                        <td>P218</td>
+                        <td style="color: blue">Regular</td>
+                        <td>84</td>
+                        <td>114</td>
+                        <td>29</td>
+                        <td>11</td>
+                        <td>176.5</td>
+                    </tr>
+        
+                    <tr id="row-S29" data-category="Regular">
+                        <td>S29</td>
+                        <td>P217</td>
+                        <td style="color: blue">Regular</td>
+                        <td>171</td>
+                        <td>115</td>
+                        <td>15</td>
+                        <td>20</td>
+                        <td>192.5</td>
+                    </tr>
+        
+                    <tr id="row-S30" data-category="Regular">
+                        <td>S30</td>
+                        <td>P216</td>
+                        <td style="color: blue">Regular</td>
+                        <td>187</td>
+                        <td>118</td>
+                        <td>15</td>
+                        <td>22</td>
+                        <td>194.5</td>
+                    </tr>
+        
+                    <tr id="row-S31" data-category="Regular">
+                        <td>S31</td>
+                        <td>P215</td>
+                        <td style="color: blue">Regular</td>
+                        <td>204</td>
+                        <td>123</td>
+                        <td>12</td>
+                        <td>21</td>
+                        <td>153.0</td>
+                    </tr>
+        
+                    <tr id="row-S32" data-category="Regular">
+                        <td>S32</td>
+                        <td>P214</td>
+                        <td style="color: blue">Regular</td>
+                        <td>216</td>
+                        <td>125</td>
+                        <td>16</td>
+                        <td>23</td>
+                        <td>214.5</td>
+                    </tr>
+        
+                    <tr id="row-S33" data-category="Regular">
+                        <td>S33</td>
+                        <td>P213</td>
+                        <td style="color: blue">Regular</td>
+                        <td>82</td>
+                        <td>126</td>
+                        <td>30</td>
+                        <td>13</td>
+                        <td>222.5</td>
+                    </tr>
+        
+                    <tr id="row-S34" data-category="Regular">
+                        <td>S34</td>
+                        <td>P212</td>
+                        <td style="color: blue">Regular</td>
+                        <td>232</td>
+                        <td>129</td>
+                        <td>13</td>
+                        <td>23</td>
+                        <td>168.5</td>
+                    </tr>
+        
+                    <tr id="row-S35" data-category="Regular">
+                        <td>S35</td>
+                        <td>P211</td>
+                        <td style="color: blue">Regular</td>
+                        <td>244</td>
+                        <td>133</td>
+                        <td>15</td>
+                        <td>22</td>
+                        <td>191.0</td>
+                    </tr>
+        
+                    <tr id="row-S36" data-category="Regular">
+                        <td>S36</td>
+                        <td>P210</td>
+                        <td style="color: blue">Regular</td>
+                        <td>259</td>
+                        <td>136</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>205.5</td>
+                    </tr>
+        
+                    <tr id="row-S37" data-category="Regular">
+                        <td>S37</td>
+                        <td>P209</td>
+                        <td style="color: blue">Regular</td>
+                        <td>161</td>
+                        <td>139</td>
+                        <td>19</td>
+                        <td>29</td>
+                        <td>306.5</td>
+                    </tr>
+        
+                    <tr id="row-S38" data-category="Regular">
+                        <td>S38</td>
+                        <td>P208</td>
+                        <td style="color: blue">Regular</td>
+                        <td>80</td>
+                        <td>140</td>
+                        <td>29</td>
+                        <td>14</td>
+                        <td>233.0</td>
+                    </tr>
+        
+                    <tr id="row-S39" data-category="Regular">
+                        <td>S39</td>
+                        <td>P207</td>
+                        <td style="color: blue">Regular</td>
+                        <td>273</td>
+                        <td>140</td>
+                        <td>15</td>
+                        <td>23</td>
+                        <td>201.5</td>
+                    </tr>
+        
+                    <tr id="row-S40" data-category="Regular">
+                        <td>S40</td>
+                        <td>P206</td>
+                        <td style="color: blue">Regular</td>
+                        <td>177</td>
+                        <td>143</td>
+                        <td>20</td>
+                        <td>30</td>
+                        <td>307.0</td>
+                    </tr>
+        
+                    <tr id="row-S41" data-category="Regular">
+                        <td>S41</td>
+                        <td>P205</td>
+                        <td style="color: blue">Regular</td>
+                        <td>287</td>
+                        <td>143</td>
+                        <td>15</td>
+                        <td>24</td>
+                        <td>206.5</td>
+                    </tr>
+        
+                    <tr id="row-S42" data-category="Regular">
+                        <td>S42</td>
+                        <td>P204</td>
+                        <td style="color: blue">Regular</td>
+                        <td>196</td>
+                        <td>147</td>
+                        <td>15</td>
+                        <td>29</td>
+                        <td>228.0</td>
+                    </tr>
+        
+                    <tr id="row-S43" data-category="Regular">
+                        <td>S43</td>
+                        <td>P203</td>
+                        <td style="color: blue">Regular</td>
+                        <td>302</td>
+                        <td>148</td>
+                        <td>14</td>
+                        <td>22</td>
+                        <td>199.5</td>
+                    </tr>
+        
+                    <tr id="row-S44" data-category="Regular">
+                        <td>S44</td>
+                        <td>P202</td>
+                        <td style="color: blue">Regular</td>
+                        <td>210</td>
+                        <td>150</td>
+                        <td>15</td>
+                        <td>29</td>
+                        <td>273.5</td>
+                    </tr>
+        
+                    <tr id="row-S45" data-category="Regular">
+                        <td>S45</td>
+                        <td>P201</td>
+                        <td style="color: blue">Regular</td>
+                        <td>316</td>
+                        <td>151</td>
+                        <td>12</td>
+                        <td>22</td>
+                        <td>131.0</td>
+                    </tr>
+        
+                    <tr id="row-S46" data-category="Regular">
+                        <td>S46</td>
+                        <td>P200</td>
+                        <td style="color: blue">Regular</td>
+                        <td>224</td>
+                        <td>154</td>
+                        <td>15</td>
+                        <td>28</td>
+                        <td>210.5</td>
+                    </tr>
+        
+                    <tr id="row-S47" data-category="Regular">
+                        <td>S47</td>
+                        <td>P199</td>
+                        <td style="color: blue">Regular</td>
+                        <td>329</td>
+                        <td>154</td>
+                        <td>11</td>
+                        <td>23</td>
+                        <td>146.5</td>
+                    </tr>
+        
+                    <tr id="row-S48" data-category="Regular">
+                        <td>S48</td>
+                        <td>P198</td>
+                        <td style="color: blue">Regular</td>
+                        <td>79</td>
+                        <td>155</td>
+                        <td>27</td>
+                        <td>14</td>
+                        <td>223.5</td>
+                    </tr>
+        
+                    <tr id="row-S49" data-category="Regular">
+                        <td>S49</td>
+                        <td>P197</td>
+                        <td style="color: blue">Regular</td>
+                        <td>237</td>
+                        <td>157</td>
+                        <td>16</td>
+                        <td>30</td>
+                        <td>253.5</td>
+                    </tr>
+        
+                    <tr id="row-S50" data-category="Regular">
+                        <td>S50</td>
+                        <td>P196</td>
+                        <td style="color: blue">Regular</td>
+                        <td>252</td>
+                        <td>162</td>
+                        <td>15</td>
+                        <td>28</td>
+                        <td>230.5</td>
+                    </tr>
+        
+                    <tr id="row-S51" data-category="Regular">
+                        <td>S51</td>
+                        <td>P195</td>
+                        <td style="color: blue">Regular</td>
+                        <td>264</td>
+                        <td>165</td>
+                        <td>17</td>
+                        <td>28</td>
+                        <td>254.5</td>
+                    </tr>
+        
+                    <tr id="row-S52" data-category="Regular">
+                        <td>S52</td>
+                        <td>P194</td>
+                        <td style="color: blue">Regular</td>
+                        <td>279</td>
+                        <td>169</td>
+                        <td>16</td>
+                        <td>27</td>
+                        <td>255.0</td>
+                    </tr>
+        
+                    <tr id="row-S53" data-category="Regular">
+                        <td>S53</td>
+                        <td>P193</td>
+                        <td style="color: blue">Regular</td>
+                        <td>77</td>
+                        <td>170</td>
+                        <td>27</td>
+                        <td>13</td>
+                        <td>246.0</td>
+                    </tr>
+        
+                    <tr id="row-S54" data-category="Regular">
+                        <td>S54</td>
+                        <td>P192</td>
+                        <td style="color: blue">Regular</td>
+                        <td>294</td>
+                        <td>173</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>228.5</td>
+                    </tr>
+        
+                    <tr id="row-S55" data-category="Regular">
+                        <td>S55</td>
+                        <td>P191</td>
+                        <td style="color: blue">Regular</td>
+                        <td>309</td>
+                        <td>176</td>
+                        <td>13</td>
+                        <td>27</td>
+                        <td>170.5</td>
+                    </tr>
+        
+                    <tr id="row-S56" data-category="Regular">
+                        <td>S56</td>
+                        <td>P190</td>
+                        <td style="color: blue">Regular</td>
+                        <td>320</td>
+                        <td>179</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>238.5</td>
+                    </tr>
+        
+                    <tr id="row-S57" data-category="Regular">
+                        <td>S57</td>
+                        <td>P189</td>
+                        <td style="color: blue">Regular</td>
+                        <td>75</td>
+                        <td>186</td>
+                        <td>26</td>
+                        <td>11</td>
+                        <td>178.5</td>
+                    </tr>
+        
+                    <tr id="row-S58" data-category="Regular">
+                        <td>S58</td>
+                        <td>P188</td>
+                        <td style="color: blue">Regular</td>
+                        <td>73</td>
+                        <td>200</td>
+                        <td>26</td>
+                        <td>11</td>
+                        <td>205.0</td>
+                    </tr>
+        
+                    <tr id="row-S59" data-category="Regular">
+                        <td>S59</td>
+                        <td>P187</td>
+                        <td style="color: blue">Regular</td>
+                        <td>150</td>
+                        <td>205</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>173.0</td>
+                    </tr>
+        
+                    <tr id="row-S60" data-category="Regular">
+                        <td>S60</td>
+                        <td>P186</td>
+                        <td style="color: blue">Regular</td>
+                        <td>164</td>
+                        <td>208</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>183.5</td>
+                    </tr>
+        
+                    <tr id="row-S61" data-category="Regular">
+                        <td>S61</td>
+                        <td>P185</td>
+                        <td style="color: blue">Regular</td>
+                        <td>178</td>
+                        <td>212</td>
+                        <td>16</td>
+                        <td>24</td>
+                        <td>203.0</td>
+                    </tr>
+        
+                    <tr id="row-S62" data-category="Regular">
+                        <td>S62</td>
+                        <td>P184</td>
+                        <td style="color: blue">Regular</td>
+                        <td>71</td>
+                        <td>213</td>
+                        <td>26</td>
+                        <td>12</td>
+                        <td>185.0</td>
+                    </tr>
+        
+                    <tr id="row-S63" data-category="Regular">
+                        <td>S63</td>
+                        <td>P183</td>
+                        <td style="color: blue">Regular</td>
+                        <td>193</td>
+                        <td>215</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>193.0</td>
+                    </tr>
+        
+                    <tr id="row-S64" data-category="Regular">
+                        <td>S64</td>
+                        <td>P182</td>
+                        <td style="color: blue">Regular</td>
+                        <td>207</td>
+                        <td>218</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>175.0</td>
+                    </tr>
+        
+                    <tr id="row-S65" data-category="Regular">
+                        <td>S65</td>
+                        <td>P181</td>
+                        <td style="color: blue">Regular</td>
+                        <td>221</td>
+                        <td>222</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>199.5</td>
+                    </tr>
+        
+                    <tr id="row-S66" data-category="Regular">
+                        <td>S66</td>
+                        <td>P180</td>
+                        <td style="color: blue">Regular</td>
+                        <td>234</td>
+                        <td>224</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>238.0</td>
+                    </tr>
+        
+                    <tr id="row-S67" data-category="Regular">
+                        <td>S67</td>
+                        <td>P179</td>
+                        <td style="color: blue">Regular</td>
+                        <td>69</td>
+                        <td>227</td>
+                        <td>26</td>
+                        <td>14</td>
+                        <td>232.5</td>
+                    </tr>
+        
+                    <tr id="row-S68" data-category="Regular">
+                        <td>S68</td>
+                        <td>P178</td>
+                        <td style="color: blue">Regular</td>
+                        <td>248</td>
+                        <td>228</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>240.0</td>
+                    </tr>
+        
+                    <tr id="row-S69" data-category="Regular">
+                        <td>S69</td>
+                        <td>P177</td>
+                        <td style="color: blue">Regular</td>
+                        <td>263</td>
+                        <td>232</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>231.5</td>
+                    </tr>
+        
+                    <tr id="row-S70" data-category="Regular">
+                        <td>S70</td>
+                        <td>P176</td>
+                        <td style="color: blue">Regular</td>
+                        <td>143</td>
+                        <td>233</td>
+                        <td>13</td>
+                        <td>22</td>
+                        <td>158.0</td>
+                    </tr>
+        
+                    <tr id="row-S71" data-category="Regular">
+                        <td>S71</td>
+                        <td>P175</td>
+                        <td style="color: blue">Regular</td>
+                        <td>277</td>
+                        <td>235</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>198.0</td>
+                    </tr>
+        
+                    <tr id="row-S72" data-category="Regular">
+                        <td>S72</td>
+                        <td>P174</td>
+                        <td style="color: blue">Regular</td>
+                        <td>157</td>
+                        <td>236</td>
+                        <td>15</td>
+                        <td>22</td>
+                        <td>173.0</td>
+                    </tr>
+        
+                    <tr id="row-S73" data-category="Regular">
+                        <td>S73</td>
+                        <td>P173</td>
+                        <td style="color: blue">Regular</td>
+                        <td>290</td>
+                        <td>239</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>217.5</td>
+                    </tr>
+        
+                    <tr id="row-S74" data-category="Regular">
+                        <td>S74</td>
+                        <td>P172</td>
+                        <td style="color: blue">Regular</td>
+                        <td>172</td>
+                        <td>240</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>197.5</td>
+                    </tr>
+        
+                    <tr id="row-S75" data-category="Regular">
+                        <td>S75</td>
+                        <td>P171</td>
+                        <td style="color: blue">Regular</td>
+                        <td>68</td>
+                        <td>242</td>
+                        <td>23</td>
+                        <td>13</td>
+                        <td>179.0</td>
+                    </tr>
+        
+                    <tr id="row-S76" data-category="Regular">
+                        <td>S76</td>
+                        <td>P170</td>
+                        <td style="color: blue">Regular</td>
+                        <td>187</td>
+                        <td>242</td>
+                        <td>12</td>
+                        <td>24</td>
+                        <td>176.5</td>
+                    </tr>
+        
+                    <tr id="row-S77" data-category="Regular">
+                        <td>S77</td>
+                        <td>P169</td>
+                        <td style="color: blue">Regular</td>
+                        <td>305</td>
+                        <td>243</td>
+                        <td>16</td>
+                        <td>24</td>
+                        <td>221.0</td>
+                    </tr>
+        
+                    <tr id="row-S78" data-category="Regular">
+                        <td>S78</td>
+                        <td>P168</td>
+                        <td style="color: blue">Regular</td>
+                        <td>200</td>
+                        <td>247</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>183.5</td>
+                    </tr>
+        
+                    <tr id="row-S79" data-category="Regular">
+                        <td>S79</td>
+                        <td>P167</td>
+                        <td style="color: blue">Regular</td>
+                        <td>214</td>
+                        <td>249</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>194.0</td>
+                    </tr>
+        
+                    <tr id="row-S80" data-category="Regular">
+                        <td>S80</td>
+                        <td>P166</td>
+                        <td style="color: blue">Regular</td>
+                        <td>228</td>
+                        <td>252</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>223.5</td>
+                    </tr>
+        
+                    <tr id="row-S81" data-category="Regular">
+                        <td>S81</td>
+                        <td>P165</td>
+                        <td style="color: blue">Regular</td>
+                        <td>242</td>
+                        <td>256</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>217.0</td>
+                    </tr>
+        
+                    <tr id="row-S82" data-category="Regular">
+                        <td>S82</td>
+                        <td>P164</td>
+                        <td style="color: blue">Regular</td>
+                        <td>66</td>
+                        <td>257</td>
+                        <td>24</td>
+                        <td>14</td>
+                        <td>214.0</td>
+                    </tr>
+        
+                    <tr id="row-S83" data-category="Regular">
+                        <td>S83</td>
+                        <td>P163</td>
+                        <td style="color: blue">Regular</td>
+                        <td>257</td>
+                        <td>259</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>198.0</td>
+                    </tr>
+        
+                    <tr id="row-S84" data-category="Regular">
+                        <td>S84</td>
+                        <td>P162</td>
+                        <td style="color: blue">Regular</td>
+                        <td>270</td>
+                        <td>263</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>215.0</td>
+                    </tr>
+        
+                    <tr id="row-S85" data-category="Regular">
+                        <td>S85</td>
+                        <td>P161</td>
+                        <td style="color: blue">Regular</td>
+                        <td>283</td>
+                        <td>266</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>238.5</td>
+                    </tr>
+        
+                    <tr id="row-S86" data-category="Regular">
+                        <td>S86</td>
+                        <td>P160</td>
+                        <td style="color: blue">Regular</td>
+                        <td>298</td>
+                        <td>270</td>
+                        <td>16</td>
+                        <td>25</td>
+                        <td>243.0</td>
+                    </tr>
+        
+                    <tr id="row-S87" data-category="Regular">
+                        <td>S87</td>
+                        <td>P159</td>
+                        <td style="color: blue">Regular</td>
+                        <td>65</td>
+                        <td>273</td>
+                        <td>23</td>
+                        <td>11</td>
+                        <td>130.5</td>
+                    </tr>
+        
+                    <tr id="row-S88" data-category="Regular">
+                        <td>S88</td>
+                        <td>P158</td>
+                        <td style="color: blue">Regular</td>
+                        <td>63</td>
+                        <td>285</td>
+                        <td>22</td>
+                        <td>14</td>
+                        <td>203.0</td>
+                    </tr>
+        
+                    <tr id="row-S89" data-category="Regular">
+                        <td>S89</td>
+                        <td>P157</td>
+                        <td style="color: blue">Regular</td>
+                        <td>154</td>
+                        <td>298</td>
+                        <td>16</td>
+                        <td>23</td>
+                        <td>247.5</td>
+                    </tr>
+        
+                    <tr id="row-S90" data-category="Regular">
+                        <td>S90</td>
+                        <td>P156</td>
+                        <td style="color: blue">Regular</td>
+                        <td>171</td>
+                        <td>301</td>
+                        <td>12</td>
+                        <td>24</td>
+                        <td>153.5</td>
+                    </tr>
+        
+                    <tr id="row-S91" data-category="Regular">
+                        <td>S91</td>
+                        <td>P155</td>
+                        <td style="color: blue">Regular</td>
+                        <td>61</td>
+                        <td>302</td>
+                        <td>22</td>
+                        <td>11</td>
+                        <td>145.5</td>
+                    </tr>
+        
+                    <tr id="row-S92" data-category="Regular">
+                        <td>S92</td>
+                        <td>P154</td>
+                        <td style="color: blue">Regular</td>
+                        <td>184</td>
+                        <td>304</td>
+                        <td>12</td>
+                        <td>24</td>
+                        <td>165.5</td>
+                    </tr>
+        
+                    <tr id="row-S93" data-category="Regular">
+                        <td>S93</td>
+                        <td>P153</td>
+                        <td style="color: blue">Regular</td>
+                        <td>197</td>
+                        <td>308</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>166.0</td>
+                    </tr>
+        
+                    <tr id="row-S94" data-category="Regular">
+                        <td>S94</td>
+                        <td>P152</td>
+                        <td style="color: blue">Regular</td>
+                        <td>212</td>
+                        <td>311</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>206.5</td>
+                    </tr>
+        
+                    <tr id="row-S95" data-category="Regular">
+                        <td>S95</td>
+                        <td>P151</td>
+                        <td style="color: blue">Regular</td>
+                        <td>226</td>
+                        <td>315</td>
+                        <td>13</td>
+                        <td>24</td>
+                        <td>133.0</td>
+                    </tr>
+        
+                    <tr id="row-S96" data-category="Regular">
+                        <td>S96</td>
+                        <td>P150</td>
+                        <td style="color: blue">Regular</td>
+                        <td>238</td>
+                        <td>318</td>
+                        <td>16</td>
+                        <td>24</td>
+                        <td>222.0</td>
+                    </tr>
+        
+                    <tr id="row-S97" data-category="Regular">
+                        <td>S97</td>
+                        <td>P149</td>
+                        <td style="color: blue">Regular</td>
+                        <td>254</td>
+                        <td>322</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>191.5</td>
+                    </tr>
+        
+                    <tr id="row-S98" data-category="Entry">
+                        <td>S98</td>
+                        <td>E2</td>
+                        <td style="color: red">Entry</td>
+                        <td>23</td>
+                        <td>323</td>
+                        <td>90</td>
+                        <td>68</td>
+                        <td>4052.0</td>
+                    </tr>
+        
+                    <tr id="row-S99" data-category="Regular">
+                        <td>S99</td>
+                        <td>P148</td>
+                        <td style="color: blue">Regular</td>
+                        <td>147</td>
+                        <td>324</td>
+                        <td>17</td>
+                        <td>23</td>
+                        <td>230.0</td>
+                    </tr>
+        
+                    <tr id="row-S100" data-category="Regular">
+                        <td>S100</td>
+                        <td>P147</td>
+                        <td style="color: blue">Regular</td>
+                        <td>269</td>
+                        <td>325</td>
+                        <td>13</td>
+                        <td>23</td>
+                        <td>168.0</td>
+                    </tr>
+        
+                    <tr id="row-S101" data-category="Regular">
+                        <td>S101</td>
+                        <td>P146</td>
+                        <td style="color: blue">Regular</td>
+                        <td>282</td>
+                        <td>328</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>198.5</td>
+                    </tr>
+        
+                    <tr id="row-S102" data-category="Entry">
+                        <td>S102</td>
+                        <td>E1</td>
+                        <td style="color: red">Entry</td>
+                        <td>28</td>
+                        <td>329</td>
+                        <td>80</td>
+                        <td>58</td>
+                        <td>2991.0</td>
+                    </tr>
+        
+                    <tr id="row-S103" data-category="Regular">
+                        <td>S103</td>
+                        <td>P145</td>
+                        <td style="color: blue">Regular</td>
+                        <td>164</td>
+                        <td>329</td>
+                        <td>12</td>
+                        <td>20</td>
+                        <td>147.5</td>
+                    </tr>
+        
+                    <tr id="row-S104" data-category="Regular">
+                        <td>S104</td>
+                        <td>P144</td>
+                        <td style="color: blue">Regular</td>
+                        <td>177</td>
+                        <td>332</td>
+                        <td>14</td>
+                        <td>21</td>
+                        <td>171.5</td>
+                    </tr>
+        
+                    <tr id="row-S105" data-category="Regular">
+                        <td>S105</td>
+                        <td>P143</td>
+                        <td style="color: blue">Regular</td>
+                        <td>191</td>
+                        <td>334</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>183.5</td>
+                    </tr>
+        
+                    <tr id="row-S106" data-category="Regular">
+                        <td>S106</td>
+                        <td>P142</td>
+                        <td style="color: blue">Regular</td>
+                        <td>205</td>
+                        <td>338</td>
+                        <td>15</td>
+                        <td>22</td>
+                        <td>188.0</td>
+                    </tr>
+        
+                    <tr id="row-S107" data-category="Regular">
+                        <td>S107</td>
+                        <td>P141</td>
+                        <td style="color: blue">Regular</td>
+                        <td>220</td>
+                        <td>341</td>
+                        <td>12</td>
+                        <td>22</td>
+                        <td>137.0</td>
+                    </tr>
+        
+                    <tr id="row-S108" data-category="Regular">
+                        <td>S108</td>
+                        <td>P140</td>
+                        <td style="color: blue">Regular</td>
+                        <td>231</td>
+                        <td>344</td>
+                        <td>16</td>
+                        <td>23</td>
+                        <td>202.5</td>
+                    </tr>
+        
+                    <tr id="row-S109" data-category="Regular">
+                        <td>S109</td>
+                        <td>P139</td>
+                        <td style="color: blue">Regular</td>
+                        <td>247</td>
+                        <td>347</td>
+                        <td>15</td>
+                        <td>23</td>
+                        <td>198.0</td>
+                    </tr>
+        
+                    <tr id="row-S110" data-category="Regular">
+                        <td>S110</td>
+                        <td>P138</td>
+                        <td style="color: blue">Regular</td>
+                        <td>262</td>
+                        <td>352</td>
+                        <td>13</td>
+                        <td>21</td>
+                        <td>154.5</td>
+                    </tr>
+        
+                    <tr id="row-S111" data-category="Regular">
+                        <td>S111</td>
+                        <td>P137</td>
+                        <td style="color: blue">Regular</td>
+                        <td>275</td>
+                        <td>355</td>
+                        <td>16</td>
+                        <td>21</td>
+                        <td>183.0</td>
+                    </tr>
+        
+                    <tr id="row-S112" data-category="Accessible">
+                        <td>S112</td>
+                        <td>A5</td>
+                        <td style="color: purple">Accessible</td>
+                        <td>322</td>
+                        <td>362</td>
+                        <td>118</td>
+                        <td>59</td>
+                        <td>3664.5</td>
+                    </tr>
+        
+                    <tr id="row-S113" data-category="Accessible">
+                        <td>S113</td>
+                        <td>A4</td>
+                        <td style="color: purple">Accessible</td>
+                        <td>328</td>
+                        <td>366</td>
+                        <td>27</td>
+                        <td>29</td>
+                        <td>506.0</td>
+                    </tr>
+        
+                    <tr id="row-S114" data-category="Accessible">
+                        <td>S114</td>
+                        <td>A3</td>
+                        <td style="color: purple">Accessible</td>
+                        <td>351</td>
+                        <td>371</td>
+                        <td>26</td>
+                        <td>30</td>
+                        <td>511.0</td>
+                    </tr>
+        
+                    <tr id="row-S115" data-category="Accessible">
+                        <td>S115</td>
+                        <td>A2</td>
+                        <td style="color: purple">Accessible</td>
+                        <td>373</td>
+                        <td>377</td>
+                        <td>26</td>
+                        <td>30</td>
+                        <td>507.5</td>
+                    </tr>
+        
+                    <tr id="row-S116" data-category="Regular">
+                        <td>S116</td>
+                        <td>P136</td>
+                        <td style="color: blue">Regular</td>
+                        <td>115</td>
+                        <td>383</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>177.0</td>
+                    </tr>
+        
+                    <tr id="row-S117" data-category="Accessible">
+                        <td>S117</td>
+                        <td>A1</td>
+                        <td style="color: purple">Accessible</td>
+                        <td>398</td>
+                        <td>383</td>
+                        <td>29</td>
+                        <td>31</td>
+                        <td>644.0</td>
+                    </tr>
+        
+                    <tr id="row-S118" data-category="Regular">
+                        <td>S118</td>
+                        <td>P135</td>
+                        <td style="color: blue">Regular</td>
+                        <td>129</td>
+                        <td>387</td>
+                        <td>14</td>
+                        <td>23</td>
+                        <td>160.5</td>
+                    </tr>
+        
+                    <tr id="row-S119" data-category="Regular">
+                        <td>S119</td>
+                        <td>P134</td>
+                        <td style="color: blue">Regular</td>
+                        <td>23</td>
+                        <td>389</td>
+                        <td>57</td>
+                        <td>165</td>
+                        <td>4323.5</td>
+                    </tr>
+        
+                    <tr id="row-S120" data-category="Regular">
+                        <td>S120</td>
+                        <td>P133</td>
+                        <td style="color: blue">Regular</td>
+                        <td>143</td>
+                        <td>390</td>
+                        <td>15</td>
+                        <td>23</td>
+                        <td>203.5</td>
+                    </tr>
+        
+                    <tr id="row-S121" data-category="Regular">
+                        <td>S121</td>
+                        <td>P132</td>
+                        <td style="color: blue">Regular</td>
+                        <td>158</td>
+                        <td>393</td>
+                        <td>12</td>
+                        <td>24</td>
+                        <td>139.5</td>
+                    </tr>
+        
+                    <tr id="row-S122" data-category="Regular">
+                        <td>S122</td>
+                        <td>P131</td>
+                        <td style="color: blue">Regular</td>
+                        <td>172</td>
+                        <td>396</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>252.0</td>
+                    </tr>
+        
+                    <tr id="row-S123" data-category="Regular">
+                        <td>S123</td>
+                        <td>P130</td>
+                        <td style="color: blue">Regular</td>
+                        <td>50</td>
+                        <td>397</td>
+                        <td>20</td>
+                        <td>13</td>
+                        <td>157.5</td>
+                    </tr>
+        
+                    <tr id="row-S124" data-category="Regular">
+                        <td>S124</td>
+                        <td>P129</td>
+                        <td style="color: blue">Regular</td>
+                        <td>187</td>
+                        <td>400</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>158.0</td>
+                    </tr>
+        
+                    <tr id="row-S125" data-category="Regular">
+                        <td>S125</td>
+                        <td>P128</td>
+                        <td style="color: blue">Regular</td>
+                        <td>200</td>
+                        <td>403</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>204.5</td>
+                    </tr>
+        
+                    <tr id="row-S126" data-category="Regular">
+                        <td>S126</td>
+                        <td>P127</td>
+                        <td style="color: blue">Regular</td>
+                        <td>215</td>
+                        <td>406</td>
+                        <td>13</td>
+                        <td>26</td>
+                        <td>185.5</td>
+                    </tr>
+        
+                    <tr id="row-S127" data-category="Regular">
+                        <td>S127</td>
+                        <td>P126</td>
+                        <td style="color: blue">Regular</td>
+                        <td>228</td>
+                        <td>409</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>171.0</td>
+                    </tr>
+        
+                    <tr id="row-S128" data-category="Regular">
+                        <td>S128</td>
+                        <td>P125</td>
+                        <td style="color: blue">Regular</td>
+                        <td>48</td>
+                        <td>411</td>
+                        <td>21</td>
+                        <td>10</td>
+                        <td>119.0</td>
+                    </tr>
+        
+                    <tr id="row-S129" data-category="Regular">
+                        <td>S129</td>
+                        <td>P124</td>
+                        <td style="color: blue">Regular</td>
+                        <td>108</td>
+                        <td>411</td>
+                        <td>15</td>
+                        <td>22</td>
+                        <td>181.0</td>
+                    </tr>
+        
+                    <tr id="row-S130" data-category="Regular">
+                        <td>S130</td>
+                        <td>P123</td>
+                        <td style="color: blue">Regular</td>
+                        <td>123</td>
+                        <td>413</td>
+                        <td>13</td>
+                        <td>24</td>
+                        <td>156.5</td>
+                    </tr>
+        
+                    <tr id="row-S131" data-category="Regular">
+                        <td>S131</td>
+                        <td>P122</td>
+                        <td style="color: blue">Regular</td>
+                        <td>242</td>
+                        <td>413</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>196.0</td>
+                    </tr>
+        
+                    <tr id="row-S132" data-category="Regular">
+                        <td>S132</td>
+                        <td>P121</td>
+                        <td style="color: blue">Regular</td>
+                        <td>256</td>
+                        <td>416</td>
+                        <td>16</td>
+                        <td>27</td>
+                        <td>254.0</td>
+                    </tr>
+        
+                    <tr id="row-S133" data-category="Regular">
+                        <td>S133</td>
+                        <td>P120</td>
+                        <td style="color: blue">Regular</td>
+                        <td>137</td>
+                        <td>418</td>
+                        <td>13</td>
+                        <td>22</td>
+                        <td>184.5</td>
+                    </tr>
+        
+                    <tr id="row-S134" data-category="Regular">
+                        <td>S134</td>
+                        <td>P119</td>
+                        <td style="color: blue">Regular</td>
+                        <td>271</td>
+                        <td>420</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>230.0</td>
+                    </tr>
+        
+                    <tr id="row-S135" data-category="Regular">
+                        <td>S135</td>
+                        <td>P118</td>
+                        <td style="color: blue">Regular</td>
+                        <td>152</td>
+                        <td>421</td>
+                        <td>13</td>
+                        <td>22</td>
+                        <td>156.0</td>
+                    </tr>
+        
+                    <tr id="row-S136" data-category="Regular">
+                        <td>S136</td>
+                        <td>P117</td>
+                        <td style="color: blue">Regular</td>
+                        <td>285</td>
+                        <td>422</td>
+                        <td>14</td>
+                        <td>29</td>
+                        <td>205.5</td>
+                    </tr>
+        
+                    <tr id="row-S137" data-category="Regular">
+                        <td>S137</td>
+                        <td>P116</td>
+                        <td style="color: blue">Regular</td>
+                        <td>46</td>
+                        <td>423</td>
+                        <td>20</td>
+                        <td>13</td>
+                        <td>180.0</td>
+                    </tr>
+        
+                    <tr id="row-S138" data-category="Regular">
+                        <td>S138</td>
+                        <td>P115</td>
+                        <td style="color: blue">Regular</td>
+                        <td>166</td>
+                        <td>425</td>
+                        <td>13</td>
+                        <td>23</td>
+                        <td>162.5</td>
+                    </tr>
+        
+                    <tr id="row-S139" data-category="Regular">
+                        <td>S139</td>
+                        <td>P114</td>
+                        <td style="color: blue">Regular</td>
+                        <td>299</td>
+                        <td>426</td>
+                        <td>12</td>
+                        <td>28</td>
+                        <td>182.5</td>
+                    </tr>
+        
+                    <tr id="row-S140" data-category="Regular">
+                        <td>S140</td>
+                        <td>P113</td>
+                        <td style="color: blue">Regular</td>
+                        <td>179</td>
+                        <td>429</td>
+                        <td>14</td>
+                        <td>22</td>
+                        <td>163.5</td>
+                    </tr>
+        
+                    <tr id="row-S141" data-category="Regular">
+                        <td>S141</td>
+                        <td>P112</td>
+                        <td style="color: blue">Regular</td>
+                        <td>193</td>
+                        <td>431</td>
+                        <td>15</td>
+                        <td>23</td>
+                        <td>182.0</td>
+                    </tr>
+        
+                    <tr id="row-S142" data-category="Regular">
+                        <td>S142</td>
+                        <td>P111</td>
+                        <td style="color: blue">Regular</td>
+                        <td>208</td>
+                        <td>436</td>
+                        <td>13</td>
+                        <td>22</td>
+                        <td>176.0</td>
+                    </tr>
+        
+                    <tr id="row-S143" data-category="Regular">
+                        <td>S143</td>
+                        <td>P110</td>
+                        <td style="color: blue">Regular</td>
+                        <td>43</td>
+                        <td>439</td>
+                        <td>22</td>
+                        <td>10</td>
+                        <td>145.0</td>
+                    </tr>
+        
+                    <tr id="row-S144" data-category="Regular">
+                        <td>S144</td>
+                        <td>P109</td>
+                        <td style="color: blue">Regular</td>
+                        <td>222</td>
+                        <td>440</td>
+                        <td>13</td>
+                        <td>21</td>
+                        <td>147.5</td>
+                    </tr>
+        
+                    <tr id="row-S145" data-category="Regular">
+                        <td>S145</td>
+                        <td>P108</td>
+                        <td style="color: blue">Regular</td>
+                        <td>348</td>
+                        <td>441</td>
+                        <td>14</td>
+                        <td>21</td>
+                        <td>180.0</td>
+                    </tr>
+        
+                    <tr id="row-S146" data-category="Regular">
+                        <td>S146</td>
+                        <td>P107</td>
+                        <td style="color: blue">Regular</td>
+                        <td>235</td>
+                        <td>443</td>
+                        <td>12</td>
+                        <td>22</td>
+                        <td>141.0</td>
+                    </tr>
+        
+                    <tr id="row-S147" data-category="Regular">
+                        <td>S147</td>
+                        <td>P106</td>
+                        <td style="color: blue">Regular</td>
+                        <td>363</td>
+                        <td>445</td>
+                        <td>12</td>
+                        <td>21</td>
+                        <td>159.0</td>
+                    </tr>
+        
+                    <tr id="row-S148" data-category="Regular">
+                        <td>S148</td>
+                        <td>P105</td>
+                        <td style="color: blue">Regular</td>
+                        <td>248</td>
+                        <td>446</td>
+                        <td>16</td>
+                        <td>22</td>
+                        <td>210.5</td>
+                    </tr>
+        
+                    <tr id="row-S149" data-category="Regular">
+                        <td>S149</td>
+                        <td>P104</td>
+                        <td style="color: blue">Regular</td>
+                        <td>377</td>
+                        <td>448</td>
+                        <td>14</td>
+                        <td>21</td>
+                        <td>185.5</td>
+                    </tr>
+        
+                    <tr id="row-S150" data-category="Regular">
+                        <td>S150</td>
+                        <td>P103</td>
+                        <td style="color: blue">Regular</td>
+                        <td>266</td>
+                        <td>451</td>
+                        <td>12</td>
+                        <td>21</td>
+                        <td>170.0</td>
+                    </tr>
+        
+                    <tr id="row-S151" data-category="Regular">
+                        <td>S151</td>
+                        <td>P102</td>
+                        <td style="color: blue">Regular</td>
+                        <td>41</td>
+                        <td>452</td>
+                        <td>21</td>
+                        <td>13</td>
+                        <td>188.0</td>
+                    </tr>
+        
+                    <tr id="row-S152" data-category="Regular">
+                        <td>S152</td>
+                        <td>P101</td>
+                        <td style="color: blue">Regular</td>
+                        <td>393</td>
+                        <td>452</td>
+                        <td>12</td>
+                        <td>21</td>
+                        <td>162.5</td>
+                    </tr>
+        
+                    <tr id="row-S153" data-category="Regular">
+                        <td>S153</td>
+                        <td>P100</td>
+                        <td style="color: blue">Regular</td>
+                        <td>281</td>
+                        <td>455</td>
+                        <td>12</td>
+                        <td>20</td>
+                        <td>139.5</td>
+                    </tr>
+        
+                    <tr id="row-S154" data-category="Regular">
+                        <td>S154</td>
+                        <td>P99</td>
+                        <td style="color: blue">Regular</td>
+                        <td>407</td>
+                        <td>456</td>
+                        <td>12</td>
+                        <td>20</td>
+                        <td>165.0</td>
+                    </tr>
+        
+                    <tr id="row-S155" data-category="Regular">
+                        <td>S155</td>
+                        <td>P98</td>
+                        <td style="color: blue">Regular</td>
+                        <td>421</td>
+                        <td>459</td>
+                        <td>16</td>
+                        <td>21</td>
+                        <td>220.5</td>
+                    </tr>
+        
+                    <tr id="row-S156" data-category="Regular">
+                        <td>S156</td>
+                        <td>P97</td>
+                        <td style="color: blue">Regular</td>
+                        <td>437</td>
+                        <td>463</td>
+                        <td>15</td>
+                        <td>20</td>
+                        <td>187.0</td>
+                    </tr>
+        
+                    <tr id="row-S157" data-category="Regular">
+                        <td>S157</td>
+                        <td>P96</td>
+                        <td style="color: blue">Regular</td>
+                        <td>39</td>
+                        <td>465</td>
+                        <td>21</td>
+                        <td>14</td>
+                        <td>202.0</td>
+                    </tr>
+        
+                    <tr id="row-S158" data-category="Regular">
+                        <td>S158</td>
+                        <td>P95</td>
+                        <td style="color: blue">Regular</td>
+                        <td>103</td>
+                        <td>466</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>221.5</td>
+                    </tr>
+        
+                    <tr id="row-S159" data-category="Regular">
+                        <td>S159</td>
+                        <td>P94</td>
+                        <td style="color: blue">Regular</td>
+                        <td>341</td>
+                        <td>466</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>266.0</td>
+                    </tr>
+        
+                    <tr id="row-S160" data-category="Regular">
+                        <td>S160</td>
+                        <td>P93</td>
+                        <td style="color: blue">Regular</td>
+                        <td>117</td>
+                        <td>470</td>
+                        <td>19</td>
+                        <td>25</td>
+                        <td>311.0</td>
+                    </tr>
+        
+                    <tr id="row-S161" data-category="Regular">
+                        <td>S161</td>
+                        <td>P92</td>
+                        <td style="color: blue">Regular</td>
+                        <td>357</td>
+                        <td>470</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>226.5</td>
+                    </tr>
+        
+                    <tr id="row-S162" data-category="Regular">
+                        <td>S162</td>
+                        <td>P91</td>
+                        <td style="color: blue">Regular</td>
+                        <td>371</td>
+                        <td>473</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>264.5</td>
+                    </tr>
+        
+                    <tr id="row-S163" data-category="Regular">
+                        <td>S163</td>
+                        <td>P90</td>
+                        <td style="color: blue">Regular</td>
+                        <td>135</td>
+                        <td>474</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>193.5</td>
+                    </tr>
+        
+                    <tr id="row-S164" data-category="Regular">
+                        <td>S164</td>
+                        <td>P89</td>
+                        <td style="color: blue">Regular</td>
+                        <td>387</td>
+                        <td>476</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>200.5</td>
+                    </tr>
+        
+                    <tr id="row-S165" data-category="Regular">
+                        <td>S165</td>
+                        <td>P88</td>
+                        <td style="color: blue">Regular</td>
+                        <td>148</td>
+                        <td>478</td>
+                        <td>15</td>
+                        <td>24</td>
+                        <td>216.5</td>
+                    </tr>
+        
+                    <tr id="row-S166" data-category="Regular">
+                        <td>S166</td>
+                        <td>P87</td>
+                        <td style="color: blue">Regular</td>
+                        <td>400</td>
+                        <td>479</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>229.0</td>
+                    </tr>
+        
+                    <tr id="row-S167" data-category="Regular">
+                        <td>S167</td>
+                        <td>P86</td>
+                        <td style="color: blue">Regular</td>
+                        <td>36</td>
+                        <td>481</td>
+                        <td>22</td>
+                        <td>11</td>
+                        <td>158.0</td>
+                    </tr>
+        
+                    <tr id="row-S168" data-category="Regular">
+                        <td>S168</td>
+                        <td>P85</td>
+                        <td style="color: blue">Regular</td>
+                        <td>162</td>
+                        <td>482</td>
+                        <td>15</td>
+                        <td>24</td>
+                        <td>206.0</td>
+                    </tr>
+        
+                    <tr id="row-S169" data-category="Regular">
+                        <td>S169</td>
+                        <td>P84</td>
+                        <td style="color: blue">Regular</td>
+                        <td>415</td>
+                        <td>482</td>
+                        <td>17</td>
+                        <td>25</td>
+                        <td>261.5</td>
+                    </tr>
+        
+                    <tr id="row-S170" data-category="Regular">
+                        <td>S170</td>
+                        <td>P83</td>
+                        <td style="color: blue">Regular</td>
+                        <td>175</td>
+                        <td>485</td>
+                        <td>15</td>
+                        <td>24</td>
+                        <td>219.0</td>
+                    </tr>
+        
+                    <tr id="row-S171" data-category="Regular">
+                        <td>S171</td>
+                        <td>P82</td>
+                        <td style="color: blue">Regular</td>
+                        <td>430</td>
+                        <td>485</td>
+                        <td>17</td>
+                        <td>27</td>
+                        <td>265.5</td>
+                    </tr>
+        
+                    <tr id="row-S172" data-category="Regular">
+                        <td>S172</td>
+                        <td>P81</td>
+                        <td style="color: blue">Regular</td>
+                        <td>190</td>
+                        <td>488</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>239.0</td>
+                    </tr>
+        
+                    <tr id="row-S173" data-category="Regular">
+                        <td>S173</td>
+                        <td>P80</td>
+                        <td style="color: blue">Regular</td>
+                        <td>205</td>
+                        <td>492</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>217.0</td>
+                    </tr>
+        
+                    <tr id="row-S174" data-category="Regular">
+                        <td>S174</td>
+                        <td>P79</td>
+                        <td style="color: blue">Regular</td>
+                        <td>34</td>
+                        <td>493</td>
+                        <td>22</td>
+                        <td>12</td>
+                        <td>172.5</td>
+                    </tr>
+        
+                    <tr id="row-S175" data-category="Regular">
+                        <td>S175</td>
+                        <td>P78</td>
+                        <td style="color: blue">Regular</td>
+                        <td>97</td>
+                        <td>493</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>206.5</td>
+                    </tr>
+        
+                    <tr id="row-S176" data-category="Regular">
+                        <td>S176</td>
+                        <td>P77</td>
+                        <td style="color: blue">Regular</td>
+                        <td>218</td>
+                        <td>495</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>180.0</td>
+                    </tr>
+        
+                    <tr id="row-S177" data-category="Regular">
+                        <td>S177</td>
+                        <td>P76</td>
+                        <td style="color: blue">Regular</td>
+                        <td>111</td>
+                        <td>497</td>
+                        <td>18</td>
+                        <td>25</td>
+                        <td>306.0</td>
+                    </tr>
+        
+                    <tr id="row-S178" data-category="Regular">
+                        <td>S178</td>
+                        <td>P75</td>
+                        <td style="color: blue">Regular</td>
+                        <td>230</td>
+                        <td>499</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>198.0</td>
+                    </tr>
+        
+                    <tr id="row-S179" data-category="Regular">
+                        <td>S179</td>
+                        <td>P74</td>
+                        <td style="color: blue">Regular</td>
+                        <td>128</td>
+                        <td>501</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>171.5</td>
+                    </tr>
+        
+                    <tr id="row-S180" data-category="Regular">
+                        <td>S180</td>
+                        <td>P73</td>
+                        <td style="color: blue">Regular</td>
+                        <td>244</td>
+                        <td>502</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>190.5</td>
+                    </tr>
+        
+                    <tr id="row-S181" data-category="Regular">
+                        <td>S181</td>
+                        <td>P72</td>
+                        <td style="color: blue">Regular</td>
+                        <td>139</td>
+                        <td>505</td>
+                        <td>17</td>
+                        <td>25</td>
+                        <td>253.0</td>
+                    </tr>
+        
+                    <tr id="row-S182" data-category="Regular">
+                        <td>S182</td>
+                        <td>P71</td>
+                        <td style="color: blue">Regular</td>
+                        <td>257</td>
+                        <td>506</td>
+                        <td>17</td>
+                        <td>25</td>
+                        <td>280.0</td>
+                    </tr>
+        
+                    <tr id="row-S183" data-category="Regular">
+                        <td>S183</td>
+                        <td>P70</td>
+                        <td style="color: blue">Regular</td>
+                        <td>31</td>
+                        <td>507</td>
+                        <td>23</td>
+                        <td>15</td>
+                        <td>240.0</td>
+                    </tr>
+        
+                    <tr id="row-S184" data-category="Regular">
+                        <td>S184</td>
+                        <td>P69</td>
+                        <td style="color: blue">Regular</td>
+                        <td>155</td>
+                        <td>508</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>218.5</td>
+                    </tr>
+        
+                    <tr id="row-S185" data-category="Regular">
+                        <td>S185</td>
+                        <td>P68</td>
+                        <td style="color: blue">Regular</td>
+                        <td>273</td>
+                        <td>509</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>201.5</td>
+                    </tr>
+        
+                    <tr id="row-S186" data-category="Regular">
+                        <td>S186</td>
+                        <td>P67</td>
+                        <td style="color: blue">Regular</td>
+                        <td>169</td>
+                        <td>511</td>
+                        <td>15</td>
+                        <td>28</td>
+                        <td>258.0</td>
+                    </tr>
+        
+                    <tr id="row-S187" data-category="Regular">
+                        <td>S187</td>
+                        <td>P66</td>
+                        <td style="color: blue">Regular</td>
+                        <td>286</td>
+                        <td>513</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>210.5</td>
+                    </tr>
+        
+                    <tr id="row-S188" data-category="Regular">
+                        <td>S188</td>
+                        <td>P65</td>
+                        <td style="color: blue">Regular</td>
+                        <td>184</td>
+                        <td>516</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>236.5</td>
+                    </tr>
+        
+                    <tr id="row-S189" data-category="Regular">
+                        <td>S189</td>
+                        <td>P64</td>
+                        <td style="color: blue">Regular</td>
+                        <td>300</td>
+                        <td>517</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>236.5</td>
+                    </tr>
+        
+                    <tr id="row-S190" data-category="Regular">
+                        <td>S190</td>
+                        <td>P63</td>
+                        <td style="color: blue">Regular</td>
+                        <td>199</td>
+                        <td>519</td>
+                        <td>13</td>
+                        <td>26</td>
+                        <td>188.0</td>
+                    </tr>
+        
+                    <tr id="row-S191" data-category="Regular">
+                        <td>S191</td>
+                        <td>P62</td>
+                        <td style="color: blue">Regular</td>
+                        <td>314</td>
+                        <td>520</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>235.5</td>
+                    </tr>
+        
+                    <tr id="row-S192" data-category="Regular">
+                        <td>S192</td>
+                        <td>P61</td>
+                        <td style="color: blue">Regular</td>
+                        <td>211</td>
+                        <td>523</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>165.0</td>
+                    </tr>
+        
+                    <tr id="row-S193" data-category="Regular">
+                        <td>S193</td>
+                        <td>P60</td>
+                        <td style="color: blue">Regular</td>
+                        <td>329</td>
+                        <td>524</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>235.0</td>
+                    </tr>
+        
+                    <tr id="row-S194" data-category="Regular">
+                        <td>S194</td>
+                        <td>P59</td>
+                        <td style="color: blue">Regular</td>
+                        <td>223</td>
+                        <td>526</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>209.5</td>
+                    </tr>
+        
+                    <tr id="row-S195" data-category="Regular">
+                        <td>S195</td>
+                        <td>P58</td>
+                        <td style="color: blue">Regular</td>
+                        <td>343</td>
+                        <td>527</td>
+                        <td>17</td>
+                        <td>27</td>
+                        <td>286.5</td>
+                    </tr>
+        
+                    <tr id="row-S196" data-category="Regular">
+                        <td>S196</td>
+                        <td>P57</td>
+                        <td style="color: blue">Regular</td>
+                        <td>237</td>
+                        <td>530</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>209.5</td>
+                    </tr>
+        
+                    <tr id="row-S197" data-category="Regular">
+                        <td>S197</td>
+                        <td>P56</td>
+                        <td style="color: blue">Regular</td>
+                        <td>360</td>
+                        <td>532</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>225.5</td>
+                    </tr>
+        
+                    <tr id="row-S198" data-category="Regular">
+                        <td>S198</td>
+                        <td>P55</td>
+                        <td style="color: blue">Regular</td>
+                        <td>250</td>
+                        <td>533</td>
+                        <td>17</td>
+                        <td>27</td>
+                        <td>281.0</td>
+                    </tr>
+        
+                    <tr id="row-S199" data-category="Regular">
+                        <td>S199</td>
+                        <td>P54</td>
+                        <td style="color: blue">Regular</td>
+                        <td>373</td>
+                        <td>535</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>214.0</td>
+                    </tr>
+        
+                    <tr id="row-S200" data-category="Regular">
+                        <td>S200</td>
+                        <td>P53</td>
+                        <td style="color: blue">Regular</td>
+                        <td>267</td>
+                        <td>537</td>
+                        <td>13</td>
+                        <td>26</td>
+                        <td>192.5</td>
+                    </tr>
+        
+                    <tr id="row-S201" data-category="Regular">
+                        <td>S201</td>
+                        <td>P52</td>
+                        <td style="color: blue">Regular</td>
+                        <td>386</td>
+                        <td>539</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>232.5</td>
+                    </tr>
+        
+                    <tr id="row-S202" data-category="Regular">
+                        <td>S202</td>
+                        <td>P51</td>
+                        <td style="color: blue">Regular</td>
+                        <td>279</td>
+                        <td>541</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>220.5</td>
+                    </tr>
+        
+                    <tr id="row-S203" data-category="Regular">
+                        <td>S203</td>
+                        <td>P50</td>
+                        <td style="color: blue">Regular</td>
+                        <td>401</td>
+                        <td>542</td>
+                        <td>16</td>
+                        <td>27</td>
+                        <td>243.0</td>
+                    </tr>
+        
+                    <tr id="row-S204" data-category="Regular">
+                        <td>S204</td>
+                        <td>P49</td>
+                        <td style="color: blue">Regular</td>
+                        <td>293</td>
+                        <td>544</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>230.5</td>
+                    </tr>
+        
+                    <tr id="row-S205" data-category="Regular">
+                        <td>S205</td>
+                        <td>P48</td>
+                        <td style="color: blue">Regular</td>
+                        <td>415</td>
+                        <td>546</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>203.0</td>
+                    </tr>
+        
+                    <tr id="row-S206" data-category="Regular">
+                        <td>S206</td>
+                        <td>P47</td>
+                        <td style="color: blue">Regular</td>
+                        <td>49</td>
+                        <td>549</td>
+                        <td>98</td>
+                        <td>53</td>
+                        <td>3021.5</td>
+                    </tr>
+        
+                    <tr id="row-S207" data-category="Regular">
+                        <td>S207</td>
+                        <td>P46</td>
+                        <td style="color: blue">Regular</td>
+                        <td>308</td>
+                        <td>549</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>234.5</td>
+                    </tr>
+        
+                    <tr id="row-S208" data-category="Regular">
+                        <td>S208</td>
+                        <td>P45</td>
+                        <td style="color: blue">Regular</td>
+                        <td>429</td>
+                        <td>549</td>
+                        <td>16</td>
+                        <td>27</td>
+                        <td>244.0</td>
+                    </tr>
+        
+                    <tr id="row-S209" data-category="Regular">
+                        <td>S209</td>
+                        <td>P44</td>
+                        <td style="color: blue">Regular</td>
+                        <td>322</td>
+                        <td>552</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>249.0</td>
+                    </tr>
+        
+                    <tr id="row-S210" data-category="Regular">
+                        <td>S210</td>
+                        <td>P43</td>
+                        <td style="color: blue">Regular</td>
+                        <td>443</td>
+                        <td>553</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>222.0</td>
+                    </tr>
+        
+                    <tr id="row-S211" data-category="Regular">
+                        <td>S211</td>
+                        <td>P42</td>
+                        <td style="color: blue">Regular</td>
+                        <td>55</td>
+                        <td>555</td>
+                        <td>16</td>
+                        <td>23</td>
+                        <td>266.5</td>
+                    </tr>
+        
+                    <tr id="row-S212" data-category="Regular">
+                        <td>S212</td>
+                        <td>P41</td>
+                        <td style="color: blue">Regular</td>
+                        <td>338</td>
+                        <td>556</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>254.5</td>
+                    </tr>
+        
+                    <tr id="row-S213" data-category="Regular">
+                        <td>S213</td>
+                        <td>P40</td>
+                        <td style="color: blue">Regular</td>
+                        <td>457</td>
+                        <td>557</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>241.5</td>
+                    </tr>
+        
+                    <tr id="row-S214" data-category="Regular">
+                        <td>S214</td>
+                        <td>P39</td>
+                        <td style="color: blue">Regular</td>
+                        <td>72</td>
+                        <td>559</td>
+                        <td>13</td>
+                        <td>22</td>
+                        <td>167.5</td>
+                    </tr>
+        
+                    <tr id="row-S215" data-category="Regular">
+                        <td>S215</td>
+                        <td>P38</td>
+                        <td style="color: blue">Regular</td>
+                        <td>352</td>
+                        <td>560</td>
+                        <td>14</td>
+                        <td>26</td>
+                        <td>173.5</td>
+                    </tr>
+        
+                    <tr id="row-S216" data-category="Regular">
+                        <td>S216</td>
+                        <td>P37</td>
+                        <td style="color: blue">Regular</td>
+                        <td>471</td>
+                        <td>560</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>236.5</td>
+                    </tr>
+        
+                    <tr id="row-S217" data-category="Regular">
+                        <td>S217</td>
+                        <td>P36</td>
+                        <td style="color: blue">Regular</td>
+                        <td>84</td>
+                        <td>562</td>
+                        <td>15</td>
+                        <td>22</td>
+                        <td>179.0</td>
+                    </tr>
+        
+                    <tr id="row-S218" data-category="Regular">
+                        <td>S218</td>
+                        <td>P35</td>
+                        <td style="color: blue">Regular</td>
+                        <td>364</td>
+                        <td>564</td>
+                        <td>16</td>
+                        <td>25</td>
+                        <td>224.0</td>
+                    </tr>
+        
+                    <tr id="row-S219" data-category="Regular">
+                        <td>S219</td>
+                        <td>P34</td>
+                        <td style="color: blue">Regular</td>
+                        <td>485</td>
+                        <td>564</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>236.5</td>
+                    </tr>
+        
+                    <tr id="row-S220" data-category="Regular">
+                        <td>S220</td>
+                        <td>P33</td>
+                        <td style="color: blue">Regular</td>
+                        <td>98</td>
+                        <td>565</td>
+                        <td>15</td>
+                        <td>23</td>
+                        <td>192.0</td>
+                    </tr>
+        
+                    <tr id="row-S221" data-category="Regular">
+                        <td>S221</td>
+                        <td>P32</td>
+                        <td style="color: blue">Regular</td>
+                        <td>378</td>
+                        <td>567</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>223.0</td>
+                    </tr>
+        
+                    <tr id="row-S222" data-category="Regular">
+                        <td>S222</td>
+                        <td>P31</td>
+                        <td style="color: blue">Regular</td>
+                        <td>500</td>
+                        <td>567</td>
+                        <td>15</td>
+                        <td>28</td>
+                        <td>233.0</td>
+                    </tr>
+        
+                    <tr id="row-S223" data-category="Regular">
+                        <td>S223</td>
+                        <td>P30</td>
+                        <td style="color: blue">Regular</td>
+                        <td>112</td>
+                        <td>568</td>
+                        <td>16</td>
+                        <td>24</td>
+                        <td>217.0</td>
+                    </tr>
+        
+                    <tr id="row-S224" data-category="Regular">
+                        <td>S224</td>
+                        <td>P29</td>
+                        <td style="color: blue">Regular</td>
+                        <td>147</td>
+                        <td>570</td>
+                        <td>61</td>
+                        <td>45</td>
+                        <td>1661.0</td>
+                    </tr>
+        
+                    <tr id="row-S225" data-category="Regular">
+                        <td>S225</td>
+                        <td>P28</td>
+                        <td style="color: blue">Regular</td>
+                        <td>127</td>
+                        <td>571</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>193.5</td>
+                    </tr>
+        
+                    <tr id="row-S226" data-category="Regular">
+                        <td>S226</td>
+                        <td>P27</td>
+                        <td style="color: blue">Regular</td>
+                        <td>393</td>
+                        <td>571</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>241.5</td>
+                    </tr>
+        
+                    <tr id="row-S227" data-category="Regular">
+                        <td>S227</td>
+                        <td>P26</td>
+                        <td style="color: blue">Regular</td>
+                        <td>514</td>
+                        <td>571</td>
+                        <td>13</td>
+                        <td>27</td>
+                        <td>186.5</td>
+                    </tr>
+        
+                    <tr id="row-S228" data-category="Regular">
+                        <td>S228</td>
+                        <td>P25</td>
+                        <td style="color: blue">Regular</td>
+                        <td>526</td>
+                        <td>574</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>209.0</td>
+                    </tr>
+        
+                    <tr id="row-S229" data-category="Regular">
+                        <td>S229</td>
+                        <td>P24</td>
+                        <td style="color: blue">Regular</td>
+                        <td>407</td>
+                        <td>575</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>214.5</td>
+                    </tr>
+        
+                    <tr id="row-S230" data-category="Regular">
+                        <td>S230</td>
+                        <td>P23</td>
+                        <td style="color: blue">Regular</td>
+                        <td>153</td>
+                        <td>576</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>218.0</td>
+                    </tr>
+        
+                    <tr id="row-S231" data-category="Regular">
+                        <td>S231</td>
+                        <td>P22</td>
+                        <td style="color: blue">Regular</td>
+                        <td>539</td>
+                        <td>578</td>
+                        <td>15</td>
+                        <td>27</td>
+                        <td>229.0</td>
+                    </tr>
+        
+                    <tr id="row-S232" data-category="Regular">
+                        <td>S232</td>
+                        <td>P21</td>
+                        <td style="color: blue">Regular</td>
+                        <td>421</td>
+                        <td>579</td>
+                        <td>15</td>
+                        <td>25</td>
+                        <td>206.0</td>
+                    </tr>
+        
+                    <tr id="row-S233" data-category="Regular">
+                        <td>S233</td>
+                        <td>P20</td>
+                        <td style="color: blue">Regular</td>
+                        <td>168</td>
+                        <td>581</td>
+                        <td>14</td>
+                        <td>24</td>
+                        <td>205.0</td>
+                    </tr>
+        
+                    <tr id="row-S234" data-category="Regular">
+                        <td>S234</td>
+                        <td>P19</td>
+                        <td style="color: blue">Regular</td>
+                        <td>554</td>
+                        <td>581</td>
+                        <td>17</td>
+                        <td>29</td>
+                        <td>330.5</td>
+                    </tr>
+        
+                    <tr id="row-S235" data-category="Regular">
+                        <td>S235</td>
+                        <td>P18</td>
+                        <td style="color: blue">Regular</td>
+                        <td>435</td>
+                        <td>582</td>
+                        <td>16</td>
+                        <td>27</td>
+                        <td>225.0</td>
+                    </tr>
+        
+                    <tr id="row-S236" data-category="Regular">
+                        <td>S236</td>
+                        <td>P17</td>
+                        <td style="color: blue">Regular</td>
+                        <td>182</td>
+                        <td>585</td>
+                        <td>15</td>
+                        <td>24</td>
+                        <td>215.5</td>
+                    </tr>
+        
+                    <tr id="row-S237" data-category="Regular">
+                        <td>S237</td>
+                        <td>P16</td>
+                        <td style="color: blue">Regular</td>
+                        <td>449</td>
+                        <td>586</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>238.0</td>
+                    </tr>
+        
+                    <tr id="row-S238" data-category="Regular">
+                        <td>S238</td>
+                        <td>P15</td>
+                        <td style="color: blue">Regular</td>
+                        <td>463</td>
+                        <td>590</td>
+                        <td>17</td>
+                        <td>26</td>
+                        <td>252.5</td>
+                    </tr>
+        
+                    <tr id="row-S239" data-category="Reservation">
+                        <td>S239</td>
+                        <td>R3</td>
+                        <td style="color: #B8860B">Reservation</td>
+                        <td>216</td>
+                        <td>591</td>
+                        <td>48</td>
+                        <td>42</td>
+                        <td>1150.0</td>
+                    </tr>
+        
+                    <tr id="row-S240" data-category="Reservation">
+                        <td>S240</td>
+                        <td>R2</td>
+                        <td style="color: #B8860B">Reservation</td>
+                        <td>222</td>
+                        <td>593</td>
+                        <td>23</td>
+                        <td>31</td>
+                        <td>505.0</td>
+                    </tr>
+        
+                    <tr id="row-S241" data-category="Regular">
+                        <td>S241</td>
+                        <td>P14</td>
+                        <td style="color: blue">Regular</td>
+                        <td>566</td>
+                        <td>594</td>
+                        <td>79</td>
+                        <td>106</td>
+                        <td>2958.0</td>
+                    </tr>
+        
+                    <tr id="row-S242" data-category="Regular">
+                        <td>S242</td>
+                        <td>P13</td>
+                        <td style="color: blue">Regular</td>
+                        <td>479</td>
+                        <td>595</td>
+                        <td>14</td>
+                        <td>25</td>
+                        <td>193.0</td>
+                    </tr>
+        
+                    <tr id="row-S243" data-category="Reservation">
+                        <td>S243</td>
+                        <td>R1</td>
+                        <td style="color: #B8860B">Reservation</td>
+                        <td>240</td>
+                        <td>597</td>
+                        <td>17</td>
+                        <td>28</td>
+                        <td>218.0</td>
+                    </tr>
+        
+                    <tr id="row-S244" data-category="Regular">
+                        <td>S244</td>
+                        <td>P12</td>
+                        <td style="color: blue">Regular</td>
+                        <td>492</td>
+                        <td>598</td>
+                        <td>15</td>
+                        <td>26</td>
+                        <td>224.0</td>
+                    </tr>
+        
+                    <tr id="row-S245" data-category="Regular">
+                        <td>S245</td>
+                        <td>P11</td>
+                        <td style="color: blue">Regular</td>
+                        <td>619</td>
+                        <td>600</td>
+                        <td>21</td>
+                        <td>14</td>
+                        <td>189.0</td>
+                    </tr>
+        
+                    <tr id="row-S246" data-category="Regular">
+                        <td>S246</td>
+                        <td>P10</td>
+                        <td style="color: blue">Regular</td>
+                        <td>507</td>
+                        <td>601</td>
+                        <td>13</td>
+                        <td>26</td>
+                        <td>180.5</td>
+                    </tr>
+        
+                    <tr id="row-S247" data-category="Regular">
+                        <td>S247</td>
+                        <td>P9</td>
+                        <td style="color: blue">Regular</td>
+                        <td>520</td>
+                        <td>605</td>
+                        <td>13</td>
+                        <td>25</td>
+                        <td>174.0</td>
+                    </tr>
+        
+                    <tr id="row-S248" data-category="Regular">
+                        <td>S248</td>
+                        <td>P8</td>
+                        <td style="color: blue">Regular</td>
+                        <td>532</td>
+                        <td>608</td>
+                        <td>16</td>
+                        <td>26</td>
+                        <td>260.5</td>
+                    </tr>
+        
+                    <tr id="row-S249" data-category="Regular">
+                        <td>S249</td>
+                        <td>P7</td>
+                        <td style="color: blue">Regular</td>
+                        <td>548</td>
+                        <td>612</td>
+                        <td>17</td>
+                        <td>28</td>
+                        <td>296.0</td>
+                    </tr>
+        
+                    <tr id="row-S250" data-category="Regular">
+                        <td>S250</td>
+                        <td>P6</td>
+                        <td style="color: blue">Regular</td>
+                        <td>616</td>
+                        <td>616</td>
+                        <td>19</td>
+                        <td>11</td>
+                        <td>136.5</td>
+                    </tr>
+        
+                    <tr id="row-S251" data-category="Regular">
+                        <td>S251</td>
+                        <td>P5</td>
+                        <td style="color: blue">Regular</td>
+                        <td>613</td>
+                        <td>628</td>
+                        <td>19</td>
+                        <td>13</td>
+                        <td>148.0</td>
+                    </tr>
+        
+                    <tr id="row-S252" data-category="Regular">
+                        <td>S252</td>
+                        <td>P4</td>
+                        <td style="color: blue">Regular</td>
+                        <td>405</td>
+                        <td>639</td>
+                        <td>11</td>
+                        <td>26</td>
+                        <td>84.0</td>
+                    </tr>
+        
+                    <tr id="row-S253" data-category="Regular">
+                        <td>S253</td>
+                        <td>P3</td>
+                        <td style="color: blue">Regular</td>
+                        <td>609</td>
+                        <td>641</td>
+                        <td>19</td>
+                        <td>15</td>
+                        <td>166.5</td>
+                    </tr>
+        
+                    <tr id="row-S254" data-category="Regular">
+                        <td>S254</td>
+                        <td>P2</td>
+                        <td style="color: blue">Regular</td>
+                        <td>606</td>
+                        <td>657</td>
+                        <td>19</td>
+                        <td>14</td>
+                        <td>155.5</td>
+                    </tr>
+        
+                    <tr id="row-S255" data-category="Regular">
+                        <td>S255</td>
+                        <td>P1</td>
+                        <td style="color: blue">Regular</td>
+                        <td>603</td>
+                        <td>671</td>
+                        <td>18</td>
+                        <td>12</td>
+                        <td>133.5</td>
+                    </tr>
+        
+                </tbody>
+            </table>
+        </div>
+        
+        <script>
+            function searchSlot() {
+                // Reset highlighting
+                const slots = document.querySelectorAll('.slot');
+                slots.forEach(slot => {
+                    slot.style.backgroundColor = 'transparent';
+                    slot.style.zIndex = 1;
+                });
+                
+                const rows = document.querySelectorAll('.slot-table tr');
+                rows.forEach(row => {
+                    row.classList.remove('highlight');
+                });
+                
+                // Get search value
+                const searchValue = document.getElementById('slot-search').value.trim().toUpperCase();
+                if (!searchValue) return;
+                
+                // Find and highlight the slot
+                const slot = document.getElementById(searchValue);
+                if (slot) {
+                    slot.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                    slot.style.zIndex = 100;
+                    slot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Highlight the table row
+                    const row = document.getElementById('row-' + searchValue);
+                    if (row) {
+                        row.classList.add('highlight');
+                        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } else {
+                    // Try searching by category label
+                    let found = false;
+                    slots.forEach(slotEl => {
+                        const label = slotEl.querySelector('.slot-label').textContent;
+                        if (label.includes(searchValue)) {
+                            slotEl.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                            slotEl.style.zIndex = 100;
+                            slotEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            found = true;
+                        }
+                    });
+                    
+                    if (!found) {
+                        alert('Slot ' + searchValue + ' not found!');
+                    }
+                }
+            }
+            
+function filterByCategory() {
+                const selectedCategory = document.getElementById('category-filter').value;
+                const slots = document.querySelectorAll('.slot');
+                const rows = document.querySelectorAll('.slot-table tbody tr');
+                
+                slots.forEach(slot => {
+                    if (selectedCategory === 'all' || slot.dataset.category === selectedCategory) {
+                        slot.style.display = 'flex';
+                    } else {
+                        slot.style.display = 'none';
+                    }
+                });
+                
+                rows.forEach(row => {
+                    if (selectedCategory === 'all' || row.dataset.category === selectedCategory) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            function updateLabelSize(size) {
+                document.getElementById('size-value').textContent = size + 'px';
+                const labels = document.querySelectorAll('.slot-label');
+                labels.forEach(label => {
+                    label.style.fontSize = size + 'px';
+                });
+            }
+            
+            function toggleLabels() {
+                const labels = document.querySelectorAll('.slot-label');
+                labels.forEach(label => {
+                    label.style.display = label.style.display === 'none' ? '' : 'none';
+                });
+            }
+            
+            function filterTable() {
+                const filter = document.getElementById('table-search').value.toLowerCase();
+                const rows = document.getElementById('slot-table').getElementsByTagName('tbody')[0].rows;
+                
+                for (let i = 0; i < rows.length; i++) {
+                    let visible = false;
+                    const cells = rows[i].getElementsByTagName('td');
+                    
+                    for (let j = 0; j < cells.length; j++) {
+                        const cell = cells[j];
+                        if (cell.textContent.toLowerCase().indexOf(filter) > -1) {
+                            visible = true;
+                            break;
+                        }
+                    }
+                    
+                    rows[i].style.display = visible ? '' : 'none';
+                }
+            }
+            
+            // Add hover effects for better interactivity
+            document.addEventListener('DOMContentLoaded', function() {
+                const slots = document.querySelectorAll('.slot');
+                const rows = document.querySelectorAll('.slot-table tbody tr');
+                
+                // Add hover effect to slots
+                slots.forEach(slot => {
+                    slot.addEventListener('mouseenter', function() {
+                        this.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                        this.style.transform = 'scale(1.05)';
+                        this.style.transition = 'all 0.2s ease';
+                        
+                        // Highlight corresponding table row
+                        const slotId = this.id;
+                        const correspondingRow = document.getElementById('row-' + slotId);
+                        if (correspondingRow) {
+                            correspondingRow.style.backgroundColor = '#e6f3ff';
+                        }
+                    });
+                    
+                    slot.addEventListener('mouseleave', function() {
+                        if (!this.style.backgroundColor.includes('255, 255, 0')) { // Don't reset if highlighted by search
+                            this.style.backgroundColor = 'transparent';
+                        }
+                        this.style.transform = 'scale(1)';
+                        
+                        // Remove highlight from table row
+                        const slotId = this.id;
+                        const correspondingRow = document.getElementById('row-' + slotId);
+                        if (correspondingRow && !correspondingRow.classList.contains('highlight')) {
+                            correspondingRow.style.backgroundColor = '';
+                        }
+                    });
+                    
+                    // Click to highlight permanently
+                    slot.addEventListener('click', function() {
+                        // Remove previous permanent highlights
+                        slots.forEach(s => {
+                            if (s !== this) {
+                                s.style.backgroundColor = 'transparent';
+                                s.style.zIndex = 1;
+                            }
+                        });
+                        rows.forEach(r => r.classList.remove('highlight'));
+                        
+                        // Highlight this slot
+                        this.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                        this.style.zIndex = 100;
+                        
+                        // Highlight corresponding table row
+                        const slotId = this.id;
+                        const correspondingRow = document.getElementById('row-' + slotId);
+                        if (correspondingRow) {
+                            correspondingRow.classList.add('highlight');
+                            correspondingRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                });
+                
+                // Add click effect to table rows
+                rows.forEach(row => {
+                    row.addEventListener('click', function() {
+                        // Remove previous highlights
+                        slots.forEach(s => {
+                            s.style.backgroundColor = 'transparent';
+                            s.style.zIndex = 1;
+                        });
+                        rows.forEach(r => r.classList.remove('highlight'));
+                        
+                        // Highlight this row
+                        this.classList.add('highlight');
+                        
+                        // Find and highlight corresponding slot
+                        const rowId = this.id.replace('row-', '');
+                        const correspondingSlot = document.getElementById(rowId);
+                        if (correspondingSlot) {
+                            correspondingSlot.style.backgroundColor = 'rgba(255, 255, 0, 0.5)';
+                            correspondingSlot.style.zIndex = 100;
+                            correspondingSlot.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+    </html>
+    
