@@ -1530,11 +1530,31 @@ def process_parking_slots_csv(parking_lot, location):
                 else:
                     zone = None
                 
-                # Determine boolean flags based on label prefix
-                is_accessible = label.upper().startswith('A')
-                is_entry = label.upper().startswith('E')
-                is_reservation = label.upper().startswith('R')
-                is_regular = not (is_accessible or is_entry or is_reservation)
+                # IMPROVED: Use explicit type field from CSV if available, 
+                # otherwise fall back to label-based detection
+                slot_type = row.get('type', '').strip()
+                
+                if slot_type:
+                    # Use explicit type information from CSV
+                    is_accessible = slot_type.lower() == 'accessible'
+                    is_entry = slot_type.lower() == 'entry'
+                    is_reservation = slot_type.lower() == 'reservation'
+                    is_regular = slot_type.lower() == 'regular'
+                    print(f"Using explicit type '{slot_type}' for label {label}")
+                else:
+                    # Fall back to label-based detection
+                    is_accessible = label.upper().startswith('A')
+                    is_entry = label.upper().startswith('E')
+                    is_reservation = label.upper().startswith('R')
+                    is_regular = not (is_accessible or is_entry or is_reservation)
+                    print(f"Using label-based type detection for label {label}")
+                
+                # Validation: Ensure exactly one type is True
+                type_count = sum([is_accessible, is_entry, is_reservation, is_regular])
+                if type_count != 1:
+                    print(f"Warning: Invalid type configuration for {label}. Setting to regular.")
+                    is_accessible = is_entry = is_reservation = False
+                    is_regular = True
                 
                 # Create ParkingLotCoordinate record
                 coordinate = ParkingLotCoordinate(
@@ -1548,6 +1568,7 @@ def process_parking_slots_csv(parking_lot, location):
                     is_reservation=is_reservation,
                     is_Entry=is_entry,
                     label=label,
+                    slot_assigned=False,  # Default to False for new slots
                     zone=zone
                 )
                 
@@ -1555,6 +1576,7 @@ def process_parking_slots_csv(parking_lot, location):
                 coordinates_saved += 1
                 
                 print(f"Saved coordinate: {label} at ({x_coord}, {y_coord}) - "
+                      f"Type: {slot_type or 'label-based'} - "
                       f"Regular: {is_regular}, Accessible: {is_accessible}, "
                       f"Reservation: {is_reservation}, Entry: {is_entry}, Zone: {zone}")
                 

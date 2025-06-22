@@ -48,7 +48,7 @@ class ParkingLotCoordinate(models.Model):
     is_accessible = models.BooleanField(default=False)
     is_reservation = models.BooleanField(default=False)
     is_Entry = models.BooleanField(default=False)
-    label = models.CharField(max_length=10, blank=True, null=True, unique=True)
+    label = models.CharField(max_length=10, blank=True, null=True)
     slot_assigned = models.BooleanField(default=False)
     zone = models.CharField(max_length=1, blank=True, null=True)
 
