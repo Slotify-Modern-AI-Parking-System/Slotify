@@ -188,7 +188,7 @@
             loginSpinner.classList.remove('hidden');
             loginBtn.disabled = true;
             
-            // Simulate API call
+            // API call to login endpoint
             fetch('/parking-lot/login/', {
                 method: 'POST',
                 headers: {
@@ -202,12 +202,21 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Store lotId in sessionStorage with exact variable name
+                    sessionStorage.setItem('lotId', data.lotId);
+                    
+                    console.log('Login successful, lotId stored:', data.lotId);
+                    
                     // Show success message
                     successMessage.classList.remove('hidden');
                     
-                    // Redirect after 2 seconds
+                    // Optional: You can also store other lot data if needed
+                    sessionStorage.setItem('lotData', JSON.stringify(data.data));
+                    
+                    // Redirect after 2 seconds (you can change the URL as needed)
                     setTimeout(() => {
-                        
+                        // Replace with your dashboard URL
+                        window.location.href = '/dashboard/';
                     }, 2000);
                 } else {
                     // Show error message
@@ -216,6 +225,7 @@
                 }
             })
             .catch(error => {
+                console.error('Login error:', error);
                 // Handle network errors
                 document.getElementById('errorText').textContent = 'Network error. Please try again.';
                 errorMessage.classList.remove('hidden');
@@ -239,6 +249,16 @@
         // Focus username field on load
         window.addEventListener('load', function() {
             document.getElementById('username').focus();
+        });
+
+        // Optional: Check if user is already logged in
+        window.addEventListener('load', function() {
+            const storedLotId = sessionStorage.getItem('lotId');
+            if (storedLotId) {
+                console.log('User already has lotId in session:', storedLotId);
+                // You can redirect to dashboard if already logged in
+                // window.location.href = '/dashboard/';
+            }
         });
     </script>
 </body>

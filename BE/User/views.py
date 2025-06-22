@@ -66,8 +66,9 @@ running_processes = {}
 
 @receiver(parking_lot_logged_in)
 def start_car_detector(sender, lot_id, **kwargs):
+    script_path = "../../ALPR/carDetector.py"
     """Start the car detector script when parking lot logs in"""
-    script_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/carDetector.py"
+    
     
     # Check if script is already running for this lot
     if lot_id in running_processes and running_processes[lot_id].poll() is None:
@@ -132,6 +133,54 @@ def stop_car_detector(sender, lot_id, **kwargs):
         except Exception as e:
             print(f"Error stopping car detector for lot {lot_id}: {str(e)}")
 
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def parking_lot_login(request):
+#     try:
+#         data = json.loads(request.body)
+#         username = data.get("username")
+#         password = data.get("password")
+
+#         if not username or not password:
+#             return JsonResponse({"success": False, "message": "Username and password required"}, status=400)
+
+#         try:
+#             lot = ParkingLot.objects.get(username=username, password=password)
+#         except ParkingLot.DoesNotExist:
+#             return JsonResponse({"success": False, "message": "Invalid username or password"}, status=401)
+
+#         print(f"About to trigger signal for lot {lot.id}")  # Debug print
+        
+#         # Trigger the car detector script
+#         parking_lot_logged_in.send(sender=ParkingLot, lot_id=lot.id)
+        
+#         print(f"Signal sent for lot {lot.id}")  # Debug print
+
+#         # Prepare the data to return
+#         lot_data = {
+#             "id": lot.id,
+#             "name": lot.name,
+#             "location": lot.location,
+#             "total_spaces": lot.total_spaces,
+#             "available_spaces": lot.available_spaces,
+#             "registered_by": lot.registered_by.id,
+#             "confirmed": lot.confirmed,
+#             "username": lot.username,
+#         }
+
+#         return JsonResponse({
+#             "success": True,
+#             "message": "Login successful",
+#             "data": lot_data
+#         })
+
+#     except json.JSONDecodeError:
+#         return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
+#     except Exception as e:
+#         print(f"Login error: {str(e)}")  # Debug print
+# Add this new view to check process status
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def parking_lot_login(request):
@@ -139,22 +188,22 @@ def parking_lot_login(request):
         data = json.loads(request.body)
         username = data.get("username")
         password = data.get("password")
-
+        
         if not username or not password:
             return JsonResponse({"success": False, "message": "Username and password required"}, status=400)
-
+        
         try:
             lot = ParkingLot.objects.get(username=username, password=password)
         except ParkingLot.DoesNotExist:
             return JsonResponse({"success": False, "message": "Invalid username or password"}, status=401)
-
+        
         print(f"About to trigger signal for lot {lot.id}")  # Debug print
         
         # Trigger the car detector script
         parking_lot_logged_in.send(sender=ParkingLot, lot_id=lot.id)
         
         print(f"Signal sent for lot {lot.id}")  # Debug print
-
+        
         # Prepare the data to return
         lot_data = {
             "id": lot.id,
@@ -166,18 +215,19 @@ def parking_lot_login(request):
             "confirmed": lot.confirmed,
             "username": lot.username,
         }
-
+        
         return JsonResponse({
             "success": True,
             "message": "Login successful",
-            "data": lot_data
+            "data": lot_data,
+            "lotId": lot.id  # Add lotId to response for client-side storage
         })
-
+        
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
     except Exception as e:
         print(f"Login error: {str(e)}")  # Debug print
-# Add this new view to check process status
+        return JsonResponse({"success": False, "message": "Internal server error"}, status=500)
 @csrf_exempt
 @require_http_methods(["GET"])
 def check_processes(request):
@@ -223,8 +273,10 @@ def run_car_detector_in_thread(lot_id, script_path):
 # Alternative signal receiver using threading
 @receiver(parking_lot_logged_in)
 def start_car_detector_thread(sender, lot_id, **kwargs):
+
+    script_path = "../../ALPR/carDetector.py"
     """Start the car detector script in a thread when parking lot logs in"""
-    script_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/carDetector.py"
+    
     
     # Check if thread is already running for this lot
     if lot_id in running_threads and running_threads[lot_id].is_alive():
@@ -279,7 +331,7 @@ def get_license_plate(request):
     """
     GET API to read license plate detection from file and clear it
     """
-    file_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/detection.txt"
+    file_path = "../../ALPR/detection.txt"
     
     try:
         # Check if file exists
