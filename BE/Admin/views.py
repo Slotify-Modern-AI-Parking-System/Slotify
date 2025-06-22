@@ -1294,6 +1294,8 @@ def process_parking_slots_csv(parking_lot, location):
     import csv
     import os
     
+    csv_filename = None  # Initialize to track the file for cleanup
+    
     try:
         # Construct CSV filename
         csv_filename = f"parking_slots_{location}.csv"
@@ -1390,12 +1392,22 @@ def process_parking_slots_csv(parking_lot, location):
         
         print(f"Successfully processed CSV file. Saved {coordinates_saved} coordinates.")
         
+        # Delete the CSV file after successful processing
+        try:
+            os.remove(csv_filename)
+            print(f"Successfully deleted CSV file: {csv_filename}")
+            file_deleted = True
+        except OSError as delete_error:
+            print(f"Warning: Could not delete CSV file {csv_filename}: {str(delete_error)}")
+            file_deleted = False
+        
         return {
             'success': True,
             'message': f'Successfully processed {csv_filename}',
             'coordinates_saved': coordinates_saved,
             'entry_coordinates': {'x': entry_x, 'y': entry_y},
-            'csv_file': csv_filename
+            'csv_file': csv_filename,
+            'file_deleted': file_deleted
         }
         
     except FileNotFoundError:
@@ -1410,13 +1422,21 @@ def process_parking_slots_csv(parking_lot, location):
     except Exception as csv_error:
         error_msg = f'Error processing CSV file: {str(csv_error)}'
         print(error_msg)
+        
+        # Clean up CSV file even if processing failed (optional - you might want to keep it for debugging)
+        if csv_filename and os.path.exists(csv_filename):
+            try:
+                os.remove(csv_filename)
+                print(f"Deleted CSV file after processing error: {csv_filename}")
+            except OSError as delete_error:
+                print(f"Could not delete CSV file after error: {str(delete_error)}")
+        
         return {
             'success': False,
             'message': error_msg,
             'coordinates_saved': 0,
             'error_details': str(csv_error)
         }
-
 
 
 import os
