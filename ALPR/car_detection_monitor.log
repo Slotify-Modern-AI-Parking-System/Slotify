@@ -45,3 +45,11 @@
 2025-06-21 15:44:32,509 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 0
 2025-06-21 15:45:40,096 - INFO - ✅ Main script execution completed successfully
 2025-06-21 15:45:49,851 - ERROR - Error triggering main script: [Errno 32] Broken pipe
+2025-06-22 16:43:01,227 - INFO - 🎯 Car ID 1 persistent for 17.4s - TRIGGERING MAIN.PY
+2025-06-22 16:43:01,229 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-22 16:43:01,229 - INFO - 🎯 Car ID 2 persistent for 16.7s - TRIGGERING MAIN.PY
+2025-06-22 16:43:01,229 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-22 16:44:11,342 - INFO - ✅ Main script execution completed successfully
+2025-06-22 16:44:11,345 - INFO - ✅ Main script execution completed successfully
+2025-06-22 16:45:25,468 - ERROR - Error triggering main script: [Errno 32] Broken pipe
+2025-06-22 16:45:25,468 - ERROR - Error triggering main script: [Errno 32] Broken pipe

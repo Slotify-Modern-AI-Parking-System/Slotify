@@ -1280,6 +1280,166 @@ def run_python_script(request):
         }, status=500)
 
 
+# def process_parking_slots_csv(parking_lot, location):
+#     """
+#     Process CSV file with parking slot coordinates and save to ParkingLotCoordinate table
+    
+#     Args:
+#         parking_lot: ParkingLot instance
+#         location: location string used to find the CSV file
+        
+#     Returns:
+#         dict: Processing result information
+#     """
+#     import csv
+#     import os
+    
+#     csv_filename = None  # Initialize to track the file for cleanup
+    
+#     try:
+#         # Construct CSV filename
+#         csv_filename = f"parking_slots_{location}.csv"
+        
+#         # Check if CSV file exists in current directory
+#         if not os.path.exists(csv_filename):
+#             print(f"CSV file not found: {csv_filename}")
+#             return {
+#                 'success': False,
+#                 'message': f'CSV file not found: {csv_filename}',
+#                 'coordinates_saved': 0
+#             }
+        
+#         print(f"Processing CSV file: {csv_filename}")
+        
+#         # Read CSV and find entry coordinates (label = E1)
+#         entry_x = 0
+#         entry_y = 0
+#         csv_data = []
+        
+#         with open(csv_filename, 'r', newline='', encoding='utf-8') as csvfile:
+#             reader = csv.DictReader(csvfile)
+            
+#             # First pass: collect all data and find entry coordinates
+#             for row in reader:
+#                 csv_data.append(row)
+#                 if row.get('label', '').strip() == 'E1':
+#                     try:
+#                         entry_x = float(row.get('x', 0))
+#                         entry_y = float(row.get('y', 0))
+#                         print(f"Found entry coordinates from E1: ({entry_x}, {entry_y})")
+#                     except (ValueError, TypeError):
+#                         print(f"Error parsing entry coordinates from E1: x={row.get('x')}, y={row.get('y')}")
+        
+#         print(f"Using entry coordinates: ({entry_x}, {entry_y})")
+        
+#         # Clear existing coordinates for this parking lot
+#         ParkingLotCoordinate.objects.filter(lotId=parking_lot).delete()
+#         print(f"Cleared existing coordinates for parking lot: {parking_lot.id}")
+        
+#         # Second pass: create ParkingLotCoordinate records
+#         coordinates_saved = 0
+        
+#         for row in csv_data:
+#             try:
+#                 # Skip if missing required fields
+#                 if not all(key in row for key in ['label', 'x', 'y']):
+#                     print(f"Skipping row with missing required fields: {row}")
+#                     continue
+                
+#                 label = row.get('label', '').strip()
+#                 if not label:
+#                     print(f"Skipping row with empty label: {row}")
+#                     continue
+                
+#                 # Parse coordinates
+#                 try:
+#                     x_coord = float(row.get('x', 0))
+#                     y_coord = float(row.get('y', 0))
+#                 except (ValueError, TypeError) as coord_error:
+#                     print(f"Error parsing coordinates for label {label}: {coord_error}")
+#                     continue
+                
+#                 # Determine boolean flags based on label prefix
+#                 is_accessible = label.upper().startswith('A')
+#                 is_entry = label.upper().startswith('E')
+#                 is_reservation = label.upper().startswith('R')
+#                 is_regular = not (is_accessible or is_entry or is_reservation)
+                
+#                 # Create ParkingLotCoordinate record
+#                 coordinate = ParkingLotCoordinate(
+#                     lotId=parking_lot,
+#                     x_coordinate=x_coord,
+#                     y_coordinate=y_coord,
+#                     entry_x=entry_x,
+#                     entry_y=entry_y,
+#                     is_regular=is_regular,
+#                     is_accessible=is_accessible,
+#                     is_reservation=is_reservation,
+#                     is_Entry=is_entry,
+#                     label=label
+#                 )
+                
+#                 coordinate.save()
+#                 coordinates_saved += 1
+                
+#                 print(f"Saved coordinate: {label} at ({x_coord}, {y_coord}) - "
+#                       f"Regular: {is_regular}, Accessible: {is_accessible}, "
+#                       f"Reservation: {is_reservation}, Entry: {is_entry}")
+                
+#             except Exception as row_error:
+#                 print(f"Error processing row {row}: {str(row_error)}")
+#                 continue
+        
+#         print(f"Successfully processed CSV file. Saved {coordinates_saved} coordinates.")
+        
+#         # Delete the CSV file after successful processing
+#         try:
+#             os.remove(csv_filename)
+#             print(f"Successfully deleted CSV file: {csv_filename}")
+#             file_deleted = True
+#         except OSError as delete_error:
+#             print(f"Warning: Could not delete CSV file {csv_filename}: {str(delete_error)}")
+#             file_deleted = False
+        
+#         return {
+#             'success': True,
+#             'message': f'Successfully processed {csv_filename}',
+#             'coordinates_saved': coordinates_saved,
+#             'entry_coordinates': {'x': entry_x, 'y': entry_y},
+#             'csv_file': csv_filename,
+#             'file_deleted': file_deleted
+#         }
+        
+#     except FileNotFoundError:
+#         error_msg = f'CSV file not found: parking_slots_{location}.csv'
+#         print(error_msg)
+#         return {
+#             'success': False,
+#             'message': error_msg,
+#             'coordinates_saved': 0
+#         }
+        
+#     except Exception as csv_error:
+#         error_msg = f'Error processing CSV file: {str(csv_error)}'
+#         print(error_msg)
+        
+#         # Clean up CSV file even if processing failed (optional - you might want to keep it for debugging)
+#         if csv_filename and os.path.exists(csv_filename):
+#             try:
+#                 os.remove(csv_filename)
+#                 print(f"Deleted CSV file after processing error: {csv_filename}")
+#             except OSError as delete_error:
+#                 print(f"Could not delete CSV file after error: {str(delete_error)}")
+        
+#         return {
+#             'success': False,
+#             'message': error_msg,
+#             'coordinates_saved': 0,
+#             'error_details': str(csv_error)
+#         }
+
+
+
 def process_parking_slots_csv(parking_lot, location):
     """
     Process CSV file with parking slot coordinates and save to ParkingLotCoordinate table
@@ -1359,6 +1519,17 @@ def process_parking_slots_csv(parking_lot, location):
                     print(f"Error parsing coordinates for label {label}: {coord_error}")
                     continue
                 
+                # Extract zone information
+                zone = row.get('zone', '').strip()
+                if zone:
+                    # Extract single character from zone (e.g., "A" from "Zone A")
+                    if zone.startswith('Zone '):
+                        zone = zone.replace('Zone ', '').strip()
+                    # Take only the first character to fit max_length=1
+                    zone = zone[:1] if zone else None
+                else:
+                    zone = None
+                
                 # Determine boolean flags based on label prefix
                 is_accessible = label.upper().startswith('A')
                 is_entry = label.upper().startswith('E')
@@ -1376,7 +1547,8 @@ def process_parking_slots_csv(parking_lot, location):
                     is_accessible=is_accessible,
                     is_reservation=is_reservation,
                     is_Entry=is_entry,
-                    label=label
+                    label=label,
+                    zone=zone
                 )
                 
                 coordinate.save()
@@ -1384,7 +1556,7 @@ def process_parking_slots_csv(parking_lot, location):
                 
                 print(f"Saved coordinate: {label} at ({x_coord}, {y_coord}) - "
                       f"Regular: {is_regular}, Accessible: {is_accessible}, "
-                      f"Reservation: {is_reservation}, Entry: {is_entry}")
+                      f"Reservation: {is_reservation}, Entry: {is_entry}, Zone: {zone}")
                 
             except Exception as row_error:
                 print(f"Error processing row {row}: {str(row_error)}")

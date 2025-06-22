@@ -18,3 +18,6 @@
 2025-06-21 15:43:03,604 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-21 15:44:13,993 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-21 15:45:41,713 - INFO - License plate detected and returned: LL
+2025-06-22 16:42:20,657 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-22 16:42:42,125 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-06-22 16:44:12,990 - INFO - License plate detected and returned: DL7C01939
