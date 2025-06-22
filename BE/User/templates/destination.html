@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slotify Destination - AI Smart Parking Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(25px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0, -30px, 0);
+            }
+            70% {
+                transform: translate3d(0, -15px, 0);
+            }
+            90% {
+                transform: translate3d(0, -4px, 0);
+            }
+        }
+
+        @keyframes morphSpin {
+            0% { transform: rotate(0deg) scale(1); border-radius: 50%; }
+            25% { transform: rotate(90deg) scale(1.1); border-radius: 30%; }
+            50% { transform: rotate(180deg) scale(1); border-radius: 20%; }
+            75% { transform: rotate(270deg) scale(1.1); border-radius: 40%; }
+            100% { transform: rotate(360deg) scale(1); border-radius: 50%; }
+        }
+
+        @keyframes slideRight {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.6), 0 0 60px rgba(34, 197, 94, 0.3); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes wiggle {
+            0%, 7% { transform: rotateZ(0); }
+            15% { transform: rotateZ(-15deg); }
+            20% { transform: rotateZ(10deg); }
+            25% { transform: rotateZ(-10deg); }
+            30% { transform: rotateZ(6deg); }
+            35% { transform: rotateZ(-4deg); }
+            40%, 100% { transform: rotateZ(0); }
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-pulse-gentle {
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .animate-bounce-gentle {
+            animation: bounce 2s infinite;
+        }
+
+        .animate-morphSpin {
+            animation: morphSpin 2s linear infinite;
+        }
+
+        .animate-slideRight {
+            animation: slideRight 0.5s ease-out;
+        }
+
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .animate-shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        .animate-wiggle {
+            animation: wiggle 2s ease-in-out infinite;
+        }
+
+        .animate-heartbeat {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        .bg-gradient-navy-green {
+            background: linear-gradient(135deg, #001f3f 0%, #2d5a2d 100%);
+        }
+
+        .bg-gradient-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-600 { animation-delay: 0.6s; }
+        .delay-800 { animation-delay: 0.8s; }
+        .delay-1000 { animation-delay: 1s; }
+        .delay-1500 { animation-delay: 1.5s; }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-3000 { animation-delay: 3s; }
+        .delay-4000 { animation-delay: 4s; }
+        .delay-5000 { animation-delay: 5s; }
+
+        .loading-wave {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            animation: bounce 1.4s ease-in-out infinite both;
+        }
+        .loading-wave:nth-child(1) { animation-delay: -0.32s; }
+        .loading-wave:nth-child(2) { animation-delay: -0.16s; }
+        .loading-wave:nth-child(3) { animation-delay: 0s; }
+
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .progress-bar {
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        .typewriter {
+            overflow: hidden;
+            border-right: 3px solid #667eea;
+            white-space: nowrap;
+            animation: typewriter 2s steps(40, end), blink 0.75s step-end infinite;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #667eea;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-navy-green min-h-screen flex items-center justify-center p-4 md:p-6 font-sans overflow-hidden">
+    <!-- Modern floating elements -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <!-- Animated particles -->
+        <div class="particle" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="top: 60%; left: 85%; animation-delay: 1s;"></div>
+        <div class="particle" style="top: 80%; left: 20%; animation-delay: 2s;"></div>
+        <div class="particle" style="top: 30%; left: 70%; animation-delay: 1.5s;"></div>
+        
+        <!-- Modern floating icons with glassmorphism -->
+        <div class="absolute top-[15%] left-[8%] w-12 h-12 bg-glass rounded-2xl flex items-center justify-center text-2xl animate-float animate-glow">🚗</div>
+        <div class="absolute top-[25%] right-[12%] w-12 h-12 bg-glass rounded-2xl flex items-center justify-center text-2xl animate-float delay-1000">🅿️</div>
+        <div class="absolute bottom-[35%] left-[15%] w-12 h-12 bg-glass rounded-2xl flex items-center justify-center text-2xl animate-float delay-2000">🚙</div>
+        <div class="absolute bottom-[25%] right-[8%] w-12 h-12 bg-glass rounded-2xl flex items-center justify-center text-2xl animate-float delay-3000">🚕</div>
+        <div class="absolute top-[55%] left-[3%] w-12 h-12 bg-glass rounded-2xl flex items-center justify-center text-2xl animate-float delay-4000">🚐</div>
+        <div class="absolute top-[65%] right-[5%] w-12 h-12 bg-glass rounded-2xl flex items-center justify-center text-2xl animate-float delay-5000">🚓</div>
+    </div>
+
+    <!-- Main container with glassmorphism -->
+    <div class="bg-white bg-opacity-10 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white border-opacity-20 p-8 md:p-12 w-full max-w-lg animate-slideIn relative z-10">
+        
+        <!-- Selection Screen -->
+        <div id="selectionScreen" class="text-center">
+            <!-- Modern Header -->
+            <div class="mb-10">
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl md:text-4xl font-bold text-white animate-pulse-gentle shadow-2xl animate-glow">
+                    <span class="animate-wiggle">🎯</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-white mb-3 text-gradient">
+                    Find Your Spot
+                </h1>
+                <p class="text-white text-opacity-80 text-base md:text-lg">
+                    Choose your perfect parking experience ✨
+                </p>
+            </div>
+
+            <!-- Modern Parking Type Options -->
+            <div class="space-y-5">
+                <button onclick="selectParkingType('Regular')" 
+                        class="group w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-6 px-8 rounded-2xl hover-lift shadow-xl transition-all duration-500 overflow-hidden relative">
+                    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-4 group-hover:animate-bounce-gentle">🚗</span>
+                            <div class="text-left">
+                                <span class="text-xl font-bold block">Regular Parking</span>
+                                <span class="text-blue-100 text-sm">Standard spots available</span>
+                            </div>
+                        </div>
+                        <span class="text-2xl group-hover:animate-slideRight">→</span>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-white bg-opacity-20 group-hover:animate-shimmer"></div>
+                </button>
+
+                <button onclick="selectParkingType('Accessible')" 
+                        class="group w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-6 px-8 rounded-2xl hover-lift shadow-xl transition-all duration-500 overflow-hidden relative delay-200 animate-fadeInUp">
+                    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-4 group-hover:animate-heartbeat">♿</span>
+                            <div class="text-left">
+                                <span class="text-xl font-bold block">Accessible Parking</span>
+                                <span class="text-green-100 text-sm">Wheelchair friendly spots</span>
+                            </div>
+                        </div>
+                        <span class="text-2xl group-hover:animate-slideRight">→</span>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-white bg-opacity-20 group-hover:animate-shimmer"></div>
+                </button>
+
+                <button onclick="selectParkingType('Reserved')" 
+                        class="group w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-6 px-8 rounded-2xl hover-lift shadow-xl transition-all duration-500 overflow-hidden relative delay-400 animate-fadeInUp">
+                    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-3xl mr-4 group-hover:animate-wiggle">⭐</span>
+                            <div class="text-left">
+                                <span class="text-xl font-bold block">Reserved Parking</span>
+                                <span class="text-purple-100 text-sm">Premium VIP experience</span>
+                            </div>
+                        </div>
+                        <span class="text-2xl group-hover:animate-slideRight">→</span>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-white bg-opacity-20 group-hover:animate-shimmer"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modern Loading Screen -->
+        <div id="loadingScreen" class="hidden text-center">
+            <div class="mb-10">
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl md:text-4xl font-bold text-white animate-morphSpin shadow-2xl">
+                    🔍
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-3" id="loadingTitle">
+                    <span class="typewriter">AI is working its magic...</span>
+                </h2>
+                <p class="text-white text-opacity-80 text-base md:text-lg mb-6" id="loadingMessage">
+                    Scanning the perfect spot just for you 🎯
+                </p>
+                
+                <!-- Modern Progress Bar -->
+                <div class="w-full bg-white bg-opacity-20 rounded-full h-2 mb-6">
+                    <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Modern Loading Animation -->
+            <div class="flex justify-center items-center space-x-3 mb-8">
+                <div class="loading-wave"></div>
+                <div class="loading-wave"></div>
+                <div class="loading-wave"></div>
+            </div>
+
+            <!-- Modern Progress Messages -->
+            <div class="space-y-4">
+                <div id="progress1" class="hidden p-4 bg-blue-500 bg-opacity-20 backdrop-blur-lg border border-blue-400 border-opacity-30 rounded-xl animate-slideRight">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3 animate-bounce-gentle">🔍</span>
+                        <span class="text-white font-semibold">Analyzing 847 parking spots...</span>
+                    </div>
+                </div>
+                <div id="progress2" class="hidden p-4 bg-green-500 bg-opacity-20 backdrop-blur-lg border border-green-400 border-opacity-30 rounded-xl animate-slideRight">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3 animate-heartbeat">📍</span>
+                        <span class="text-white font-semibold">AI calculating optimal route...</span>
+                    </div>
+                </div>
+                <div id="progress3" class="hidden p-4 bg-purple-500 bg-opacity-20 backdrop-blur-lg border border-purple-400 border-opacity-30 rounded-xl animate-slideRight">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3 animate-wiggle">🎯</span>
+                        <span class="text-white font-semibold">Perfect match found! 🎉</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modern Success Screen -->
+        <div id="successScreen" class="hidden text-center">
+            <div class="mb-10">
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 to-emerald-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl md:text-4xl font-bold text-white animate-bounce-gentle shadow-2xl animate-glow">
+                    🎉
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-3">
+                    Spot <span id="assignedSlot" class="text-green-400 text-4xl font-extrabold animate-pulse-gentle"></span> is Ready!
+                </h2>
+                <p class="text-white text-opacity-80 text-base md:text-lg">
+                    Your perfect parking spot awaits! 🌟
+                </p>
+            </div>
+
+            <!-- Modern Slot Details -->
+            <div class="bg-green-500 bg-opacity-20 backdrop-blur-lg border border-green-400 border-opacity-30 rounded-2xl p-6 mb-8 animate-fadeInUp">
+                <div class="flex items-center justify-center mb-4">
+                    <span class="text-4xl mr-3 animate-heartbeat">🅿️</span>
+                    <span class="text-xl font-bold text-white">Your Reserved Spot</span>
+                </div>
+                <div class="flex justify-center items-center space-x-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-400" id="slotDistance"></div>
+                        <div class="text-white text-opacity-70 text-sm">meters away</div>
+                    </div>
+                    <div class="w-px h-8 bg-white bg-opacity-30"></div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-400" id="selectedParkingType"></div>
+                        <div class="text-white text-opacity-70 text-sm">parking type</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Navigation -->
+            <div class="mb-8">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center justify-center">
+                    <span class="text-3xl mr-3 animate-wiggle">🧭</span>
+                    Your GPS Route
+                </h3>
+                <div id="directions" class="space-y-4">
+                    <!-- Directions will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Final Modern Message -->
+            <div class="bg-blue-500 bg-opacity-20 backdrop-blur-lg border border-blue-400 border-opacity-30 rounded-2xl p-6 animate-fadeInUp delay-400">
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-3xl mr-3 animate-heartbeat">🛡️</span>
+                    <span class="text-2xl font-bold text-white">Safe Parking!</span>
+                </div>
+                <p class="text-white text-opacity-80">
+                    Drive safely and enjoy your visit! 🚗💨
+                </p>
+            </div>
+        </div>
+
+        <!-- Final Goodbye Screen -->
+        <div id="goodbyeScreen" class="hidden text-center">
+            <div class="mb-10">
+                <div class="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl md:text-4xl font-bold text-white animate-pulse-gentle shadow-2xl animate-glow">
+                    👋
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-3">
+                    Thank You!
+                </h2>
+                <p class="text-white text-opacity-80 text-base md:text-lg">
+                    Have a great day! 🌟
+                </p>
+            </div>
+        </div>
+
+        <!-- Modern Footer -->
+        <div class="mt-10 text-center">
+            <p class="text-white text-opacity-60 text-sm">
+                ✨ Slotify - Next-Gen AI Parking Experience
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let selectedType = '';
+        let progressPercent = 0;
+        
+        const modernLoadingMessages = [
+            "🤖 AI scanning 847 available spots...",
+            "⚡ Quantum algorithms at work...", 
+            "🎯 Optimizing your perfect match...",
+            "🚀 Machine learning magic happening...",
+            "✨ Almost there, finalizing details...",
+            "🎉 Your spot is ready to rock!"
+        ];
+
+        // Function to get proper direction symbol
+        function getDirectionSymbol(direction) {
+            const text = direction.toLowerCase();
+            
+            // Straight directions
+            if (text.includes('straight') || text.includes('forward') || text.includes('ahead')) {
+                return '⬆️';
+            }
+            
+            // Left turns
+            if (text.includes('left')) {
+                return '⬅️';
+            }
+            
+            // Right turns
+            if (text.includes('right')) {
+                return '➡️';
+            }
+            
+            // Backward/reverse
+            if (text.includes('back') || text.includes('reverse') || text.includes('behind')) {
+                return '⬇️';
+            }
+            
+            // U-turn
+            if (text.includes('u-turn') || text.includes('turn around')) {
+                return '🔄';
+            }
+            
+            // Parking/arrival
+            if (text.includes('park') || text.includes('arrive') || text.includes('destination')) {
+                return '🅿️';
+            }
+            
+            // Default
+            return '📍';
+        }
+
+        function selectParkingType(type) {
+            selectedType = type;
+            showLoadingScreen();
+            animateProgressBar();
+            
+            // Enhanced loading experience with progress
+            let messageIndex = 0;
+            const messageInterval = setInterval(() => {
+                if (messageIndex < modernLoadingMessages.length) {
+                    document.getElementById('loadingMessage').innerHTML = modernLoadingMessages[messageIndex];
+                    messageIndex++;
+                }
+            }, 1300);
+
+            // Animate progress messages with stagger
+            setTimeout(() => {
+                document.getElementById('progress1').classList.remove('hidden');
+                triggerConfetti();
+            }, 2000);
+            setTimeout(() => document.getElementById('progress2').classList.remove('hidden'), 4000);
+            setTimeout(() => document.getElementById('progress3').classList.remove('hidden'), 6000);
+
+            // Call API after enhanced 8-second experience
+            setTimeout(() => {
+                clearInterval(messageInterval);
+                assignSlot(type);
+            }, 8000);
+        }
+
+        function animateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                } else {
+                    width += 1.25; // Complete in 8 seconds
+                    progressBar.style.width = width + '%';
+                }
+            }, 100);
+        }
+
+        function triggerConfetti() {
+            // Simple confetti effect with particles
+            for (let i = 0; i < 20; i++) {
+                createParticle();
+            }
+        }
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 3000);
+        }
+
+        function showLoadingScreen() {
+            document.getElementById('selectionScreen').classList.add('hidden');
+            document.getElementById('loadingScreen').classList.remove('hidden');
+        }
+
+        function showSuccessScreen() {
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('successScreen').classList.remove('hidden');
+            
+            // Start the auto-close timer after showing success screen
+            setTimeout(() => {
+                showGoodbyeScreen();
+            }, 10000); // Show success for 10 seconds
+        }
+
+        function showGoodbyeScreen() {
+            document.getElementById('successScreen').classList.add('hidden');
+            document.getElementById('goodbyeScreen').classList.remove('hidden');
+            
+            // Close tab after 3 seconds
+            setTimeout(() => {
+                window.close();
+            }, 3000);
+        }
+
+        function assignSlot(type) {
+            // Get lotId from sessionStorage
+            const lotId = sessionStorage.getItem('lotId') || 21;
+            
+            const requestBody = {
+                type: type,
+                lotId: parseInt(lotId)
+            };
+
+            fetch('/api/assign-slot/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displaySlotAssignment(data);
+                } else {
+                    showError(data.message || 'Failed to assign slot');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('Network error occurred');
+            });
+        }
+
+        function displaySlotAssignment(data) {
+            const slot = data.slot;
+            
+            // Update slot information with modern styling
+            document.getElementById('assignedSlot').textContent = slot.label;
+            document.getElementById('slotDistance').textContent = Math.round(slot.distance_from_entry);
+            document.getElementById('selectedParkingType').textContent = selectedType;
+            
+            // Parse and display directions with proper direction symbols
+            const directionsContainer = document.getElementById('directions');
+            const directions = slot.directions.split(' → ');
+            
+            directionsContainer.innerHTML = '';
+            directions.forEach((direction, index) => {
+                const directionDiv = document.createElement('div');
+                directionDiv.className = 'group p-4 bg-white bg-opacity-10 backdrop-blur-lg border border-white border-opacity-20 rounded-xl hover-lift animate-slideRight';
+                directionDiv.style.animationDelay = `${index * 0.3}s`;
+                
+                const symbol = getDirectionSymbol(direction);
+                directionDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="text-2xl mr-4 group-hover:animate-bounce-gentle">${symbol}</span>
+                            <span class="text-white font-medium text-left">${direction.trim()}</span>
+                        </div>
+                        <span class="text-white text-opacity-50 text-sm">${index + 1}</span>
+                    </div>
+                `;
+                
+                directionsContainer.appendChild(directionDiv);
+            });
+            
+            showSuccessScreen();
+            triggerConfetti(); // Celebrate success!
+        }
+
+        function showError(message) {
+            // Enhanced error handling with modern styling
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 bg-opacity-90 backdrop-blur-lg text-white p-4 rounded-xl shadow-2xl z-50 animate-slideRight';
+            errorDiv.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">❌</span>
+                <span class="font-semibold">${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(errorDiv);
+        
+        // Auto remove error after 5 seconds
+        setTimeout(() => {
+            errorDiv.remove();
+            // Reset to selection screen
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('selectionScreen').classList.remove('hidden');
+        }, 5000);
+    }
+
+    // Enhanced direction symbols mapping
+    function getDirectionSymbol(direction) {
+        const text = direction.toLowerCase();
+        
+        // Entry/Start
+        if (text.includes('entry') || text.includes('entrance') || text.includes('start')) {
+            return '🚪';
+        }
+        
+        // Straight directions
+        if (text.includes('straight') || text.includes('forward') || text.includes('ahead') || text.includes('continue')) {
+            return '⬆️';
+        }
+        
+        // Left turns - various types
+        if (text.includes('sharp left')) {
+            return '↰';
+        }
+        if (text.includes('slight left')) {
+            return '↖️';
+        }
+        if (text.includes('left')) {
+            return '⬅️';
+        }
+        
+        // Right turns - various types
+        if (text.includes('sharp right')) {
+            return '↱';
+        }
+        if (text.includes('slight right')) {
+            return '↗️';
+        }
+        if (text.includes('right')) {
+            return '➡️';
+        }
+        
+        // Backward/reverse
+        if (text.includes('back') || text.includes('reverse') || text.includes('behind')) {
+            return '⬇️';
+        }
+        
+        // U-turn
+        if (text.includes('u-turn') || text.includes('turn around')) {
+            return '🔄';
+        }
+        
+        // Parking/arrival/destination
+        if (text.includes('park') || text.includes('arrive') || text.includes('destination') || text.includes('spot')) {
+            return '🎯';
+        }
+        
+        // Floor/level changes
+        if (text.includes('floor') || text.includes('level') || text.includes('up') || text.includes('down')) {
+            return '🏢';
+        }
+        
+        // Roundabout
+        if (text.includes('roundabout') || text.includes('circle')) {
+            return '🔄';
+        }
+        
+        // Exit
+        if (text.includes('exit')) {
+            return '🚪';
+        }
+        
+        // Default navigation
+        return '📍';
+    }
+
+    // Function to close the tab
+    function closeTab() {
+        try {
+            // Try to close the tab
+            window.close();
+        } catch (error) {
+            // If window.close() doesn't work (some browsers restrict it)
+            // Try alternative methods
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                // As a last resort, redirect to a blank page
+                window.location.href = 'about:blank';
+            }
+        }
+    }
+    </script>
+</body>
+</html>

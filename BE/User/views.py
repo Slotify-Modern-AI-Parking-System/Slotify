@@ -13,6 +13,8 @@ import sys
 import os
 from Admin.models import *
 from slotifyBE.models import *
+from django.views.decorators.http import require_POST
+from math import sqrt
 
 # Global variables to manage detection state
 detection_status = {
@@ -335,4 +337,114 @@ def get_license_plate(request):
             'message': f'Error reading detection file: {str(e)}',
             'license_plate': None
         }, status=500)
+
+
+def get_directions(entry_x, entry_y, target_x, target_y, scale_factor=0.1):
+    dx = target_x - entry_x
+    dy = target_y - entry_y
+    
+    # Convert image units to meters using scale factor
+    dx_m = dx * scale_factor
+    dy_m = dy * scale_factor
+    
+    directions = []
+    
+    # Based on the parking lot image coordinate system:
+    # - Positive Y means going straight up into the lot from entry
+    # - Negative X means going RIGHT from entry perspective (image coordinates are flipped)
+    # - Positive X means going LEFT from entry perspective
+    
+    # Handle vertical movement (straight into lot)
+    if abs(dy_m) > 0.1:  # Only add direction if movement is significant
+        if dy_m > 0:
+            directions.append(f"Go straight {abs(round(dy_m, 1))} meters")
+        else:
+            # If target has lower Y than entry, it's closer to entry
+            directions.append(f"Go straight {abs(round(dy_m, 1))} meters toward entrance")
+    
+    # Handle horizontal movement (left/right from entry perspective)
+    # Note: X-axis is flipped in image coordinates
+    if abs(dx_m) > 0.1:  # Only add direction if movement is significant
+        if dx_m < 0:  # Negative X means RIGHT from entry perspective
+            directions.append(f"Turn right and go {abs(round(dx_m, 1))} meters")
+        else:  # Positive X means LEFT from entry perspective
+            directions.append(f"Turn left and go {abs(round(dx_m, 1))} meters")
+    
+    # If no significant movement, the slot is very close to entry
+    if not directions:
+        directions.append("Slot is directly at the entry point")
+    
+    return " → ".join(directions)
+
+@csrf_exempt
+@require_POST
+def assign_nearest_parking_slot(request):
+    try:
+        data = json.loads(request.body)
+        slot_type = data.get('type')
+        lot_id = data.get('lotId')
+        
+        if slot_type not in ['Regular', 'Reserved', 'Accessible']:
+            return JsonResponse({'success': False, 'message': 'Invalid slot type'}, status=400)
+        
+        # Get the entry point for the lot
+        entry_point = ParkingLotCoordinate.objects.filter(
+            lotId_id=lot_id,
+            is_Entry=True
+        ).first()
+        
+        if not entry_point:
+            return JsonResponse({'success': False, 'message': 'Entry point not defined for this lot'}, status=404)
+        
+        entry_x, entry_y = entry_point.entry_x, entry_point.entry_y
+        
+        # Build filter for slot type
+        slot_filter = {
+            'lotId_id': lot_id,
+            'slot_assigned': False
+        }
+        
+        if slot_type == 'Regular':
+            slot_filter['is_regular'] = True
+        elif slot_type == 'Reserved':
+            slot_filter['is_reservation'] = True
+        elif slot_type == 'Accessible':
+            slot_filter['is_accessible'] = True
+        
+        # Get all matching available slots
+        available_slots = ParkingLotCoordinate.objects.filter(**slot_filter)
+        
+        if not available_slots.exists():
+            return JsonResponse({'success': False, 'message': 'No available slots of this type'}, status=404)
+        
+        # Find the nearest slot using Euclidean distance
+        def distance(slot):
+            return sqrt((slot.x_coordinate - entry_x)**2 + (slot.y_coordinate - entry_y)**2)
+        
+        nearest_slot = min(available_slots, key=distance)
+        
+        # Assign the slot
+        nearest_slot.slot_assigned = True
+        nearest_slot.save()
+        
+        directions = get_directions(entry_x, entry_y, nearest_slot.x_coordinate, nearest_slot.y_coordinate)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{slot_type} slot assigned successfully (nearest)',
+            'slot': {
+                'label': nearest_slot.label,
+                'x_coordinate': nearest_slot.x_coordinate,
+                'y_coordinate': nearest_slot.y_coordinate,
+                'entry_x': nearest_slot.entry_x,
+                'entry_y': nearest_slot.entry_y,
+                'distance_from_entry': round(distance(nearest_slot), 2),
+                'directions': directions
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=500)
 

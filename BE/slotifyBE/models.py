@@ -49,6 +49,7 @@ class ParkingLotCoordinate(models.Model):
     is_reservation = models.BooleanField(default=False)
     is_Entry = models.BooleanField(default=False)
     label = models.CharField(max_length=10, blank=True, null=True, unique=True)
+    slot_assigned = models.BooleanField(default=False)
 
 
     def __str__(self):
