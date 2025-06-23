@@ -1296,16 +1296,16 @@ def main():
         # This adds zone information to each slot
         zones = determine_parking_zones(slots, image.shape)
         
-        print(f"\n=== ZONE DIVISION COMPLETED ===")
-        print("Zone Layout:")
-        print("┌─────────┬─────────┐")
-        print("│  Zone A │  Zone C │")
-        print("│ (Top-L) │ (Top-R) │")
-        print("├─────────┼─────────┤")
-        print("│  Zone B │  Zone D │")
-        print("│ (Bot-L) │ (Bot-R) │")
-        print("└─────────┴─────────┘")
-        print()
+        # print(f"\n=== ZONE DIVISION COMPLETED ===")
+        # print("Zone Layout:")
+        # print("┌─────────┬─────────┐")
+        # print("│  Zone A │  Zone C │")
+        # print("│ (Top-L) │ (Top-R) │")
+        # print("├─────────┼─────────┤")
+        # print("│  Zone B │  Zone D │")
+        # print("│ (Bot-L) │ (Bot-R) │")
+        # print("└─────────┴─────────┘")
+        # print()
         
         # Print zone statistics with detailed breakdown
         total_detected = 0
@@ -1364,16 +1364,16 @@ def main():
             # Create a zone summary file for navigation purposes
             zone_summary_filename = f"zone_summary_{args.address.replace('/', '_').replace(',', '_') if args.address else 'default'}.txt"
             with open(zone_summary_filename, "w") as zone_file:
-                zone_file.write("PARKING LOT ZONE SUMMARY\n")
-                zone_file.write("========================\n\n")
-                zone_file.write("Zone Layout for Navigation:\n")
-                zone_file.write("┌─────────┬─────────┐\n")
-                zone_file.write("│  Zone A │  Zone C │\n")
-                zone_file.write("│ (Top-L) │ (Top-R) │\n")
-                zone_file.write("├─────────┼─────────┤\n")
-                zone_file.write("│  Zone B │  Zone D │\n")
-                zone_file.write("│ (Bot-L) │ (Bot-R) │\n")
-                zone_file.write("└─────────┴─────────┘\n\n")
+                # zone_file.write("PARKING LOT ZONE SUMMARY\n")
+                # zone_file.write("========================\n\n")
+                # zone_file.write("Zone Layout for Navigation:\n")
+                # zone_file.write("┌─────────┬─────────┐\n")
+                # zone_file.write("│  Zone A │  Zone C │\n")
+                # zone_file.write("│ (Top-L) │ (Top-R) │\n")
+                # zone_file.write("├─────────┼─────────┤\n")
+                # zone_file.write("│  Zone B │  Zone D │\n")
+                # zone_file.write("│ (Bot-L) │ (Bot-R) │\n")
+                # zone_file.write("└─────────┴─────────┘\n\n")
                 
                 for zone_name, zone_info in zones_data.items():
                     zone_file.write(f"Zone {zone_name}: {len(zone_info['slots'])} slots\n")
