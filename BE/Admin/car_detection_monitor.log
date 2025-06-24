@@ -21,3 +21,7 @@
 2025-06-22 16:42:20,657 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-22 16:42:42,125 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-22 16:44:12,990 - INFO - License plate detected and returned: DL7C01939
+2025-06-24 11:44:50,829 - WARNING - Not Found: /api/assign-slot/
+2025-06-24 11:44:57,190 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-06-24 11:45:03,193 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-06-24 11:45:09,316 - WARNING - Not Found: /api/assign-slot/

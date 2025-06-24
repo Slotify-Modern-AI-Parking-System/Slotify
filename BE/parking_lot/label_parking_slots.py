@@ -1322,7 +1322,7 @@ def main():
                     type_counts[slot_type] = type_counts.get(slot_type, 0) + 1
                 
                 type_breakdown = ', '.join([f"{count} {slot_type}" for slot_type, count in type_counts.items()])
-                print(f"  └─ Breakdown: {type_breakdown}")
+                print(f" Breakdown: {type_breakdown}")
         
         print(f"\nTotal slots with zone assignments: {total_detected}")
         
