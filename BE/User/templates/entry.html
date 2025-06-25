@@ -168,98 +168,190 @@
     </div>
 
     <script>
+
         function handleLogin(event) {
-            event.preventDefault();
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const loginBtn = document.getElementById('loginBtn');
+    const loginBtnText = document.getElementById('loginBtnText');
+    const loginSpinner = document.getElementById('loginSpinner');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // Hide any previous messages
+    successMessage.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+    
+    // Show loading state
+    loginBtnText.classList.add('hidden');
+    loginSpinner.classList.remove('hidden');
+    loginBtn.disabled = true;
+    
+    // API call to login endpoint
+    fetch('/parking-lot/login/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Store lotId in localStorage
+            localStorage.setItem('lotId', data.lotId);
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const loginBtnText = document.getElementById('loginBtnText');
-            const loginSpinner = document.getElementById('loginSpinner');
-            const successMessage = document.getElementById('successMessage');
-            const errorMessage = document.getElementById('errorMessage');
+            console.log('Login successful, lotId stored:', data.lotId);
             
-            // Hide any previous messages
-            successMessage.classList.add('hidden');
-            errorMessage.classList.add('hidden');
+            // Show success message
+            successMessage.classList.remove('hidden');
             
-            // Show loading state
-            loginBtnText.classList.add('hidden');
-            loginSpinner.classList.remove('hidden');
-            loginBtn.disabled = true;
+            // Store other lot data if needed
+            if (data.data) {
+                localStorage.setItem('lotData', JSON.stringify(data.data));
+            }
             
-            // API call to login endpoint
-            fetch('/parking-lot/login/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: username,
-                    password: password
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Store lotId in sessionStorage with exact variable name
-                    sessionStorage.setItem('lotId', data.lotId);
-                    
-                    console.log('Login successful, lotId stored:', data.lotId);
-                    
-                    // Show success message
-                    successMessage.classList.remove('hidden');
-                    
-                    // Optional: You can also store other lot data if needed
-                    sessionStorage.setItem('lotData', JSON.stringify(data.data));
-                    
-                    // Redirect after 2 seconds (you can change the URL as needed)
-                    setTimeout(() => {
-                        // Replace with your dashboard URL
-                        // window.location.href = '/dashboard/';
-                    }, 20000);
-                } else {
-                    // Show error message
-                    document.getElementById('errorText').textContent = data.message || 'Invalid username or password.';
-                    errorMessage.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error('Login error:', error);
-                // Handle network errors
-                document.getElementById('errorText').textContent = 'Network error. Please try again.';
-                errorMessage.classList.remove('hidden');
-            })
-            .finally(() => {
-                // Reset button state
-                loginBtnText.classList.remove('hidden');
-                loginSpinner.classList.add('hidden');
-                loginBtn.disabled = false;
-            });
+            // No redirect - user stays on current page
+            console.log('User logged in successfully. IDs stored in localStorage.');
+            
+        } else {
+            // Show error message
+            document.getElementById('errorText').textContent = data.message || 'Invalid username or password.';
+            errorMessage.classList.remove('hidden');
         }
+    })
+    .catch(error => {
+        console.error('Login error:', error);
+        // Handle network errors
+        document.getElementById('errorText').textContent = 'Network error. Please try again.';
+        errorMessage.classList.remove('hidden');
+    })
+    .finally(() => {
+        // Reset button state
+        loginBtnText.classList.remove('hidden');
+        loginSpinner.classList.add('hidden');
+        loginBtn.disabled = false;
+    });
+}
 
-        // Add enter key support
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const form = document.getElementById('loginForm');
-                form.dispatchEvent(new Event('submit'));
-            }
-        });
+// Add enter key support
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const form = document.getElementById('loginForm');
+        form.dispatchEvent(new Event('submit'));
+    }
+});
 
-        // Focus username field on load
-        window.addEventListener('load', function() {
-            document.getElementById('username').focus();
-        });
+// Focus username field on load
+window.addEventListener('load', function() {
+    document.getElementById('username').focus();
+});
 
-        // Optional: Check if user is already logged in
-        window.addEventListener('load', function() {
-            const storedLotId = sessionStorage.getItem('lotId');
-            if (storedLotId) {
-                console.log('User already has lotId in session:', storedLotId);
-                // You can redirect to dashboard if already logged in
-                // window.location.href = '/dashboard/';
-            }
-        });
+// Optional: Check if user is already logged in
+window.addEventListener('load', function() {
+    const storedLotId = localStorage.getItem('lotId');
+    if (storedLotId) {
+        console.log('User already has lotId in localStorage:', storedLotId);
+        // User stays on current page - no redirect
+    }
+});
+        // function handleLogin(event) {
+        //     event.preventDefault();
+            
+        //     const username = document.getElementById('username').value;
+        //     const password = document.getElementById('password').value;
+        //     const loginBtn = document.getElementById('loginBtn');
+        //     const loginBtnText = document.getElementById('loginBtnText');
+        //     const loginSpinner = document.getElementById('loginSpinner');
+        //     const successMessage = document.getElementById('successMessage');
+        //     const errorMessage = document.getElementById('errorMessage');
+            
+        //     // Hide any previous messages
+        //     successMessage.classList.add('hidden');
+        //     errorMessage.classList.add('hidden');
+            
+        //     // Show loading state
+        //     loginBtnText.classList.add('hidden');
+        //     loginSpinner.classList.remove('hidden');
+        //     loginBtn.disabled = true;
+            
+        //     // API call to login endpoint
+        //     fetch('/parking-lot/login/', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //         },
+        //         body: JSON.stringify({
+        //             username: username,
+        //             password: password
+        //         })
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (data.success) {
+        //             // Store lotId in sessionStorage with exact variable name
+        //             localStorage.setItem('lotId', data.lotId);
+                    
+        //             console.log('Login successful, lotId stored:', data.lotId);
+                    
+        //             // Show success message
+        //             successMessage.classList.remove('hidden');
+                    
+        //             // Optional: You can also store other lot data if needed
+        //             localStorage.setItem('lotData', JSON.stringify(data.data));
+                    
+        //             // Redirect after 2 seconds (you can change the URL as needed)
+        //             setTimeout(() => {
+        //                 // Replace with your dashboard URL
+        //                 // window.location.href = '/dashboard/';
+        //             }, 20000);
+        //         } else {
+        //             // Show error message
+        //             document.getElementById('errorText').textContent = data.message || 'Invalid username or password.';
+        //             errorMessage.classList.remove('hidden');
+        //         }
+        //     })
+        //     .catch(error => {
+        //         console.error('Login error:', error);
+        //         // Handle network errors
+        //         document.getElementById('errorText').textContent = 'Network error. Please try again.';
+        //         errorMessage.classList.remove('hidden');
+        //     })
+        //     .finally(() => {
+        //         // Reset button state
+        //         loginBtnText.classList.remove('hidden');
+        //         loginSpinner.classList.add('hidden');
+        //         loginBtn.disabled = false;
+        //     });
+        // }
+
+        // // Add enter key support
+        // document.addEventListener('keypress', function(e) {
+        //     if (e.key === 'Enter') {
+        //         const form = document.getElementById('loginForm');
+        //         form.dispatchEvent(new Event('submit'));
+        //     }
+        // });
+
+        // // Focus username field on load
+        // window.addEventListener('load', function() {
+        //     document.getElementById('username').focus();
+        // });
+
+        // // Optional: Check if user is already logged in
+        // window.addEventListener('load', function() {
+        //     const storedLotId = sessionStorage.getItem('lotId');
+        //     if (storedLotId) {
+        //         console.log('User already has lotId in session:', storedLotId);
+        //         // You can redirect to dashboard if already logged in
+        //         // window.location.href = '/dashboard/';
+        //     }
+        // });
     </script>
 </body>
 </html>

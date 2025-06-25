@@ -292,7 +292,7 @@
         }
         function assignSlot(type) {
     // Get lotId from sessionStorage or use default
-    const lotId = sessionStorage.getItem('lotId') || 21;
+    const lotId = localStorage.getItem('lotId') || 21;
     
     const requestBody = {
         type: type,

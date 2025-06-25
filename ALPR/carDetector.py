@@ -1014,7 +1014,7 @@ def main():
     
     try:
         # Set camera ID to 1 (no user input)
-        camera_id = 1
+        camera_id = 0
         print(f"📹 Using camera ID: {camera_id}")
         
         # Test camera connection
