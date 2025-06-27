@@ -17,4 +17,8 @@ urlpatterns = [
     path('nearbyParking/', views.nearby_parking, name='nearby_parking'),
     path('confirmParking/', views.confirm_parking, name='confirm_parking'),
     path('user-summary/', views.user_summary, name='user-summary'),
+    path('getLandingPageStats/', views.get_landingPageStats, name="LandingPageStats"),
+    path('about/', views.about, name="AboutPage"),
+    path('features/', views.features, name="FeaturesPage"),
+    path('contact/', views.contact, name="ContactPage")
 ]

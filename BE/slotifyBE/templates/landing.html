@@ -470,9 +470,10 @@
             Slotify
         </a>
         <div class="nav-links">
-            <a href="#" class="nav-link">About</a>
-            <a href="#" class="nav-link">Features</a>
-            <a href="#" class="nav-link">Contact</a>
+            <a href="/" class="nav-link">Home</a>
+            <a href="/about/" class="nav-link">About</a>
+            <a href="/features/" class="nav-link">Features</a>
+            <a href="/contact/" class="nav-link">Contact</a>
         </div>
     </nav>
 
@@ -480,7 +481,7 @@
     <div class="container">
         <div class="content">
             <h1>Slotify</h1>
-            <p class="subtitle">Find affordable parking spaces quickly and efficiently with our smart parking solution</p>
+            <p class="subtitle">Easily find available free parking spots with our smart parking solution</p>
             
             <div class="features">
                 <div class="feature">
@@ -513,11 +514,11 @@
     <!-- Stats Section -->
     <div class="stats">
         <div class="stat">
-            <span class="stat-number">10K+</span>
-            <span class="stat-label">Happy Users</span>
+            <span class="stat-number" id="ownersCount">Loading...</span>
+            <span class="stat-label">Happy Lot Owners</span>
         </div>
         <div class="stat">
-            <span class="stat-number">500+</span>
+            <span class="stat-number" id="parkingLotCount">Loading...</span>
             <span class="stat-label">Parking Lots</span>
         </div>
         <div class="stat">
@@ -526,104 +527,113 @@
         </div>
     </div>
 
+
     <script>
-        // Add smooth interactions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Particle animation enhancement
-            const particles = document.querySelectorAll('.particle');
-            particles.forEach(particle => {
-                const randomDelay = Math.random() * 6;
-                particle.style.animationDelay = randomDelay + 's';
-                particle.style.top = '100vh';
-            });
+document.addEventListener('DOMContentLoaded', function () {
+    const statNumbers = document.querySelectorAll('.stat-number');
 
-            // Button click effects
-            const buttons = document.querySelectorAll('.button');
-            buttons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    // Create ripple effect
-                    const ripple = document.createElement('span');
-                    const rect = this.getBoundingClientRect();
-                    const size = Math.max(rect.width, rect.height);
-                    const x = e.clientX - rect.left - size / 2;
-                    const y = e.clientY - rect.top - size / 2;
-                    
-                    ripple.style.cssText = `
-                        position: absolute;
-                        width: ${size}px;
-                        height: ${size}px;
-                        left: ${x}px;
-                        top: ${y}px;
-                        background: rgba(255, 255, 255, 0.3);
-                        border-radius: 50%;
-                        transform: scale(0);
-                        animation: ripple 0.6s linear;
-                        pointer-events: none;
-                    `;
-                    
-                    this.appendChild(ripple);
-                    setTimeout(() => ripple.remove(), 600);
-                });
-            });
+    // Particle animation enhancement
+    const particles = document.querySelectorAll('.particle');
+    particles.forEach(particle => {
+        const randomDelay = Math.random() * 6;
+        particle.style.animationDelay = randomDelay + 's';
+        particle.style.top = '100vh';
+    });
 
-            // Parallax effect on mouse move
-            document.addEventListener('mousemove', function(e) {
-                const mouseX = e.clientX / window.innerWidth;
-                const mouseY = e.clientY / window.innerHeight;
-                
-                particles.forEach((particle, index) => {
-                    const speed = (index + 1) * 0.5;
-                    const x = (mouseX - 0.5) * speed;
-                    const y = (mouseY - 0.5) * speed;
-                    particle.style.transform = `translate(${x}px, ${y}px)`;
-                });
-            });
+    // Button click effects
+    const buttons = document.querySelectorAll('.button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function (e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
 
-            // Stats counter animation
-            const statNumbers = document.querySelectorAll('.stat-number');
-            const animateStats = () => {
-                statNumbers.forEach(stat => {
-                    const text = stat.textContent;
-                    if (text.includes('K')) {
-                        animateNumber(stat, 0, 10, 'K+');
-                    } else if (text.includes('24/7')) {
-                        stat.textContent = '24/7';
-                    } else {
-                        animateNumber(stat, 0, 500, '+');
-                    }
-                });
-            };
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
 
-            const animateNumber = (element, start, end, suffix) => {
-                const duration = 2000;
-                const increment = end / (duration / 16);
-                let current = start;
-                
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= end) {
-                        current = end;
-                        clearInterval(timer);
-                    }
-                    element.textContent = Math.floor(current) + suffix;
-                }, 16);
-            };
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
 
-            // Trigger stats animation after page load
-            setTimeout(animateStats, 2500);
+    // Parallax effect on mouse move
+    document.addEventListener('mousemove', function (e) {
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+
+        particles.forEach((particle, index) => {
+            const speed = (index + 1) * 0.5;
+            const x = (mouseX - 0.5) * speed;
+            const y = (mouseY - 0.5) * speed;
+            particle.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    });
+
+    // Animate Number Helper
+    const animateNumber = (element, start, end, suffix) => {
+        const duration = 2000;
+        const increment = (end - start) / (duration / 16);
+        let current = start;
+
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= end) {
+                current = end;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current) + suffix;
+        }, 16);
+    };
+
+    // Fetch stats and animate with real data
+    fetch('/getLandingPageStats/')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not OK');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Animate with real values
+            const ownersElement = document.getElementById('ownersCount');
+            const parkingElement = document.getElementById('parkingLotCount');
+
+            // Delay animation start for smooth page load
+            setTimeout(() => {
+                animateNumber(ownersElement, 0, data.owners_count, '+');
+                animateNumber(parkingElement, 0, data.parking_lot_count, '+');
+            }, 2500);
+        })
+        .catch(error => {
+            console.error('Error fetching stats:', error);
+            document.getElementById('ownersCount').textContent = 'N/A';
+            document.getElementById('parkingLotCount').textContent = 'N/A';
         });
 
-        // CSS for ripple animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(2);
-                    opacity: 0;
-                }
+    // Inject ripple animation CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(2);
+                opacity: 0;
             }
-        `;
-        document.head.appendChild(style);
+        }
+    `;
+    document.head.appendChild(style);
+});
     </script>
 </body>
 </html>

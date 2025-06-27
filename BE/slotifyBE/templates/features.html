@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - Slotify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-text {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+        .glass { backdrop-filter: blur(16px); background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .animate-slide-up { animation: slideUp 0.8s ease-out forwards; opacity: 0; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); } }
+        .feature-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <a href="#" class="flex items-center space-x-3">
+                    <i class="fas fa-parking text-3xl gradient-text"></i>
+                    <span class="text-2xl font-bold text-white">Slotify</span>
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="/" class="text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="/about/" class="text-white/80 hover:text-white transition-colors">About</a>
+                    <a href="/features/" class="text-white font-semibold">Features</a>
+                    <a href="/contact/" class="text-white/80 hover:text-white transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg relative min-h-screen flex items-center overflow-hidden">
+        <!-- Floating particles -->
+        <div class="absolute inset-0">
+            <div class="absolute w-2 h-2 bg-white/20 rounded-full animate-float" style="left: 15%; top: 25%; animation-delay: 0s;"></div>
+            <div class="absolute w-3 h-3 bg-white/20 rounded-full animate-float" style="left: 75%; top: 35%; animation-delay: 2s;"></div>
+            <div class="absolute w-1.5 h-1.5 bg-white/20 rounded-full animate-float" style="left: 50%; top: 60%; animation-delay: 4s;"></div>
+            <div class="absolute w-2.5 h-2.5 bg-white/20 rounded-full animate-float" style="left: 85%; top: 70%; animation-delay: 1s;"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-32 relative z-10">
+            <div class="text-center text-white">
+                <h1 class="text-6xl md:text-8xl font-bold mb-6 animate-slide-up">Smart Features</h1>
+                <p class="text-xl md:text-2xl mb-12 text-white/90 animate-slide-up" style="animation-delay: 0.2s;">Discover how Slotify revolutionizes parking with AI-powered solutions</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold gradient-text mb-6">Comprehensive Parking Solutions</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">From lot registration to real-time tracking, we've got every aspect of parking covered</p>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- Feature 1: Parking Lot Registration -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-clipboard-list text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Smart Lot Registration</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Effortlessly register your parking lot with comprehensive details including address, operational hours, rates, and accessibility features.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Open space support</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Quick and Accessible Parking Spaces</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Reserved slot management</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2: AI Layout Management -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.1s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-th text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">AI Layout Generation</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Satellite imagery automatically generates matrix-based parking layouts with intelligent slot mapping (A1, A2, etc.).</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Satellite image processing</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automatic slot numbering</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Reserved slot integration</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Smart Entry Tracking -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.2s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-camera text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Intelligent Entry Tracking</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Camera systems scan vehicles and assign optimal parking slots based on destination and real-time availability.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Computer vision scanning</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Smart slot assignment</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automated billing system</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 4: Navigation System -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-route text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Smart Navigation</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Get the shortest path to your assigned parking slot with visual guidance on localized parking maps.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Shortest path calculation</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Visual parking maps</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Real-time directions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 5: Real-time Monitoring -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.4s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-eye text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Real-time Vehicle Tracking</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Continuous monitoring ensures vehicles are in assigned slots and automatically updates database for any changes.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>24/7 camera monitoring</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Automatic slot updates</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Violation detection</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 6: Availability Dashboard -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.5s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-tachometer-alt text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Live Availability Dashboard</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Check real-time slot availability and reserve parking spots up to 2 hours in advance with minimal fees.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Real-time availability</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Advanced reservations</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Mobile-friendly interface</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 7: Analytics & Reports -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.6s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-chart-bar text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Advanced Analytics</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Comprehensive dashboard for lot owners with usage analytics, revenue tracking, and vehicle data insights.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Usage analytics</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Revenue tracking</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Performance insights</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 8: AI Feedback System -->
+                <div class="feature-card bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: 0.7s;">
+                    <div class="flex items-start space-x-6">
+                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-brain text-2xl text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">AI Learning & Feedback</h3>
+                            <p class="text-gray-600 mb-4 leading-relaxed">Reinforcement learning system that improves slot assignments based on user feedback with reward-based incentives.</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Machine learning optimization</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>User feedback integration</li>
+                                <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>Reward-based system</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Stack -->
+    <section class="py-20 gradient-bg">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold text-white mb-12">Powered by Advanced Technology</h2>
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="glass rounded-xl p-6 animate-slide-up" style="animation-delay: 0.1s;">
+                    <i class="fas fa-eye text-3xl text-white mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white mb-2">Computer Vision</h3>
+                    <p class="text-white/80">Advanced AI for vehicle recognition</p>
+                </div>
+                <div class="glass rounded-xl p-6 animate-slide-up" style="animation-delay: 0.2s;">
+                    <i class="fas fa-brain text-3xl text-white mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white mb-2">Machine Learning</h3>
+                    <p class="text-white/80">Smart slot assignment optimization</p>
+                </div>
+                <div class="glass rounded-xl p-6 animate-slide-up" style="animation-delay: 0.3s;">
+                    <i class="fas fa-satellite text-3xl text-white mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white mb-2">Satellite Imagery</h3>
+                    <p class="text-white/80">Automated layout generation</p>
+                </div>
+                <div class="glass rounded-xl p-6 animate-slide-up" style="animation-delay: 0.4s;">
+                    <i class="fas fa-mobile-alt text-3xl text-white mb-4"></i>
+                    <h3 class="text-xl font-semibold text-white mb-2">Mobile First</h3>
+                    <p class="text-white/80">Seamless user experience</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-4xl font-bold gradient-text mb-6">Ready to Transform Your Parking Experience?</h2>
+            <p class="text-xl text-gray-600 mb-8">Join thousands of satisfied users who have revolutionized their parking with Slotify</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="window.location.href='/'" class="gradient-bg text-white px-8 py-4 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                    Register Your Lot
+                </button>
+                <button class="border-2 border-purple-500 text-purple-500 px-8 py-4 rounded-xl font-semibold hover:bg-purple-500 hover:text-white transition-all duration-300">
+                    Find Parking
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+
+    <script>
+        // Add scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-slide-up').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

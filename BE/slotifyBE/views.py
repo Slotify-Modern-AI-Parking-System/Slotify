@@ -65,6 +65,15 @@ def logout_view(request):
     logout(request)  # Clears the session
     return redirect('landing')  # Send user to landing page
 
+def about(request):
+    return render(request, "about.html")
+
+def features(request):
+    return render(request, "features.html")
+
+def contact(request):
+    return render(request, "contact.html")
+
 @csrf_exempt
 def login_owner(request):
     if request.method == 'POST':
@@ -407,3 +416,17 @@ def user_summary(request):
         })
     else:
         return JsonResponse({"error": "Only GET method allowed."}, status=405)
+
+
+@csrf_exempt
+def get_landingPageStats(request):
+    if request.method == 'GET':
+        owners_count = OwnerProfile.objects.count()
+        parking_lot_count = ParkingLot.objects.count()
+
+        return JsonResponse({
+            'owners_count': owners_count,
+            'parking_lot_count': parking_lot_count
+        })
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
