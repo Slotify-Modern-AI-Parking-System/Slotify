@@ -5,3 +5,15 @@
 2025-06-29 20:53:08,773 - WARNING - Failed to read frame, retrying...
 2025-06-29 20:53:21,872 - INFO - ✅ Main script execution completed successfully
 2025-06-29 20:53:30,846 - INFO - ✅ Main script execution completed successfully
+2025-06-29 21:02:08,566 - INFO - 🎯 Car ID 1 persistent for 15.9s - TRIGGERING MAIN.PY
+2025-06-29 21:02:08,566 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-29 21:03:16,313 - INFO - ✅ Main script execution completed successfully
+2025-06-29 21:06:49,838 - INFO - 🎯 Car ID 8 persistent for 15.9s - TRIGGERING MAIN.PY
+2025-06-29 21:06:49,839 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-29 21:07:57,742 - INFO - ✅ Main script execution completed successfully
+2025-06-29 21:16:14,198 - INFO - 🎯 Car ID 1 persistent for 15.4s - TRIGGERING MAIN.PY
+2025-06-29 21:16:14,198 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-29 21:17:22,456 - INFO - ✅ Main script execution completed successfully
+2025-06-29 21:18:39,696 - INFO - 🎯 Car ID 1 persistent for 16.7s - TRIGGERING MAIN.PY
+2025-06-29 21:18:39,696 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-29 21:19:48,077 - INFO - ✅ Main script execution completed successfully

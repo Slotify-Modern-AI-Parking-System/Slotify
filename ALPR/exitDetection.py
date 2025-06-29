@@ -403,7 +403,7 @@ def write_plate_to_file(plate_number):
 def open_dashboard_page():
     hostname = socket.gethostname()
     ip = socket.gethostbyname(hostname)
-    dashboard_url = f"http://{ip}:8000/dashboard/"
+    dashboard_url = f"http://{ip}:8000/thankyou/"
 
     try:
         import webbrowser

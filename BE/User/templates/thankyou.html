@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - Slotify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes logoFloat {
+            from { transform: translateY(-10px); }
+            to { transform: translateY(10px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes starPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes buttonHover {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 1s ease-out;
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-logoFloat {
+            animation: logoFloat 2s ease-in-out infinite alternate;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-starPulse {
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-1000 { animation-delay: 1s; }
+        .delay-1500 { animation-delay: 1.5s; }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-2500 { animation-delay: 2.5s; }
+        .delay-3000 { animation-delay: 3s; }
+        .delay-4000 { animation-delay: 4s; }
+        .delay-5000 { animation-delay: 5s; }
+
+        .bg-gradient-navy-green {
+            background: linear-gradient(135deg, #001f3f 0%, #2d5a2d 100%);
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .star {
+            font-size: 2.5rem;
+            color: #ffffff40;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #ffd700;
+            transform: scale(1.1);
+        }
+
+        .star:hover ~ .star {
+            color: #ffffff40;
+        }
+
+        .feedback-section {
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-navy-green h-screen flex items-center justify-center overflow-hidden font-sans">
+    <!-- Background floating icons -->
+    <div class="absolute inset-0 pointer-events-none z-0">
+        <div class="absolute top-[10%] left-[10%] text-3xl text-white opacity-10 animate-float">🚗</div>
+        <div class="absolute top-[20%] right-[15%] text-3xl text-white opacity-10 animate-float delay-1000">🅿️</div>
+        <div class="absolute bottom-[30%] left-[20%] text-3xl text-white opacity-10 animate-float delay-2000">🚙</div>
+        <div class="absolute bottom-[20%] right-[10%] text-3xl text-white opacity-10 animate-float delay-3000">🚕</div>
+        <div class="absolute top-[50%] left-[5%] text-3xl text-white opacity-10 animate-float delay-4000">🚐</div>
+        <div class="absolute top-[60%] right-[5%] text-3xl text-white opacity-10 animate-float delay-5000">🚓</div>
+        <div class="absolute top-[30%] left-[60%] text-2xl text-white opacity-10 animate-float delay-2500">⭐</div>
+        <div class="absolute bottom-[40%] right-[30%] text-2xl text-white opacity-10 animate-float delay-3500">✨</div>
+    </div>
+
+    <!-- Main thank you container -->
+    <div class="text-center text-white animate-slideIn z-10 max-w-2xl mx-auto px-4" id="thankYouContainer">
+        <!-- Logo -->
+        <div class="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 bg-white rounded-full mx-auto mb-6 md:mb-8 flex items-center justify-center text-3xl md:text-4xl lg:text-5xl font-bold text-blue-900 animate-logoFloat shadow-2xl">
+            S
+        </div>
+
+        <!-- Thank you title -->
+        <h1 class="text-3xl md:text-4xl lg:text-6xl font-bold mb-4 md:mb-6 opacity-0 animate-fadeInUp delay-500 drop-shadow-lg">
+            Thank You!
+        </h1>
+
+        <!-- Thank you subtitle -->
+        <p class="text-lg md:text-xl lg:text-2xl opacity-0 animate-fadeInUp delay-1000 text-green-300 mb-6 md:mb-8">
+            Thank you for visiting Slotify
+        </p>
+
+        <!-- Rating section -->
+        <div class="feedback-section opacity-0 animate-fadeInUp delay-1500">
+            <p class="text-base md:text-lg lg:text-xl mb-4 text-white">
+                How was your parking experience?
+            </p>
+            
+            <div class="star-rating" id="starRating">
+                <span class="star" data-rating="1">⭐</span>
+                <span class="star" data-rating="2">⭐</span>
+                <span class="star" data-rating="3">⭐</span>
+                <span class="star" data-rating="4">⭐</span>
+                <span class="star" data-rating="5">⭐</span>
+            </div>
+            
+            <p class="text-sm md:text-base text-green-300 mb-6" id="ratingText">
+                Click the stars to rate your experience
+            </p>
+        </div>
+
+        <!-- Additional feedback section -->
+        <div class="opacity-0 animate-fadeInUp delay-2000" id="feedbackSection">
+            <textarea 
+                class="w-full max-w-md mx-auto bg-white bg-opacity-20 text-white placeholder-green-200 border border-white border-opacity-30 rounded-lg p-4 mb-6 resize-none focus:outline-none focus:ring-2 focus:ring-green-300 focus:border-transparent"
+                rows="3"
+                placeholder="Tell us more about your experience (optional)"
+                id="feedbackText"
+            ></textarea>
+            
+            <button 
+                class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mb-4"
+                onclick="submitFeedback()"
+                id="submitBtn"
+            >
+                Submit Feedback
+            </button>
+        </div>
+
+        <!-- Success message (hidden initially) -->
+        <div class="hidden opacity-0" id="successMessage">
+            <div class="text-2xl animate-starPulse mb-4">🌟</div>
+            <p class="text-lg md:text-xl text-green-300 mb-4">
+                Thank you for your feedback!
+            </p>
+            <p class="text-sm md:text-base text-white">
+                Redirecting you shortly...
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('.star');
+        const ratingText = document.getElementById('ratingText');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const feedbackSection = document.getElementById('feedbackSection');
+        const thankYouContainer = document.getElementById('thankYouContainer');
+
+        const ratingMessages = {
+            1: "We're sorry to hear that. We'll work to improve!",
+            2: "Thank you for the feedback. We'll do better!",
+            3: "Thanks for your rating. We appreciate your honesty!",
+            4: "Great! We're glad you had a good experience!",
+            5: "Excellent! We're thrilled you loved using Slotify!"
+        };
+
+        // Star rating functionality
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                updateStars();
+                ratingText.textContent = ratingMessages[selectedRating];
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const hoverRating = parseInt(this.dataset.rating);
+                highlightStars(hoverRating);
+            });
+        });
+
+        document.getElementById('starRating').addEventListener('mouseleave', function() {
+            updateStars();
+        });
+
+        function highlightStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function updateStars() {
+            highlightStars(selectedRating);
+        }
+
+        function submitFeedback() {
+            if (selectedRating === 0) {
+                alert('Please select a rating before submitting!');
+                return;
+            }
+
+            // Hide the current content
+            feedbackSection.style.opacity = '0';
+            
+            setTimeout(() => {
+                feedbackSection.style.display = 'none';
+                successMessage.classList.remove('hidden');
+                successMessage.style.opacity = '1';
+                
+                // Redirect after showing success message
+                setTimeout(() => {
+                    window.location.href = '/'; // Redirect to home or dashboard
+                }, 3000);
+            }, 500);
+        }
+
+        // Auto-redirect after 30 seconds if no interaction
+        setTimeout(() => {
+            if (selectedRating === 0) {
+                window.location.href = '/';
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

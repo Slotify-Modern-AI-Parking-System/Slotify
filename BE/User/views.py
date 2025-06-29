@@ -49,6 +49,9 @@ def dashboard(request):
 def destination(request):
     return render(request, "destination.html")
 
+def thankyou(request):
+    return render(request, "thankyou.html")
+
 # import json
 # import subprocess
 # from django.http import JsonResponse

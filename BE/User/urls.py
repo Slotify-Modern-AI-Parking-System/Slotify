@@ -13,5 +13,6 @@ urlpatterns = [
     path('api/license-plate/', views.get_license_plate, name='get_license_plate'),
     path('api/assign-slot/', views.assign_nearest_parking_slot, name='assign_parking_slot'),
     path('get-exit-license-plate/', views.get_exit_license_plate, name='get_exit_license_plate'),
+    path('thankyou/', views.thankyou, name="ThankYouPage")
 
 ]
