@@ -1,0 +1,7 @@
+2025-06-29 20:52:13,206 - INFO - 🎯 Car ID 2 persistent for 17.4s - TRIGGERING MAIN.PY
+2025-06-29 20:52:13,206 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-29 20:52:21,889 - INFO - 🎯 Car ID 3 persistent for 22.0s - TRIGGERING MAIN.PY
+2025-06-29 20:52:21,889 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-06-29 20:53:08,773 - WARNING - Failed to read frame, retrying...
+2025-06-29 20:53:21,872 - INFO - ✅ Main script execution completed successfully
+2025-06-29 20:53:30,846 - INFO - ✅ Main script execution completed successfully

@@ -49,13 +49,437 @@ def dashboard(request):
 def destination(request):
     return render(request, "destination.html")
 
+# import json
+# import subprocess
+# from django.http import JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+# from django.views.decorators.http import require_http_methods
+# from django.dispatch import Signal, receiver
+# from slotifyBE.models import ParkingLot
+
+# # Custom signals for parking lot login/logout
+# parking_lot_logged_in = Signal()
+# parking_lot_logged_out = Signal()
+
+# # Dictionary to keep track of running processes/threads
+# running_processes = {}
+# running_threads = {}
+
+# # Choose one approach - I recommend subprocess approach for better isolation
+# USE_SUBPROCESS = True  # Set to False to use threading approach
+
+# @receiver(parking_lot_logged_in)
+# def start_car_detector(sender, lot_id, **kwargs):
+#     """Start the car detector script when parking lot logs in"""
+    
+#     # Define script path - make sure this is correct
+#     script_path = os.path.abspath("../../ALPR/carDetector.py")
+    
+#     print(f"Starting car detector for lot {lot_id}")
+#     print(f"Script path: {script_path}")
+    
+#     if USE_SUBPROCESS:
+#         start_car_detector_subprocess(lot_id, script_path)
+#     else:
+#         start_car_detector_thread(lot_id, script_path)
+
+# def start_car_detector_subprocess(lot_id, script_path):
+#     """Start car detector using subprocess"""
+#     global running_processes
+    
+#     # Check if script is already running for this lot
+#     if lot_id in running_processes:
+#         process = running_processes[lot_id]
+#         if process.poll() is None:  # Still running
+#             print(f"Car detector already running for lot {lot_id}")
+#             return
+#         else:
+#             # Process died, remove it
+#             del running_processes[lot_id]
+    
+#     try:
+#         # Verify script exists
+#         if not os.path.exists(script_path):
+#             print(f"ERROR: Script not found at {script_path}")
+#             # Try alternative paths
+#             alternative_paths = [
+#                 os.path.join(os.path.dirname(__file__), "../../ALPR/carDetector.py"),
+#                 os.path.join(os.getcwd(), "ALPR/carDetector.py"),
+#                 "carDetector.py"
+#             ]
+            
+#             for alt_path in alternative_paths:
+#                 abs_alt_path = os.path.abspath(alt_path)
+#                 print(f"Trying alternative path: {abs_alt_path}")
+#                 if os.path.exists(abs_alt_path):
+#                     script_path = abs_alt_path
+#                     print(f"Found script at: {script_path}")
+#                     break
+#             else:
+#                 print("ERROR: Could not find carDetector.py script")
+#                 return
+        
+#         # Get Python executable
+#         python_executable = sys.executable
+#         print(f"Using Python executable: {python_executable}")
+        
+#         # Get script directory for setting working directory
+#         script_dir = os.path.dirname(script_path)
+        
+#         # Start the script as a subprocess
+#         process = subprocess.Popen([
+#             python_executable, script_path
+#         ], 
+#         stdout=subprocess.PIPE, 
+#         stderr=subprocess.PIPE, 
+#         cwd=script_dir,
+#         bufsize=1,
+#         universal_newlines=True
+#         )
+        
+#         # Store the process
+#         running_processes[lot_id] = process
+#         print(f"Car detector started for parking lot {lot_id} with PID {process.pid}")
+        
+#         # Check if process started successfully
+#         time.sleep(1)  # Give it a moment to start
+        
+#         if process.poll() is not None:
+#             # Process has already terminated
+#             stdout, stderr = process.communicate()
+#             print(f"Process terminated immediately. Return code: {process.returncode}")
+#             print(f"STDOUT: {stdout}")
+#             print(f"STDERR: {stderr}")
+#             # Remove failed process
+#             if lot_id in running_processes:
+#                 del running_processes[lot_id]
+#         else:
+#             print(f"Process is running successfully with PID {process.pid}")
+        
+#     except Exception as e:
+#         print(f"Error starting car detector subprocess for lot {lot_id}: {str(e)}")
+#         traceback.print_exc()
+
+# def start_car_detector_thread(lot_id, script_path):
+#     """Start car detector using threading"""
+#     global running_threads
+    
+#     # Check if thread is already running for this lot
+#     if lot_id in running_threads and running_threads[lot_id].is_alive():
+#         print(f"Car detector thread already running for lot {lot_id}")
+#         return
+    
+#     try:
+#         # Start the script in a separate thread
+#         thread = threading.Thread(
+#             target=run_car_detector_in_thread, 
+#             args=(lot_id, script_path),
+#             daemon=True,
+#             name=f"CarDetector-{lot_id}"
+#         )
+#         thread.start()
+        
+#         # Store the thread
+#         running_threads[lot_id] = thread
+#         print(f"Car detector thread started for parking lot {lot_id}")
+        
+#     except Exception as e:
+#         print(f"Error starting car detector thread for lot {lot_id}: {str(e)}")
+#         traceback.print_exc()
+
+# def run_car_detector_in_thread(lot_id, script_path):
+#     """Run the car detector script in a separate thread"""
+#     try:
+#         print(f"Running car detector in thread for lot {lot_id}")
+        
+#         # Change to script directory
+#         original_cwd = os.getcwd()
+#         script_dir = os.path.dirname(script_path)
+#         if script_dir:
+#             os.chdir(script_dir)
+        
+#         # Import and run the script as a module
+#         spec = importlib.util.spec_from_file_location("carDetector", script_path)
+#         if spec is None:
+#             raise ImportError(f"Could not load spec from {script_path}")
+            
+#         car_detector = importlib.util.module_from_spec(spec)
+        
+#         # Add script directory to sys.path temporarily
+#         if script_dir not in sys.path:
+#             sys.path.insert(0, script_dir)
+        
+#         try:
+#             spec.loader.exec_module(car_detector)
+            
+#             # If the script has a main function, call it
+#             if hasattr(car_detector, 'main'):
+#                 print(f"Calling main() function for lot {lot_id}")
+#                 car_detector.main()
+#             else:
+#                 print(f"No main() function found in carDetector.py for lot {lot_id}")
+                
+#         finally:
+#             # Restore original working directory and sys.path
+#             os.chdir(original_cwd)
+#             if script_dir in sys.path:
+#                 sys.path.remove(script_dir)
+        
+#     except Exception as e:
+#         print(f"Error running car detector in thread for lot {lot_id}: {str(e)}")
+#         traceback.print_exc()
+
+# @receiver(parking_lot_logged_out)
+# def stop_car_detector(sender, lot_id, **kwargs):
+#     """Stop the car detector script when parking lot logs out"""
+#     print(f"Stopping car detector for lot {lot_id}")
+    
+#     if USE_SUBPROCESS:
+#         stop_car_detector_subprocess(lot_id)
+#     else:
+#         stop_car_detector_thread(lot_id)
+
+# def stop_car_detector_subprocess(lot_id):
+#     """Stop subprocess car detector"""
+#     global running_processes
+    
+#     if lot_id in running_processes:
+#         process = running_processes[lot_id]
+#         try:
+#             if process.poll() is None:  # Process is still running
+#                 print(f"Terminating car detector process for lot {lot_id}")
+#                 process.terminate()
+                
+#                 # Wait for graceful shutdown
+#                 try:
+#                     process.wait(timeout=5)
+#                     print(f"Car detector stopped gracefully for parking lot {lot_id}")
+#                 except subprocess.TimeoutExpired:
+#                     # Force kill if it doesn't terminate gracefully
+#                     print(f"Force killing car detector for lot {lot_id}")
+#                     process.kill()
+#                     process.wait()
+#                     print(f"Car detector force killed for parking lot {lot_id}")
+            
+#             del running_processes[lot_id]
+            
+#         except Exception as e:
+#             print(f"Error stopping car detector for lot {lot_id}: {str(e)}")
+#             traceback.print_exc()
+
+# def stop_car_detector_thread(lot_id):
+#     """Stop thread car detector (note: Python threads can't be forcefully stopped)"""
+#     global running_threads
+    
+#     if lot_id in running_threads:
+#         thread = running_threads[lot_id]
+#         if thread.is_alive():
+#             print(f"Car detector thread for lot {lot_id} is still running")
+#             print("Note: Python threads cannot be forcefully stopped")
+#             # You might need to implement a stop flag in your carDetector.py
+        
+#         del running_threads[lot_id]
+
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def parking_lot_login(request):
+#     try:
+#         data = json.loads(request.body)
+#         username = data.get("username")
+#         password = data.get("password")
+        
+#         if not username or not password:
+#             return JsonResponse({"success": False, "message": "Username and password required"}, status=400)
+        
+#         try:
+#             lot = ParkingLot.objects.get(username=username, password=password)
+#         except ParkingLot.DoesNotExist:
+#             return JsonResponse({"success": False, "message": "Invalid username or password"}, status=401)
+        
+#         print(f"Parking lot {lot.id} logged in successfully")
+#         print(f"About to trigger signal for lot {lot.id}")
+        
+#         # Trigger the car detector script
+#         parking_lot_logged_in.send(sender=ParkingLot, lot_id=lot.id)
+        
+#         print(f"Signal sent for lot {lot.id}")
+        
+#         # Prepare the data to return
+#         lot_data = {
+#             "id": lot.id,
+#             "name": lot.name,
+#             "location": lot.location,
+#             "total_spaces": lot.total_spaces,
+#             "available_spaces": lot.available_spaces,
+#             "registered_by": lot.registered_by.id,
+#             "confirmed": lot.confirmed,
+#             "username": lot.username,
+#         }
+        
+#         return JsonResponse({
+#             "success": True,
+#             "message": "Login successful",
+#             "data": lot_data,
+#             "lotId": lot.id
+#         })
+        
+#     except json.JSONDecodeError:
+#         return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
+#     except Exception as e:
+#         print(f"Login error: {str(e)}")
+#         traceback.print_exc()
+#         return JsonResponse({"success": False, "message": "Internal server error"}, status=500)
+
+# @csrf_exempt
+# @require_http_methods(["POST"])
+# def parking_lot_logout(request):
+#     try:
+#         data = json.loads(request.body)
+#         lot_id = data.get("lot_id")
+        
+#         if not lot_id:
+#             return JsonResponse({"success": False, "message": "Lot ID required"}, status=400)
+        
+#         print(f"Parking lot {lot_id} logging out")
+        
+#         # Trigger signal to stop car detector
+#         parking_lot_logged_out.send(sender=ParkingLot, lot_id=lot_id)
+        
+#         return JsonResponse({
+#             "success": True,
+#             "message": "Logout successful"
+#         })
+        
+#     except json.JSONDecodeError:
+#         return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
+#     except Exception as e:
+#         print(f"Logout error: {str(e)}")
+#         traceback.print_exc()
+#         return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+# @csrf_exempt
+# @require_http_methods(["GET"])
+# def check_processes(request):
+#     """Debug endpoint to check running processes"""
+#     status = {
+#         "approach": "subprocess" if USE_SUBPROCESS else "threading",
+#         "processes": {},
+#         "threads": {}
+#     }
+    
+#     # Check subprocess status
+#     for lot_id, process in running_processes.items():
+#         if process.poll() is None:
+#             status["processes"][lot_id] = {"status": "running", "pid": process.pid}
+#         else:
+#             try:
+#                 stdout, stderr = process.communicate(timeout=1)
+#                 status["processes"][lot_id] = {
+#                     "status": "terminated", 
+#                     "return_code": process.returncode,
+#                     "stdout": stdout[:500] if stdout else "",
+#                     "stderr": stderr[:500] if stderr else ""
+#                 }
+#             except subprocess.TimeoutExpired:
+#                 status["processes"][lot_id] = {
+#                     "status": "terminated", 
+#                     "return_code": process.returncode,
+#                     "stdout": "timeout",
+#                     "stderr": "timeout"
+#                 }
+    
+#     # Check thread status
+#     for lot_id, thread in running_threads.items():
+#         status["threads"][lot_id] = {
+#             "status": "alive" if thread.is_alive() else "dead",
+#             "name": thread.name
+#         }
+    
+#     return JsonResponse(status)
+
+# @require_http_methods(["GET"])
+# @csrf_exempt
+# def get_license_plate(request):
+#     """
+#     GET API to read license plate detection from file and clear it
+#     """
+#     file_path = "../../ALPR/detection.txt"
+    
+#     try:
+#         # Check if file exists
+#         if not os.path.exists(file_path):
+#             return JsonResponse({
+#                 'success': False,
+#                 'message': 'Detection file not found',
+#                 'license_plate': None
+#             }, status=404)
+        
+#         # Read the file content
+#         with open(file_path, 'r', encoding='utf-8') as file:
+#             content = file.read().strip()
+        
+#         # Check if file has content
+#         if not content:
+#             return JsonResponse({
+#                 'success': True,
+#                 'message': 'No license plate detected',
+#                 'license_plate': None
+#             }, status=200)
+        
+#         # Clear the file after reading
+#         with open(file_path, 'w', encoding='utf-8') as file:
+#             file.write('')
+        
+#         logger.info(f"License plate detected and returned: {content}")
+        
+#         return JsonResponse({
+#             'success': True,
+#             'message': 'License plate detected successfully',
+#             'license_plate': content
+#         }, status=200)
+        
+#     except FileNotFoundError:
+#         logger.error(f"Detection file not found: {file_path}")
+#         return JsonResponse({
+#             'success': False,
+#             'message': 'Detection file not found',
+#             'license_plate': None
+#         }, status=404)
+        
+#     except PermissionError:
+#         logger.error(f"Permission denied accessing file: {file_path}")
+#         return JsonResponse({
+#             'success': False,
+#             'message': 'Permission denied accessing detection file',
+#             'license_plate': None
+#         }, status=403)
+        
+#     except Exception as e:
+#         logger.error(f"Error reading detection file: {str(e)}")
+#         return JsonResponse({
+#             'success': False,
+#             'message': f'Error reading detection file: {str(e)}',
+#             'license_plate': None
+#         }, status=500)
+
+
 import json
 import subprocess
+import os
+import sys
+import time
+import threading
+import importlib.util
+import traceback
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.dispatch import Signal, receiver
 from slotifyBE.models import ParkingLot
+import logging
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # Custom signals for parking lot login/logout
 parking_lot_logged_in = Signal()
@@ -69,43 +493,51 @@ running_threads = {}
 USE_SUBPROCESS = True  # Set to False to use threading approach
 
 @receiver(parking_lot_logged_in)
-def start_car_detector(sender, lot_id, **kwargs):
-    """Start the car detector script when parking lot logs in"""
+def start_car_detectors(sender, lot_id, **kwargs):
+    """Start both car detector scripts when parking lot logs in"""
     
-    # Define script path - make sure this is correct
-    script_path = os.path.abspath("../../ALPR/carDetector.py")
+    # Define script paths - make sure these are correct
+    entry_script_path = os.path.abspath("../../ALPR/carDetector.py")
+    exit_script_path = os.path.abspath("../../ALPR/carExit.py")
     
-    print(f"Starting car detector for lot {lot_id}")
-    print(f"Script path: {script_path}")
+    print(f"Starting car detectors for lot {lot_id}")
+    print(f"Entry script path: {entry_script_path}")
+    print(f"Exit script path: {exit_script_path}")
     
     if USE_SUBPROCESS:
-        start_car_detector_subprocess(lot_id, script_path)
+        start_car_detector_subprocess(lot_id, entry_script_path, "entry")
+        start_car_detector_subprocess(lot_id, exit_script_path, "exit")
     else:
-        start_car_detector_thread(lot_id, script_path)
+        start_car_detector_thread(lot_id, entry_script_path, "entry")
+        start_car_detector_thread(lot_id, exit_script_path, "exit")
 
-def start_car_detector_subprocess(lot_id, script_path):
+def start_car_detector_subprocess(lot_id, script_path, script_type):
     """Start car detector using subprocess"""
     global running_processes
     
-    # Check if script is already running for this lot
-    if lot_id in running_processes:
-        process = running_processes[lot_id]
+    # Create unique key for each script type
+    process_key = f"{lot_id}_{script_type}"
+    
+    # Check if script is already running for this lot and type
+    if process_key in running_processes:
+        process = running_processes[process_key]
         if process.poll() is None:  # Still running
-            print(f"Car detector already running for lot {lot_id}")
+            print(f"Car detector ({script_type}) already running for lot {lot_id}")
             return
         else:
             # Process died, remove it
-            del running_processes[lot_id]
+            del running_processes[process_key]
     
     try:
         # Verify script exists
         if not os.path.exists(script_path):
             print(f"ERROR: Script not found at {script_path}")
             # Try alternative paths
+            script_name = os.path.basename(script_path)
             alternative_paths = [
-                os.path.join(os.path.dirname(__file__), "../../ALPR/carDetector.py"),
-                os.path.join(os.getcwd(), "ALPR/carDetector.py"),
-                "carDetector.py"
+                os.path.join(os.path.dirname(__file__), f"../../ALPR/{script_name}"),
+                os.path.join(os.getcwd(), f"ALPR/{script_name}"),
+                script_name
             ]
             
             for alt_path in alternative_paths:
@@ -116,7 +548,7 @@ def start_car_detector_subprocess(lot_id, script_path):
                     print(f"Found script at: {script_path}")
                     break
             else:
-                print("ERROR: Could not find carDetector.py script")
+                print(f"ERROR: Could not find {script_name} script")
                 return
         
         # Get Python executable
@@ -138,8 +570,8 @@ def start_car_detector_subprocess(lot_id, script_path):
         )
         
         # Store the process
-        running_processes[lot_id] = process
-        print(f"Car detector started for parking lot {lot_id} with PID {process.pid}")
+        running_processes[process_key] = process
+        print(f"Car detector ({script_type}) started for parking lot {lot_id} with PID {process.pid}")
         
         # Check if process started successfully
         time.sleep(1)  # Give it a moment to start
@@ -147,50 +579,53 @@ def start_car_detector_subprocess(lot_id, script_path):
         if process.poll() is not None:
             # Process has already terminated
             stdout, stderr = process.communicate()
-            print(f"Process terminated immediately. Return code: {process.returncode}")
+            print(f"Process ({script_type}) terminated immediately. Return code: {process.returncode}")
             print(f"STDOUT: {stdout}")
             print(f"STDERR: {stderr}")
             # Remove failed process
-            if lot_id in running_processes:
-                del running_processes[lot_id]
+            if process_key in running_processes:
+                del running_processes[process_key]
         else:
-            print(f"Process is running successfully with PID {process.pid}")
+            print(f"Process ({script_type}) is running successfully with PID {process.pid}")
         
     except Exception as e:
-        print(f"Error starting car detector subprocess for lot {lot_id}: {str(e)}")
+        print(f"Error starting car detector ({script_type}) subprocess for lot {lot_id}: {str(e)}")
         traceback.print_exc()
 
-def start_car_detector_thread(lot_id, script_path):
+def start_car_detector_thread(lot_id, script_path, script_type):
     """Start car detector using threading"""
     global running_threads
     
-    # Check if thread is already running for this lot
-    if lot_id in running_threads and running_threads[lot_id].is_alive():
-        print(f"Car detector thread already running for lot {lot_id}")
+    # Create unique key for each script type
+    thread_key = f"{lot_id}_{script_type}"
+    
+    # Check if thread is already running for this lot and type
+    if thread_key in running_threads and running_threads[thread_key].is_alive():
+        print(f"Car detector ({script_type}) thread already running for lot {lot_id}")
         return
     
     try:
         # Start the script in a separate thread
         thread = threading.Thread(
             target=run_car_detector_in_thread, 
-            args=(lot_id, script_path),
+            args=(lot_id, script_path, script_type),
             daemon=True,
-            name=f"CarDetector-{lot_id}"
+            name=f"CarDetector-{script_type}-{lot_id}"
         )
         thread.start()
         
         # Store the thread
-        running_threads[lot_id] = thread
-        print(f"Car detector thread started for parking lot {lot_id}")
+        running_threads[thread_key] = thread
+        print(f"Car detector ({script_type}) thread started for parking lot {lot_id}")
         
     except Exception as e:
-        print(f"Error starting car detector thread for lot {lot_id}: {str(e)}")
+        print(f"Error starting car detector ({script_type}) thread for lot {lot_id}: {str(e)}")
         traceback.print_exc()
 
-def run_car_detector_in_thread(lot_id, script_path):
+def run_car_detector_in_thread(lot_id, script_path, script_type):
     """Run the car detector script in a separate thread"""
     try:
-        print(f"Running car detector in thread for lot {lot_id}")
+        print(f"Running car detector ({script_type}) in thread for lot {lot_id}")
         
         # Change to script directory
         original_cwd = os.getcwd()
@@ -199,7 +634,8 @@ def run_car_detector_in_thread(lot_id, script_path):
             os.chdir(script_dir)
         
         # Import and run the script as a module
-        spec = importlib.util.spec_from_file_location("carDetector", script_path)
+        module_name = f"carDetector_{script_type}_{lot_id}"
+        spec = importlib.util.spec_from_file_location(module_name, script_path)
         if spec is None:
             raise ImportError(f"Could not load spec from {script_path}")
             
@@ -214,10 +650,10 @@ def run_car_detector_in_thread(lot_id, script_path):
             
             # If the script has a main function, call it
             if hasattr(car_detector, 'main'):
-                print(f"Calling main() function for lot {lot_id}")
+                print(f"Calling main() function for lot {lot_id} ({script_type})")
                 car_detector.main()
             else:
-                print(f"No main() function found in carDetector.py for lot {lot_id}")
+                print(f"No main() function found in {os.path.basename(script_path)} for lot {lot_id}")
                 
         finally:
             # Restore original working directory and sys.path
@@ -226,59 +662,65 @@ def run_car_detector_in_thread(lot_id, script_path):
                 sys.path.remove(script_dir)
         
     except Exception as e:
-        print(f"Error running car detector in thread for lot {lot_id}: {str(e)}")
+        print(f"Error running car detector ({script_type}) in thread for lot {lot_id}: {str(e)}")
         traceback.print_exc()
 
 @receiver(parking_lot_logged_out)
-def stop_car_detector(sender, lot_id, **kwargs):
-    """Stop the car detector script when parking lot logs out"""
-    print(f"Stopping car detector for lot {lot_id}")
+def stop_car_detectors(sender, lot_id, **kwargs):
+    """Stop both car detector scripts when parking lot logs out"""
+    print(f"Stopping car detectors for lot {lot_id}")
     
     if USE_SUBPROCESS:
-        stop_car_detector_subprocess(lot_id)
+        stop_car_detector_subprocess(lot_id, "entry")
+        stop_car_detector_subprocess(lot_id, "exit")
     else:
-        stop_car_detector_thread(lot_id)
+        stop_car_detector_thread(lot_id, "entry")
+        stop_car_detector_thread(lot_id, "exit")
 
-def stop_car_detector_subprocess(lot_id):
+def stop_car_detector_subprocess(lot_id, script_type):
     """Stop subprocess car detector"""
     global running_processes
     
-    if lot_id in running_processes:
-        process = running_processes[lot_id]
+    process_key = f"{lot_id}_{script_type}"
+    
+    if process_key in running_processes:
+        process = running_processes[process_key]
         try:
             if process.poll() is None:  # Process is still running
-                print(f"Terminating car detector process for lot {lot_id}")
+                print(f"Terminating car detector ({script_type}) process for lot {lot_id}")
                 process.terminate()
                 
                 # Wait for graceful shutdown
                 try:
                     process.wait(timeout=5)
-                    print(f"Car detector stopped gracefully for parking lot {lot_id}")
+                    print(f"Car detector ({script_type}) stopped gracefully for parking lot {lot_id}")
                 except subprocess.TimeoutExpired:
                     # Force kill if it doesn't terminate gracefully
-                    print(f"Force killing car detector for lot {lot_id}")
+                    print(f"Force killing car detector ({script_type}) for lot {lot_id}")
                     process.kill()
                     process.wait()
-                    print(f"Car detector force killed for parking lot {lot_id}")
+                    print(f"Car detector ({script_type}) force killed for parking lot {lot_id}")
             
-            del running_processes[lot_id]
+            del running_processes[process_key]
             
         except Exception as e:
-            print(f"Error stopping car detector for lot {lot_id}: {str(e)}")
+            print(f"Error stopping car detector ({script_type}) for lot {lot_id}: {str(e)}")
             traceback.print_exc()
 
-def stop_car_detector_thread(lot_id):
+def stop_car_detector_thread(lot_id, script_type):
     """Stop thread car detector (note: Python threads can't be forcefully stopped)"""
     global running_threads
     
-    if lot_id in running_threads:
-        thread = running_threads[lot_id]
+    thread_key = f"{lot_id}_{script_type}"
+    
+    if thread_key in running_threads:
+        thread = running_threads[thread_key]
         if thread.is_alive():
-            print(f"Car detector thread for lot {lot_id} is still running")
+            print(f"Car detector ({script_type}) thread for lot {lot_id} is still running")
             print("Note: Python threads cannot be forcefully stopped")
-            # You might need to implement a stop flag in your carDetector.py
+            # You might need to implement a stop flag in your scripts
         
-        del running_threads[lot_id]
+        del running_threads[thread_key]
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -299,7 +741,7 @@ def parking_lot_login(request):
         print(f"Parking lot {lot.id} logged in successfully")
         print(f"About to trigger signal for lot {lot.id}")
         
-        # Trigger the car detector script
+        # Trigger the car detector scripts
         parking_lot_logged_in.send(sender=ParkingLot, lot_id=lot.id)
         
         print(f"Signal sent for lot {lot.id}")
@@ -342,7 +784,7 @@ def parking_lot_logout(request):
         
         print(f"Parking lot {lot_id} logging out")
         
-        # Trigger signal to stop car detector
+        # Trigger signal to stop car detectors
         parking_lot_logged_out.send(sender=ParkingLot, lot_id=lot_id)
         
         return JsonResponse({
@@ -368,20 +810,20 @@ def check_processes(request):
     }
     
     # Check subprocess status
-    for lot_id, process in running_processes.items():
+    for process_key, process in running_processes.items():
         if process.poll() is None:
-            status["processes"][lot_id] = {"status": "running", "pid": process.pid}
+            status["processes"][process_key] = {"status": "running", "pid": process.pid}
         else:
             try:
                 stdout, stderr = process.communicate(timeout=1)
-                status["processes"][lot_id] = {
+                status["processes"][process_key] = {
                     "status": "terminated", 
                     "return_code": process.returncode,
                     "stdout": stdout[:500] if stdout else "",
                     "stderr": stderr[:500] if stderr else ""
                 }
             except subprocess.TimeoutExpired:
-                status["processes"][lot_id] = {
+                status["processes"][process_key] = {
                     "status": "terminated", 
                     "return_code": process.returncode,
                     "stdout": "timeout",
@@ -389,8 +831,8 @@ def check_processes(request):
                 }
     
     # Check thread status
-    for lot_id, thread in running_threads.items():
-        status["threads"][lot_id] = {
+    for thread_key, thread in running_threads.items():
+        status["threads"][thread_key] = {
             "status": "alive" if thread.is_alive() else "dead",
             "name": thread.name
         }
@@ -401,7 +843,7 @@ def check_processes(request):
 @csrf_exempt
 def get_license_plate(request):
     """
-    GET API to read license plate detection from file and clear it
+    GET API to read license plate detection from entry file and clear it
     """
     file_path = "../../ALPR/detection.txt"
     
@@ -410,7 +852,7 @@ def get_license_plate(request):
         if not os.path.exists(file_path):
             return JsonResponse({
                 'success': False,
-                'message': 'Detection file not found',
+                'message': 'Entry detection file not found',
                 'license_plate': None
             }, status=404)
         
@@ -422,7 +864,7 @@ def get_license_plate(request):
         if not content:
             return JsonResponse({
                 'success': True,
-                'message': 'No license plate detected',
+                'message': 'No license plate detected at entry',
                 'license_plate': None
             }, status=200)
         
@@ -430,75 +872,104 @@ def get_license_plate(request):
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write('')
         
-        logger.info(f"License plate detected and returned: {content}")
+        logger.info(f"Entry license plate detected and returned: {content}")
         
         return JsonResponse({
             'success': True,
-            'message': 'License plate detected successfully',
+            'message': 'Entry license plate detected successfully',
             'license_plate': content
         }, status=200)
         
     except FileNotFoundError:
-        logger.error(f"Detection file not found: {file_path}")
+        logger.error(f"Entry detection file not found: {file_path}")
         return JsonResponse({
             'success': False,
-            'message': 'Detection file not found',
+            'message': 'Entry detection file not found',
             'license_plate': None
         }, status=404)
         
     except PermissionError:
-        logger.error(f"Permission denied accessing file: {file_path}")
+        logger.error(f"Permission denied accessing entry file: {file_path}")
         return JsonResponse({
             'success': False,
-            'message': 'Permission denied accessing detection file',
+            'message': 'Permission denied accessing entry detection file',
             'license_plate': None
         }, status=403)
         
     except Exception as e:
-        logger.error(f"Error reading detection file: {str(e)}")
+        logger.error(f"Error reading entry detection file: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': f'Error reading detection file: {str(e)}',
+            'message': f'Error reading entry detection file: {str(e)}',
+            'license_plate': None
+        }, status=500)
+
+@require_http_methods(["GET"])
+@csrf_exempt
+def get_exit_license_plate(request):
+    """
+    GET API to read license plate detection from exit file and clear it
+    """
+    file_path = "../../ALPR/exitDetection.txt"
+    
+    try:
+        # Check if file exists
+        if not os.path.exists(file_path):
+            return JsonResponse({
+                'success': False,
+                'message': 'Exit detection file not found',
+                'license_plate': None
+            }, status=404)
+        
+        # Read the file content
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read().strip()
+        
+        # Check if file has content
+        if not content:
+            return JsonResponse({
+                'success': True,
+                'message': 'No license plate detected at exit',
+                'license_plate': None
+            }, status=200)
+        
+        # Clear the file after reading
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write('')
+        
+        logger.info(f"Exit license plate detected and returned: {content}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Exit license plate detected successfully',
+            'license_plate': content
+        }, status=200)
+        
+    except FileNotFoundError:
+        logger.error(f"Exit detection file not found: {file_path}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Exit detection file not found',
+            'license_plate': None
+        }, status=404)
+        
+    except PermissionError:
+        logger.error(f"Permission denied accessing exit file: {file_path}")
+        return JsonResponse({
+            'success': False,
+            'message': 'Permission denied accessing exit detection file',
+            'license_plate': None
+        }, status=403)
+        
+    except Exception as e:
+        logger.error(f"Error reading exit detection file: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error reading exit detection file: {str(e)}',
             'license_plate': None
         }, status=500)
 
 
-# def get_directions(entry_x, entry_y, target_x, target_y, scale_factor=0.1):
-#     dx = target_x - entry_x
-#     dy = target_y - entry_y
-    
-#     # Convert image units to meters using scale factor
-#     dx_m = dx * scale_factor
-#     dy_m = dy * scale_factor
-    
-#     directions = []
-    
-#     # Based on the parking lot image coordinate system:
-#     # - Positive Y means going straight up into the lot from entry
-#     # - Negative X means going RIGHT from entry perspective (image coordinates are flipped)
-#     # - Positive X means going LEFT from entry perspective
-    
-#     # Handle vertical movement (straight into lot)
-#     if abs(dy_m) > 0.1:  # Only add direction if movement is significant
-#         if dy_m > 0:
-#             directions.append(f"Go straight {abs(round(dy_m, 1))} meters")
-#         else:
-#             # If target has lower Y than entry, it's closer to entry
-#             directions.append(f"Go straight {abs(round(dy_m, 1))} meters toward entrance")
-    
-#     # Handle horizontal movement (left/right from entry perspective)
-#     # Note: X-axis is flipped in image coordinates
-#     if abs(dx_m) > 0.1:  # Only add direction if movement is significant
-#         if dx_m < 0:  # Negative X means RIGHT from entry perspective
-#             directions.append(f"Turn right and go {abs(round(dx_m, 1))} meters")
-#         else:  # Positive X means LEFT from entry perspective
-#             directions.append(f"Turn left and go {abs(round(dx_m, 1))} meters")
-    
-#     # If no significant movement, the slot is very close to entry
-#     if not directions:
-#         directions.append("Slot is directly at the entry point")
-    
-#     return " → ".join(directions)
 
 
 # Zone direction mappings
