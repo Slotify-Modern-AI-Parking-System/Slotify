@@ -478,8 +478,185 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.dispatch import Signal, receiver
-from slotifyBE.models import ParkingLot
+from slotifyBE.models import ParkingLot, ParkingLotCoordinate
 import logging
+
+
+
+# View function to handle the cleanup (can be called via URL for cron jobs)
+
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+import stripe
+import json
+from .models import ParkingReservation, Payment
+
+
+# def reservation_form(request):
+#     return render(request, 'reservation.html')
+# @csrf_exempt
+
+# def create_reservation(request):
+#     if request.method == 'POST':
+#         name = request.POST.get('name')
+#         email = request.POST.get('email')
+#         license_plate = request.POST.get('license_plate')
+#         hours = int(request.POST.get('hours'))
+#         total_amount = hours * 10
+        
+#         reservation = ParkingReservation.objects.create(
+#             name=name,
+#             email=email,
+#             license_plate=license_plate,
+#             hours=hours,
+#             total_amount=total_amount
+#         )
+        
+#         try:
+#             intent = stripe.PaymentIntent.create(
+#                 amount=int(total_amount * 100),
+#                 currency='usd',
+#                 metadata={'reservation_id': reservation.id}
+#             )
+            
+#             Payment.objects.create(
+#                 reservation=reservation,
+#                 stripe_payment_intent_id=intent.id,
+#                 amount=total_amount
+#             )
+            
+#             return JsonResponse({
+#                 'client_secret': intent.client_secret,
+#                 'reservation_id': reservation.id
+#             })
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=400)
+    
+#     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+# @csrf_exempt
+# def payment_success(request):
+#     if request.method == 'POST':
+#         data = json.loads(request.body)
+#         payment_intent_id = data.get('payment_intent_id')
+        
+#         try:
+#             payment = Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
+#             payment.status = 'completed'
+#             payment.save()
+#             return JsonResponse({'status': 'success'})
+#         except Payment.DoesNotExist:
+#             return JsonResponse({'error': 'Payment not found'}, status=404)
+    
+#     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def reservation_form(request):
+    return render(request, 'reservation.html')
+@csrf_exempt
+def create_reservation(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        license_plate = request.POST.get('license_plate')
+        location = request.POST.get('location')
+        hours = int(request.POST.get('hours'))
+        total_amount = hours * 10
+        
+        # Check if parking lot exists at the location
+        try:
+            parking_lot = ParkingLot.objects.get(location=location)
+        except ParkingLot.DoesNotExist:
+            return JsonResponse({'error': 'No parking lot found at this location'}, status=400)
+        
+        # Find available slot (but don't assign yet)
+        try:
+            available_slot = ParkingLotCoordinate.objects.filter(
+                lotId=parking_lot.id,
+                slot_assigned=False
+            ).first()
+            
+            if not available_slot:
+                return JsonResponse({'error': 'No available slots at this location'}, status=400)
+                
+        except Exception as e:
+            return JsonResponse({'error': 'Error finding available slot'}, status=400)
+        
+        # Create reservation without assigning slot yet
+        reservation = ParkingReservation.objects.create(
+            name=name,
+            email=email,
+            license_plate=license_plate,
+            location=location,
+            parking_lot=parking_lot,
+            assigned_slot=available_slot,
+            hours=hours,
+            total_amount=total_amount
+        )
+        
+        try:
+            intent = stripe.PaymentIntent.create(
+                amount=int(total_amount * 100),
+                currency='usd',
+                metadata={
+                    'reservation_id': reservation.id,
+                    'slot_id': available_slot.id
+                }
+            )
+            
+            Payment.objects.create(
+                reservation=reservation,
+                stripe_payment_intent_id=intent.id,
+                amount=total_amount
+            )
+            
+            return JsonResponse({
+                'client_secret': intent.client_secret,
+                'reservation_id': reservation.id,
+                'slot_info': f'Slot {available_slot.label or available_slot.id} in Zone {available_slot.zone or "N/A"} will be assigned after payment'
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def payment_success(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        payment_intent_id = data.get('payment_intent_id')
+        
+        try:
+            payment = Payment.objects.get(stripe_payment_intent_id=payment_intent_id)
+            payment.status = 'completed'
+            payment.save()
+            
+            # Get slot ID from Stripe metadata
+            stripe_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+            slot_id = stripe_intent.metadata.get('slot_id')
+            
+            if slot_id:
+                # Now assign the slot after successful payment
+                slot = ParkingLotCoordinate.objects.get(id=slot_id)
+                slot.slot_assigned = True
+                slot.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': f'Payment successful! Slot {slot.label or slot.id} assigned.'
+            })
+        except Payment.DoesNotExist:
+            return JsonResponse({'error': 'Payment not found'}, status=404)
+        except ParkingLotCoordinate.DoesNotExist:
+            return JsonResponse({'error': 'Slot not found'}, status=404)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+
 
 # Set up logger
 logger = logging.getLogger(__name__)

@@ -13,6 +13,14 @@ urlpatterns = [
     path('api/license-plate/', views.get_license_plate, name='get_license_plate'),
     path('api/assign-slot/', views.assign_nearest_parking_slot, name='assign_parking_slot'),
     path('get-exit-license-plate/', views.get_exit_license_plate, name='get_exit_license_plate'),
-    path('thankyou/', views.thankyou, name="ThankYouPage")
+    path('thankyou/', views.thankyou, name="ThankYouPage"),
+    
+    # Reservation management
+   path('reservation/', views.reservation_form, name='reservation_form'),
+    path('create-reservation/', views.create_reservation, name='create_reservation'),
+    path('payment-success/', views.payment_success, name='payment_success'),
+
+
+    
 
 ]
