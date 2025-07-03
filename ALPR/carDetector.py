@@ -468,7 +468,7 @@ def main():
                     y_offset += 25
             
             # Show frame
-            cv2.imshow(f"OPTIMIZED Car Detection - Camera {camera_id}", display_frame)
+            cv2.imshow(f"Car Entry OPTIMIZED Car Detection - Camera {camera_id}", display_frame)
             
             # Handle key presses
             key = cv2.waitKey(1) & 0xFF
