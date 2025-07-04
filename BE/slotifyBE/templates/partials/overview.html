@@ -1,0 +1,115 @@
+<div id="overview-content">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Parking Lots</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ dashboard_data.totalParkingLots }}</p>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-lg">
+                    <i class="fas fa-parking text-2xl text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Confirmed Lots</p>
+                    <p class="text-3xl font-bold text-green-600">{{ dashboard_data.totalConfirmedLots }}</p>
+                </div>
+                <div class="bg-green-100 p-3 rounded-lg">
+                    <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Available Spaces</p>
+                    <p class="text-3xl font-bold text-indigo-600">{{ dashboard_data.availableSpaces }}</p>
+                </div>
+                <div class="bg-indigo-100 p-3 rounded-lg">
+                    <i class="fas fa-car text-2xl text-indigo-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Occupancy Rate</p>
+                    <p class="text-3xl font-bold text-orange-600">87%</p>
+                </div>
+                <div class="bg-orange-100 p-3 rounded-lg">
+                    <i class="fas fa-chart-pie text-2xl text-orange-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <button 
+                    onclick="window.location.href='/registerParking/'" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-plus"></i>
+                    <span>Add New Parking Lot</span>
+                </button>
+
+                <button onclick="loadSection('revenue')" class="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
+                    <i class="fas fa-chart-line"></i>
+                    <span>View Revenue Report</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Activity</h3>
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg">
+                    <div class="bg-green-100 p-2 rounded-full">
+                        <i class="fas fa-check text-green-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">New booking received</p>
+                        <p class="text-xs text-gray-500">2 hours ago</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg">
+                    <div class="bg-blue-100 p-2 rounded-full">
+                        <i class="fas fa-parking text-blue-600 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">Parking lot approved</p>
+                        <p class="text-xs text-gray-500">1 day ago</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ID Proof Section -->
+    {% if dashboard_data.idProof %}
+    <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200">
+        <div class="flex items-center space-x-4">
+            <div class="bg-green-100 p-3 rounded-lg">
+                <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-bold text-gray-800">Verified Account</h3>
+                <p class="text-gray-600">Your ID proof has been uploaded and verified successfully.</p>
+                <a href="{{ dashboard_data.idProof }}" target="_blank" class="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium mt-2 transition-colors duration-200">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span>View ID Proof</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>

@@ -81,7 +81,7 @@
                             <div>
                                 <h3 class="text-xl font-semibold text-gray-800 mb-2">Email Support</h3>
                                 <p class="text-gray-600 mb-2">Get support within 24 hours</p>
-                                <a href="mailto:support@slotify.com" class="text-purple-600 hover:text-purple-800 font-semibold">support@slotify.com</a>
+                                <a href="mailto:slotify78@gmail.com" class="text-purple-600 hover:text-purple-800 font-semibold">slotify78@gmail.com</a>
                             </div>
                         </div>
 
@@ -105,7 +105,7 @@
                             <div>
                                 <h3 class="text-xl font-semibold text-gray-800 mb-2">Office Location</h3>
                                 <p class="text-gray-600 mb-2">Visit us for partnerships</p>
-                                <p class="text-purple-600 font-semibold">123 Innovation Drive<br>Tech City, TC 12345</p>
+                                <p class="text-purple-600 font-semibold">55 Columbia St E<br>Waterloo, ON N0J 4N7</p>
                             </div>
                         </div>
                     </div>
@@ -224,42 +224,79 @@
                         We charge a small percentage of your earnings with no upfront costs. Our transparent pricing ensures you only pay when you earn.
                     </div>
                 </div>
+
+                                <!-- FAQ 4 -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden animate-slide-up">
+                    <button class="faq-button w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                        <span class="text-lg font-semibold text-gray-800">What technologies power Slotify?</span>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform faq-icon"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 text-gray-600 hidden">
+                        Slotify is built using OpenCV, machine learning (YOLO, Tesseract OCR), and Google Maps APIs for real-time slot detection, license plate scanning, and navigation.
+                    </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden animate-slide-up">
+                    <button class="faq-button w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                        <span class="text-lg font-semibold text-gray-800">Can users pre-book a parking slot?</span>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform faq-icon"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 text-gray-600 hidden">
+                        Yes. Slotify supports pre-booking of slots up to 2 hours in advance with secure Stripe integration for payments.
+                    </div>
+                </div>
+
+                <!-- FAQ 6 -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden animate-slide-up">
+                    <button class="faq-button w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                        <span class="text-lg font-semibold text-gray-800">How does Slotify ensure sustainability?</span>
+                        <i class="fas fa-chevron-down text-gray-400 transform transition-transform faq-icon"></i>
+                    </button>
+                    <div class="faq-content px-8 pb-6 text-gray-600 hidden">
+                        By minimizing fuel wastage through smart parking allocation, real-time navigation, and optimized lot usage, Slotify reduces CO₂ emissions and supports sustainable urban mobility.
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <script>
         // Contact form submission
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData(this);
-            const name = formData.get('name');
-            const email = formData.get('email');
-            const phone = formData.get('phone');
-            const query = formData.get('query');
-            
-            // Simple validation
-            if (!name || !email || !phone || !query) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-            
-            // Simulate form submission
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-            
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
-            submitButton.disabled = true;
-            
-            setTimeout(() => {
-                alert('Thank you for your message! We\'ll get back to you within 24 hours.');
-                this.reset();
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-            }, 2000);
-        });
+      document.getElementById('contactForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        query: formData.get('query')
+    };
+
+    const submitButton = this.querySelector('button[type="submit"]');
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+    submitButton.disabled = true;
+
+    const res = await fetch('/submitContactQuery/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        document.getElementById("success-modal").style.display = "flex";
+        this.reset();
+    } else {
+        alert("❌ Error submitting form.");
+    }
+
+    submitButton.innerHTML = 'Send Message';
+    submitButton.disabled = false;
+    setTimeout(() => {
+    document.getElementById("success-modal").style.display = "none";
+}, 4000);
+});
 
         // FAQ functionality
         document.querySelectorAll('.faq-button').forEach(button => {
@@ -295,5 +332,17 @@
             observer.observe(el);
         });
     </script>
+
+    <div id="success-modal" style="display: none; position: fixed; z-index: 9999; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center;">
+    <div style="background: white; border-radius: 20px; padding: 30px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-family: 'Inter', sans-serif;">
+        <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+        <h2 style="margin-bottom: 10px; color: #1e293b;">Thank you!</h2>
+        <p style="color: #475569; margin-bottom: 20px;">We've received your message and will be in touch shortly.</p>
+        <button onclick="document.getElementById('success-modal').style.display='none'" 
+            style="padding: 10px 20px; border-radius: 10px; border: none; background: #4f46e5; color: white; font-weight: 600; cursor: pointer;">
+            OK
+        </button>
+    </div>
+</div>
 </body>
 </html>

@@ -12,13 +12,18 @@ from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 import logging
+import random
 from django.contrib.auth import login
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives, EmailMessage
 from django.conf import settings
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.http import HttpResponse
+from .models import ContactQuery
+from django.template.loader import render_to_string
+from django.core.cache import cache
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +45,179 @@ logger = logging.getLogger(__name__)
 
 # Load the credentials
 # credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
+
+def get_dashboard_data_for_user(user):
+    lots = ParkingLot.objects.filter(registered_by=user)
+    total_lots = lots.count()
+    confirmed_lots = lots.filter(confirmed=True).count()
+    available_spaces = lots.aggregate(total=models.Sum('available_spaces'))['total'] or 0
+
+    try:
+        owner = OwnerProfile.objects.get(user=user)
+    except OwnerProfile.DoesNotExist:
+        owner = None
+
+    return {
+        'totalParkingLots': total_lots,
+        'totalConfirmedLots': confirmed_lots,
+        'availableSpaces': available_spaces,
+        'firstName': owner.firstName if owner else '',
+        'lastName': owner.lastName if owner else '',
+        'emailId': owner.emailId if owner else '',
+        'contactNumber': owner.contactNumber if owner else '',
+        'idProof': owner.idProof if owner and owner.idProof else '',
+    }
+
+@login_required
+def overview_partial(request):
+    data = get_dashboard_data_for_user(request.user)
+    return render(request, 'partials/overview.html', {'dashboard_data': data})
+
+@login_required
+def revenue_partial(request):
+    data = get_dashboard_data_for_user(request.user)
+    return render(request, 'partials/revenue.html', {'dashboard_data': data})
+
+@login_required
+def profile_partial(request):
+    data = get_dashboard_data_for_user(request.user)
+    return render(request, 'partials/profile.html', {'dashboard_data': data})
+
+def terms_of_service(request):
+    return render(request, 'termsOfService.html')
+
+@csrf_exempt
+def resubmitPassword(request):
+    if request.method == 'GET':
+        return render(request, 'resubmitPassword.html')
+
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8')) if request.content_type == 'application/json' else request.POST
+            email = data.get("email")
+
+            user = User.objects.get(email=email)
+            otp = generate_otp()
+
+            # Cache OTP and new password
+            cache.set(email + '_otp_reset', otp, timeout=300)
+
+            send_verification_email(email, f"{user.first_name} {user.last_name}", otp)
+
+            return JsonResponse({"message": "OTP sent.", "redirect_url": f"/verify-email/?email={email}&context=password_reset"})
+
+        except User.DoesNotExist:
+            return JsonResponse({"error": "Email not registered."}, status=400)
+
+@csrf_exempt
+def verify_reset_otp(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        otp = data.get('otp')
+
+        cached_otp = cache.get(email + '_otp_reset')
+        new_password = cache.get(email + '_new_pass')
+
+        if not cached_otp or otp != cached_otp:
+            return JsonResponse({'error': 'Invalid or expired OTP.'}, status=400)
+
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+
+            # Clear OTP and temp password
+            cache.delete(email + '_otp_reset')
+            cache.delete(email + '_new_pass')
+
+            return JsonResponse({'redirect_url': '/userSignIn'})
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found'}, status=404)
+        
+@csrf_exempt
+def render_password_final(request):
+    if request.method == "GET":
+        email = request.GET.get("email")
+        return render(request, "resetPasswordFinal.html", {"email": email})
+
+@csrf_exempt
+def update_password(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body) if request.content_type == 'application/json' else request.POST
+            email = data.get("email")
+            new_password = data.get("password")
+
+            user = User.objects.get(email=email)
+            user.set_password(new_password)
+            user.save()
+
+            # Clean up cache
+            cache.delete(email + "_otp_reset")
+            cache.delete(email + "_new_pass")
+
+            return JsonResponse({"message": "Password updated."})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+def send_verification_email(email, full_name, otp_code):
+    subject = "Your Slotify Verification Code"
+    print(f"[DEBUG] Preparing to send OTP to {email}, code: {otp_code}")
+
+    try:
+        html_content = render_to_string('otp_email.html', {
+            'full_name': full_name,
+            'otp_code': otp_code
+        })
+
+        print("[DEBUG] Rendered HTML Content:\n", html_content)
+
+        email_msg = EmailMessage(
+            subject=subject,
+            body=html_content,
+            from_email='slotify78@gmail.com',
+            to=[email],
+        )
+        email_msg.content_subtype = "html"  # Important: sets content to HTML
+        email_msg.send()
+
+        print("[DEBUG] Email sent successfully to", email)
+
+    except Exception as e:
+        print("[ERROR] Failed to send OTP email:", str(e))
+
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+def otp_page(request):
+    return render(request, 'otp.html')
+
+@csrf_exempt
+def verify_otp(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            otp = data.get('otp')
+
+            if not email or not otp:
+                return JsonResponse({'message': 'Missing email or OTP.'}, status=400)
+
+            cached_otp = cache.get(f"otp_{email}")
+            if cached_otp is None:
+                return JsonResponse({'message': 'OTP expired. Please request a new one.'}, status=400)
+
+            if otp == str(cached_otp):
+                cache.delete(f"otp_{email}")  # Optional: clear OTP after successful verification
+                return JsonResponse({'redirect_url': '/options/'})
+            else:
+                return JsonResponse({'message': 'Incorrect OTP. Please try again.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'message': f'Error: {str(e)}'}, status=500)
+
+    return JsonResponse({'message': 'Invalid request method.'}, status=405)
 
 def userRegister(request):
     return render(request, "userRegister.html")
@@ -73,6 +251,51 @@ def features(request):
 
 def contact(request):
     return render(request, "contact.html")
+
+
+@csrf_exempt
+def submit_contact_query(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            full_name = data.get("name")
+            email = data.get("email")
+            contact_number = data.get("phone")
+            query = data.get("query")
+
+            # Save to database
+            ContactQuery.objects.create(
+                name=full_name,
+                email=email,
+                phone=contact_number,
+                message=query
+            )
+
+            # Render HTML email with context
+            html_content = render_to_string("contact_confirmation.html", {
+                "full_name": full_name,
+                "email": email,
+                "contact_number": contact_number,
+                "query": query,
+            })
+
+            # Send to both user and admin
+            subject = "Slotify - We've Received Your Message"
+            email_msg = EmailMultiAlternatives(
+                subject=subject,
+                body=html_content,
+                from_email="slotify78@gmail.com",
+                to=[email],
+                bcc=["slotify78@gmail.com"]
+            )
+            email_msg.attach_alternative(html_content, "text/html")
+            email_msg.send()
+
+            return JsonResponse({"message": "Query submitted and email sent successfully."}, status=200)
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt
 def login_owner(request):
@@ -297,6 +520,7 @@ def register_owner(request):
             first_name = request.POST.get('firstName')
             last_name = request.POST.get('lastName')
             email_id = request.POST.get('emailId')
+            id_proof_file = request.FILES.get('idProof')
             password = request.POST.get('password')
             contact_number = request.POST.get('contactNumber')
 
@@ -311,6 +535,7 @@ def register_owner(request):
             # Create user
             user = User.objects.create_user(
                 username=email_id,
+                email=email_id,
                 password=password
             )
 
@@ -351,7 +576,17 @@ def register_owner(request):
 # >>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
             login(request, user)
 
-            return JsonResponse({'message': 'Owner registered successfully!'}, status=201)
+# Generate OTP and send email
+            otp = generate_otp()
+            cache.set(f"otp_{email_id}", otp, timeout=300)
+
+            print("[DEBUG] OTP to send:", otp)
+
+            send_verification_email(user.email, user.first_name, otp)
+
+            # Redirect to OTP page
+            return JsonResponse({'redirect_url': f'/verify-email/?email={email_id}'}, status=200)
+
 
         except Exception as e:
             logger.error(f"Error during registration: {str(e)}")

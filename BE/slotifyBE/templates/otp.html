@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email - Slotify</title>
+  <link rel="icon" href="https://i.postimg.cc/9FDXtjBK/Logo.png" type="image/png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .input-focus:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(30, 129, 176, 0.4);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .slide-up {
+      animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(30px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+    
+    .floating {
+      animation: floating 3s ease-in-out infinite;
+    }
+    
+    @keyframes floating {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .bg-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+    }
+    
+    .pulse-ring {
+      animation: pulseRing 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+    }
+    
+    @keyframes pulseRing {
+      0% {
+        transform: scale(0.8);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(0.8);
+        opacity: 1;
+      }
+    }
+    
+    .otp-input {
+      width: 3rem;
+      height: 3rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+    }
+    
+    .otp-input:focus {
+      border-color: #3b82f6;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .otp-input.filled {
+      border-color: #10b981;
+      background: #f0fdf4;
+      color: #065f46;
+    }
+    
+    .timer {
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .success-popup {
+      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.6);
+    }
+    
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    }
+    
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+    .stagger-6 { animation-delay: 0.6s; }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex">
+  <!-- Left Panel - Hero Section -->
+  <div class="w-1/2 relative gradient-bg bg-pattern">
+    <div class="absolute inset-0 flex items-center justify-center p-12">
+      <div class="text-center text-white fade-in">
+        <div class="floating mb-8">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-2xl glass-effect flex items-center justify-center relative">
+            <div class="absolute inset-0 rounded-2xl bg-white/10 pulse-ring"></div>
+            <svg class="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <h1 class="text-5xl font-bold mb-6 leading-tight">
+          Check Your
+          <span class="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+            Email Inbox
+          </span>
+        </h1>
+        <p class="text-xl opacity-90 font-light max-w-md mx-auto leading-relaxed">
+          We've sent a verification code to secure your account and complete registration
+        </p>
+        <div class="mt-8 flex justify-center space-x-4">
+          <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+          <div class="w-8 h-2 bg-white rounded-full"></div>
+          <div class="w-2 h-2 bg-white rounded-full opacity-50"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Decorative Elements -->
+    <div class="absolute top-10 left-10 w-32 h-32 border border-white/20 rounded-full"></div>
+    <div class="absolute bottom-10 right-10 w-24 h-24 border border-white/20 rounded-full"></div>
+    <div class="absolute top-1/2 right-20 w-4 h-4 bg-white/30 rounded-full"></div>
+    <div class="absolute top-1/3 left-1/3 w-6 h-6 border border-white/20 rounded-full"></div>
+  </div>
+
+  <!-- Right Panel - OTP Verification -->
+  <div class="w-1/2 h-screen overflow-y-auto bg-white">
+    <div class="max-w-md mx-auto w-full px-8 py-12 slide-up">
+      <!-- Logo & Header -->
+      <div class="text-center mb-8">
+        <img src="https://i.postimg.cc/5tnjKtdq/Logo-BGRemoved.png" alt="Slotify Logo" class="w-20 h-20 mx-auto mb-4 floating">
+        <h2 class="text-3xl font-bold text-gray-800 mb-2">Verify Your Email</h2>
+        <p class="text-gray-500 font-light">Enter the 6-digit code we sent to</p>
+        <p class="text-blue-600 font-medium" id="emailDisplay">user@example.com</p>
+      </div>
+
+      <!-- OTP Input Form -->
+      <form id="otpForm" class="space-y-6">
+        <div class="stagger-1">
+          <label class="block text-sm font-medium text-gray-700 mb-4 text-center">Verification Code</label>
+          <div class="flex justify-center space-x-3 mb-4">
+            <input type="text" maxlength="1" class="otp-input" id="otp1" autocomplete="off">
+            <input type="text" maxlength="1" class="otp-input" id="otp2" autocomplete="off">
+            <input type="text" maxlength="1" class="otp-input" id="otp3" autocomplete="off">
+            <input type="text" maxlength="1" class="otp-input" id="otp4" autocomplete="off">
+            <input type="text" maxlength="1" class="otp-input" id="otp5" autocomplete="off">
+            <input type="text" maxlength="1" class="otp-input" id="otp6" autocomplete="off">
+          </div>
+          <div id="errorMessage" class="text-red-500 text-sm text-center hidden"></div>
+        </div>
+
+        <!-- Timer Display -->
+        <div class="text-center stagger-2">
+          <p class="text-gray-600 text-sm">
+            Code expires in <span id="timer" class="timer font-mono font-bold text-red-500">05:00</span>
+          </p>
+        </div>
+
+        <!-- Verify Button -->
+        <button 
+          type="submit" 
+          id="verifyBtn"
+          class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 rounded-xl transition-all duration-300 btn-hover transform shadow-lg stagger-3"
+        >
+          <span class="flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Verify Code
+          </span>
+        </button>
+
+        <!-- Resend Section -->
+        <div class="text-center stagger-4">
+          <p class="text-gray-600 text-sm mb-2">Didn't receive the code?</p>
+          <button 
+            type="button" 
+            id="resendBtn"
+            class="text-blue-600 font-semibold hover:text-blue-700 transition-colors disabled:text-gray-400 disabled:cursor-not-allowed"
+            disabled
+          >
+            Resend Code
+          </button>
+        </div>
+      </form>
+
+      <!-- Additional Options -->
+      <div class="mt-8 text-center stagger-5">
+        <p class="text-gray-600 text-sm mb-4">Having trouble with verification?</p>
+        <div class="space-y-2">
+          <button class="text-blue-600 font-medium hover:text-blue-700 transition-colors block mx-auto">
+            Check your spam folder
+          </button>
+          <button class="text-blue-600 font-medium hover:text-blue-700 transition-colors block mx-auto">
+            Contact support
+          </button>
+        </div>
+      </div>
+
+      <!-- Back to Registration -->
+      <div class="mt-8 text-center stagger-6">
+        <p class="text-gray-600">
+          Wrong email address? 
+          <a href="/userRegister" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">
+            Go back to registration
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Popup -->
+  <div id="successPopup" class="fixed inset-0 success-popup flex items-center justify-center hidden z-50">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform transition-all duration-300">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold text-gray-800 mb-2">Email Verified!</h3>
+      <p class="text-gray-600 mb-6">Your account has been successfully verified. Welcome to Slotify!</p>
+      <div class="flex items-center justify-center space-x-1 mb-4">
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+      </div>
+      <button 
+        onclick="redirectToLogin()" 
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+      >
+        Continue to Dashboard
+      </button>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const urlParams = new URLSearchParams(window.location.search);
+  const email = urlParams.get('email');
+  const context = urlParams.get('context') || 'register';
+
+  const emailDisplay = document.getElementById('emailDisplay');
+  if (emailDisplay) emailDisplay.textContent = email || 'user@example.com';
+
+  const otpForm = document.getElementById('otpForm');
+  const verifyBtn = document.getElementById('verifyBtn');
+  const resendBtn = document.getElementById('resendBtn');
+  const otpInputs = document.querySelectorAll('.otp-input');
+  const errorMessage = document.getElementById('errorMessage');
+  const successPopup = document.getElementById('successPopup');
+  const timerDisplay = document.getElementById('timer');
+
+
+  // Timer setup
+  let timeLeft = 300; // 5 minutes
+
+  function updateTimer() {
+    if (!timerDisplay) return;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    if (timeLeft <= 60) timerDisplay.classList.add('text-red-600');
+    if (timeLeft <= 0) {
+      timerDisplay.textContent = '00:00';
+      showError('Code has expired. Please request a new one.');
+      resendBtn.disabled = false;
+      return;
+    }
+    timeLeft--;
+  }
+  const timerInterval = setInterval(updateTimer, 1000);
+
+  function getAllOtpValues() {
+    return Array.from(otpInputs).map(input => input.value).join('');
+  }
+
+  function showError(message) {
+    if (!errorMessage) return;
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+    const otpContainer = document.querySelector('.flex.justify-center.space-x-3');
+    if (otpContainer) {
+      otpContainer.classList.add('shake');
+      setTimeout(() => otpContainer.classList.remove('shake'), 500);
+    }
+    otpInputs.forEach(input => {
+      input.value = '';
+      input.classList.remove('filled');
+    });
+    otpInputs[0].focus();
+  }
+
+  function hideError() {
+    if (errorMessage) errorMessage.classList.add('hidden');
+  }
+
+async function verifyOTP() {
+  const otpCode = getAllOtpValues();
+  if (otpCode.length !== 6) {
+    showError('Please enter all 6 digits');
+    return;
+  }
+
+  verifyBtn.disabled = true;
+  verifyBtn.innerHTML = 'Verifying...';
+
+  const endpoint = context === 'password_reset' ? '/verify-reset-otp/' : '/verify-otp/';
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, otp: otpCode })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      clearInterval(timerInterval);
+      if (successPopup) successPopup.classList.remove('hidden');
+
+      setTimeout(() => {
+        // Password reset flow
+        if (context === 'password_reset') {
+          window.location.href = `/reset-password/?email=${encodeURIComponent(email)}`;
+        } else {
+          window.location.href = '/options/';
+        }
+      }, 2000);
+    } else {
+      showError(data.message || 'Invalid code');
+    }
+  } catch (err) {
+    console.error(err);
+    showError('Something went wrong.');
+  } finally {
+    verifyBtn.disabled = false;
+    verifyBtn.textContent = 'Verify Code';
+  }
+}
+
+  otpForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    verifyOTP();
+  });
+
+  otpInputs.forEach((input, index) => {
+    input.addEventListener('input', function (e) {
+      if (!/^\d*$/.test(e.target.value)) {
+        e.target.value = '';
+        return;
+      }
+      input.classList.add('filled');
+      if (index < otpInputs.length - 1) otpInputs[index + 1].focus();
+      hideError();
+      if (getAllOtpValues().length === 6) setTimeout(verifyOTP, 300);
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !input.value && index > 0) {
+        otpInputs[index - 1].focus();
+        otpInputs[index - 1].value = '';
+      }
+    });
+
+    input.addEventListener('paste', function (e) {
+      e.preventDefault();
+      const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+      paste.split('').forEach((char, i) => {
+        if (otpInputs[i]) {
+          otpInputs[i].value = char;
+          otpInputs[i].classList.add('filled');
+        }
+      });
+      setTimeout(verifyOTP, 300);
+    });
+  });
+
+  // Enable resend after 60 seconds
+  setTimeout(() => {
+    resendBtn.disabled = false;
+  }, 60000);
+
+  resendBtn.addEventListener('click', async function () {
+    try {
+      const response = await fetch('/resend-otp/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      });
+
+      if (response.ok) {
+        timeLeft = 300;
+        timerDisplay.classList.remove('text-red-600');
+        resendBtn.disabled = true;
+
+        const msg = document.createElement('div');
+        msg.className = 'text-green-600 text-sm text-center mt-2';
+        msg.textContent = 'Code sent again!';
+        resendBtn.parentNode.appendChild(msg);
+        setTimeout(() => msg.remove(), 3000);
+      } else {
+        showError('Failed to resend code.');
+      }
+    } catch (err) {
+      showError('Something went wrong.');
+    }
+  });
+
+  if (otpInputs.length > 0) otpInputs[0].focus();
+});
+</script>
+
+</body>
+</html>

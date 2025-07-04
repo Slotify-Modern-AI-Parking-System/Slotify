@@ -136,7 +136,7 @@
   </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex overflow-hidden">
+<body class="bg-gray-50 min-h-screen flex">
   <!-- Left Panel - Hero Section -->
   <div class="w-1/2 relative gradient-bg bg-pattern">
     <div class="absolute inset-0 flex items-center justify-center p-12">
@@ -172,7 +172,7 @@
   </div>
 
   <!-- Right Panel - Registration Form -->
-  <div class="w-1/2 flex flex-col justify-center bg-white relative overflow-y-auto">
+  <div class="w-1/2 h-screen overflow-y-auto bg-white">
     <div class="max-w-md mx-auto w-full px-8 py-12 slide-up">
       <!-- Logo & Header -->
       <div class="text-center mb-8">
@@ -245,7 +245,18 @@
               </svg>
             </div>
           </div>
-        </div>
+          <div class="form-group stagger-5 mt-4">
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              maxlength="255" 
+              class="w-full p-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 input-focus bg-gray-50 focus:bg-white" 
+              placeholder="Re-enter your password"
+              required
+            >
+          </div>
+   </div>
 
         <div class="form-group stagger-5">
           <label for="contactNumber" class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
@@ -304,7 +315,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Success Popup -->
   <div id="successPopup" class="fixed inset-0 success-popup flex items-center justify-center hidden z-50">
     <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform transition-all duration-300">
@@ -332,15 +343,46 @@
   <script>
   const form = document.getElementById('registrationForm');
   const successPopup = document.getElementById('successPopup');
+  const otpPopup = document.getElementById('otpPopup');
   const imagePreview = document.getElementById('imagePreview');
 
-  // File upload preview - Fixed
+  async function submitOTP() {
+    const otpCode = document.getElementById('otpCode').value;
+    const email = document.getElementById('emailId').value;
+
+    if (otpCode.length !== 6) {
+      alert("Please enter a valid 6-digit OTP.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/verify-otp/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, otp: otpCode })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Email verified successfully!");
+        window.location.href = data.redirect_url;
+      } else {
+        alert("Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error('OTP verification failed:', error);
+      alert("Something went wrong during OTP verification.");
+    }
+  }
+
+  // File upload preview
   document.getElementById('profileImage').addEventListener('change', function(e) {
     const file = e.target.files[0];
     const content = document.querySelector('.file-upload-content');
-    
+
     if (file) {
-      // Update the visual feedback
       content.innerHTML = `
         <svg class="w-8 h-8 text-green-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -348,12 +390,9 @@
         <p class="text-sm text-green-600 font-medium">${file.name}</p>
         <p class="text-xs text-gray-400 mt-1">File selected successfully (${(file.size / 1024 / 1024).toFixed(2)} MB)</p>
       `;
-      
-      // Show additional preview
       imagePreview.innerHTML = `Selected: ${file.name}`;
       imagePreview.classList.remove('hidden');
     } else {
-      // Reset to original state
       content.innerHTML = `
         <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -365,74 +404,70 @@
     }
   });
 
-  // Form submission - Updated to match API requirements
+  // Form submission
   form.addEventListener('submit', async function(event) {
-    event.preventDefault(); 
+    event.preventDefault();
 
-    // Basic form validation
     const firstName = document.getElementById('firstName').value.trim();
     const lastName = document.getElementById('lastName').value.trim();
     const emailId = document.getElementById('emailId').value.trim();
     const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
     const contactNumber = document.getElementById('contactNumber').value.trim();
     const profileImage = document.getElementById('profileImage').files[0];
 
-    // Validate all required fields
     if (!firstName || !lastName || !emailId || !password || !contactNumber) {
       alert('All fields are required. Please fill in all information.');
       return;
     }
 
-    // Validate email format
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailId)) {
       alert('Please enter a valid email address.');
       return;
     }
 
-    // Validate contact number (assuming 10 digits)
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(contactNumber)) {
       alert('Please enter a valid 10-digit contact number.');
       return;
     }
 
-    // Validate password strength (minimum 6 characters)
     if (password.length < 6) {
       alert('Password must be at least 6 characters long.');
       return;
     }
 
-    // Validate file upload
     if (!profileImage) {
       alert('Please select a profile image.');
       return;
     }
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!allowedTypes.includes(profileImage.type)) {
       alert('Please select a valid image file (JPG, JPEG, PNG, or GIF).');
       return;
     }
 
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    const maxSize = 10 * 1024 * 1024;
     if (profileImage.size > maxSize) {
       alert('Image file size must be less than 10MB.');
       return;
     }
 
-    // Create FormData matching API expectations
     const formData = new FormData();
     formData.append('firstName', firstName);
     formData.append('lastName', lastName);
     formData.append('emailId', emailId);
     formData.append('password', password);
     formData.append('contactNumber', contactNumber);
-    formData.append('idProof', profileImage); // API expects 'idProof' not 'profileImage'
+    formData.append('idProof', profileImage);
 
-    // Disable the submit button to prevent double submission
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.innerHTML;
     submitBtn.disabled = true;
@@ -456,14 +491,16 @@
 
       if (response.ok) {
         console.log('Registration successful:', responseData);
-        
-        // Show success popup
-        successPopup.classList.remove('hidden');
-        
-        // Reset form
-        form.reset(); 
-        
-        // Reset file upload display
+
+        // Show OTP popup
+        if (response.ok) {
+  window.location.href = `/verify-email/?email=${encodeURIComponent(emailId)}`;
+}
+
+        // Optionally hide success popup if previously shown
+        successPopup.classList.add('hidden');
+
+        form.reset();
         document.querySelector('.file-upload-content').innerHTML = `
           <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -472,15 +509,8 @@
           <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
         `;
         imagePreview.classList.add('hidden');
-
-        // Redirect after delay
-        setTimeout(() => {
-          window.location.href = '/options/';
-        }, 3000);  
       } else {
-        // Handle specific error cases from API
         let errorMessage = 'Registration failed';
-        
         if (response.status === 400) {
           errorMessage = responseData.error || 'Invalid input data';
         } else if (response.status === 500) {
@@ -488,7 +518,7 @@
         } else {
           errorMessage = responseData.error || 'An unexpected error occurred';
         }
-        
+
         console.error('Registration failed:', responseData);
         alert(`Registration Error: ${errorMessage}`);
       }
@@ -496,7 +526,6 @@
       console.error('Network error:', error);
       alert('Network error occurred. Please check your connection and try again.');
     } finally {
-      // Re-enable the submit button
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnText;
     }
@@ -506,9 +535,8 @@
     successPopup.classList.add('hidden');
   }
 
-  // Test functionality for demo purposes
   console.log('Registration form loaded successfully');
-  </script>
+</script>
 </body>
 
 </html>

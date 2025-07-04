@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Slotify - Your Verification Code</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f1f5f9;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .gradient-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            padding: 50px 40px;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .floating-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .particle:nth-child(1) { left: 20%; top: 20%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 80%; top: 30%; animation-delay: 2s; }
+        .particle:nth-child(3) { left: 40%; top: 70%; animation-delay: 4s; }
+        .particle:nth-child(4) { left: 70%; top: 60%; animation-delay: 1s; }
+        .particle:nth-child(5) { left: 10%; top: 80%; animation-delay: 3s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo-text {
+            color: #334155;
+            font-size: 32px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-title {
+            color: #1e293b;
+            font-size: 48px;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .hero-subtitle {
+            color: #334155;
+            font-size: 18px;
+            margin: 0;
+            font-weight: 400;
+        }
+        
+        .otp-section {
+            padding: 50px 40px;
+            text-align: center;
+        }
+        
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #334155;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(245,158,11,0.3);
+        }
+        
+        .security-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .otp-message {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            border: 1px solid rgba(102,126,234,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .otp-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .otp-title {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+        }
+        
+        .otp-text {
+            color: #475569;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+        }
+        
+        .otp-code-container {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .otp-code-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+        
+        .otp-label {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        
+        .otp-code {
+            color: #1e293b;
+            font-size: 48px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 8px;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .otp-timer {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 30px 0;
+            border: 1px solid #fca5a5;
+            text-align: center;
+        }
+        
+        .timer-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .timer-text {
+            color: #dc2626;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .instructions-section {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid #93c5fd;
+        }
+        
+        .instructions-title {
+            color: #1e40af;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .instructions-icon {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .instructions-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .instructions-list li {
+            color: #1e3a8a;
+            font-size: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .instructions-list li::before {
+            content: '→';
+            margin-right: 10px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .security-notice {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 16px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 1px solid #f59e0b;
+            text-align: center;
+        }
+        
+        .security-notice-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .security-notice-text {
+            color: #92400e;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .footer-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .footer-brand {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .footer-tagline {
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .contact-item {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+        
+        .contact-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .contact-item a:hover {
+            color: #7c3aed;
+        }
+        
+        .footer-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #475569, transparent);
+            margin: 25px 0;
+        }
+        
+        .footer-copyright {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .gradient-header {
+                padding: 40px 25px;
+            }
+            .hero-title {
+                font-size: 36px;
+            }
+            .otp-section, .footer-section {
+                padding: 30px 25px;
+            }
+            .otp-message {
+                padding: 25px;
+            }
+            .otp-code-container {
+                padding: 25px;
+            }
+            .otp-code {
+                font-size: 36px;
+                letter-spacing: 6px;
+            }
+            .instructions-section {
+                padding: 25px;
+            }
+            .security-notice {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class='email-container'>
+        <div class='gradient-header'>
+            <div class='floating-particles'>
+                <div class='particle'></div>
+                <div class='particle'></div>
+                <div class='particle'></div>
+                <div class='particle'></div>
+                <div class='particle'></div>
+            </div>
+            <div class='logo-section'>
+                <div class='logo-icon'>🅿️</div>
+                <div class='logo-text'>Slotify</div>
+            </div>
+            <h1 class="hero-title" style="color:#1e293b; font-size:36px; font-weight:800;">
+                Verification Code
+            </h1>
+            <p class='hero-subtitle'>Secure access to your account</p>
+        </div>
+        
+        <div class='otp-section'>
+            <div class='security-badge'>
+                <span class='security-icon'>🛡️</span>
+                Security Verification
+            </div>
+            
+            <div class='otp-message'>
+                <h2 class='otp-title'>Hello {{full_name}}!</h2>
+                <p class='otp-text'>We've received a request to verify your identity. Please use the verification code below to complete your authentication.</p>
+            </div>
+            
+            <div class='otp-code-container'>
+                <div class='otp-label'>Your Verification Code</div>
+                <div class='otp-code'>{{otp_code}}</div>
+            </div>
+            
+            <div class='otp-timer'>
+                <div class='timer-icon'>⏱️</div>
+                <p class='timer-text'>This code expires in 10 minutes</p>
+            </div>
+            
+            <div class='instructions-section'>
+                <h3 class='instructions-title'>
+                    <span class='instructions-icon'>📋</span>
+                    How to use this code
+                </h3>
+                <ul class='instructions-list'>
+                    <li>Return to the Slotify app or website</li>
+                    <li>Enter the 6-digit code exactly as shown above</li>
+                    <li>Complete your verification within 10 minutes</li>
+                    <li>Do not share this code with anyone</li>
+                </ul>
+            </div>
+            
+            <div class='security-notice'>
+                <div class='security-notice-icon'>⚠️</div>
+                <p class='security-notice-text'>
+                    <strong>Security Notice:</strong> If you didn't request this verification code, please ignore this email and contact our support team immediately. Never share your verification codes with anyone.
+                </p>
+            </div>
+        </div>
+        
+        <div class='footer-section'>
+            <div class='footer-brand'>Slotify</div>
+            <div class='footer-tagline'>Smart Parking Solutions</div>
+            <div class='contact-grid'>
+                <div class='contact-item'>📧 <a href='mailto:slotify78@gmail.com'>slotify78@gmail.com</a></div>
+                <div class='contact-item'>📞 <a href='tel:+1234567890'>+1 (234) 567-8900</a></div>
+                <div class='contact-item'>📍 55 Columbia St E, Waterloo, ON N0J 4N7</div>
+            </div>
+            <div class='footer-divider'></div>
+            <div class='footer-copyright'>
+                © 2025 Slotify. All rights reserved.<br>
+                You received this email for security verification purposes.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

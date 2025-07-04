@@ -39,7 +39,7 @@
   <div class="max-w-7xl mx-auto px-6 py-8">
     
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
@@ -51,7 +51,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
@@ -63,7 +63,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
@@ -72,18 +72,6 @@
           </div>
           <div class="bg-orange-100 p-3 rounded-lg">
             <i class="fas fa-clock text-orange-600"></i>
-          </div>
-        </div>
-      </div>
-      
-      <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-600">Total Spaces</p>
-            <p id="totalSpaces" class="text-2xl font-bold text-indigo-600">0</p>
-          </div>
-          <div class="bg-indigo-100 p-3 rounded-lg">
-            <i class="fas fa-car text-indigo-600"></i>
           </div>
         </div>
       </div>
@@ -338,13 +326,21 @@ row.innerHTML = `
     const pendingLots = totalLots - approvedLots;
     const totalSpaces = lots.reduce((sum, lot) => sum + (lot.total_spaces || 0), 0);
 
-    document.getElementById('totalLots').textContent = totalLots;
-    document.getElementById('approvedLots').textContent = approvedLots;
-    document.getElementById('pendingLots').textContent = pendingLots;
-    document.getElementById('totalSpaces').textContent = totalSpaces;
-    
+    const totalLotsElem = document.getElementById('totalLots');
+    if (totalLotsElem) totalLotsElem.textContent = totalLots;
+
+    const approvedElem = document.getElementById('approvedLots');
+    if (approvedElem) approvedElem.textContent = approvedLots;
+
+    const pendingElem = document.getElementById('pendingLots');
+    if (pendingElem) pendingElem.textContent = pendingLots;
+
+    const spacesElem = document.getElementById('totalSpaces');
+    if (spacesElem) spacesElem.textContent = totalSpaces;
+
     if (userName) {
-      document.getElementById('userName').textContent = userName;
+      const userElem = document.getElementById('userName');
+      if (userElem) userElem.textContent = userName;
     }
   }
 

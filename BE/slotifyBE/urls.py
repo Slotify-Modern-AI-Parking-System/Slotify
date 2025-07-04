@@ -20,5 +20,16 @@ urlpatterns = [
     path('getLandingPageStats/', views.get_landingPageStats, name="LandingPageStats"),
     path('about/', views.about, name="AboutPage"),
     path('features/', views.features, name="FeaturesPage"),
-    path('contact/', views.contact, name="ContactPage")
+    path('contact/', views.contact, name="ContactPage"),
+    path('submitContactQuery/', views.submit_contact_query, name='submit_contact_query'),
+    path('verify-email/', views.otp_page, name='otp_page'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('reset-password/', views.render_password_final, name='reset_password_final'),
+    path('update-password/', views.update_password, name='update_password'),
+    path('forgot-password/', views.resubmitPassword, name='forgot_password'),
+    path('verify-reset-otp/', views.verify_reset_otp, name='verify_reset_otp'),
+    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+    path('partials/overview/', views.overview_partial, name='overview_partial'),
+    path('partials/revenue/', views.revenue_partial, name='revenue_partial'),
+    path('partials/profile/', views.profile_partial, name='profile_partial'),
 ]
