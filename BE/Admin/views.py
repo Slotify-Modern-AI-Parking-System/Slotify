@@ -1681,3 +1681,51 @@ def upload_image(request):
             destination.write(chunk)
 
     return JsonResponse({'message': 'Image uploaded successfully.', 'saved_as': filename})
+
+
+@csrf_exempt
+def user_summary_and_list(request):
+    if request.method == "GET":
+        try:
+            # Total users (regardless of role)
+            total_users = OwnerProfile.objects.count()
+
+            # Count of role="User"
+            total_role_user = OwnerProfile.objects.filter(role__iexact="User").count()
+
+            # Count of role="Owner"
+            total_role_owner = OwnerProfile.objects.filter(role__iexact="Owner").count()
+
+            # Count of inactive users (active=False)
+            total_inactive = OwnerProfile.objects.filter(active=False).count()
+
+            # All users where role is User or Owner
+            user_owner_profiles = OwnerProfile.objects.filter(role__in=["User", "Owner"]).values(
+                'id',
+                'firstName',
+                'lastName',
+                'emailId',
+                'contactNumber',
+                'idProof',
+                'verified',
+                'active',
+                'role',
+                'created_at',
+                'updated_at'
+            )
+
+            return JsonResponse({
+                'totalUsers': total_users,
+                'totalRoleUser': total_role_user,
+                'totalRoleOwner': total_role_owner,
+                'totalInactive': total_inactive,
+                'userOwnerData': list(user_owner_profiles)
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({
+                'error': 'Failed to retrieve user data',
+                'details': str(e)
+            }, status=500)
+    else:
+        return JsonResponse({'error': 'Only GET method allowed'}, status=405)

@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/unconfirmed-parkinglots/', views.unconfirmed_parkinglots, name='unconfirmed_parkinglots'),
     path('upload-image/', views.upload_image, name='upload_image'),
     path('api/dashboard/counts/', views.dashboard_counts, name='dashboard_counts'),
-    path('userManagement/', views.userManagement, name="UserManagementPage")
+    path('userManagement/', views.userManagement, name="UserManagementPage"),
+    path("userManagementSummary/", views.user_summary_and_list, name="UserManagementSummary")
 ]
 

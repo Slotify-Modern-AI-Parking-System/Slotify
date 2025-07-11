@@ -375,37 +375,6 @@
                     </table>
                 </div>
                 
-                <!-- Pagination -->
-                <div class="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</button>
-                        <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</button>
-                    </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700">Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">142</span> results</p>
-                        </div>
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Previous</span>
-                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                                <button class="bg-primary-blue border-primary-blue text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</button>
-                                <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">2</button>
-                                <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">3</button>
-                                <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Next</span>
-                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </main>
@@ -522,163 +491,705 @@
     </div>
 
     <script>
-        // Sample user data
+    //     // Sample user data
 
-        async function loadUserSummary() {
-        try {
-            const response = await fetch('/user-summary/');
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+    //     async function loadUserSummary() {
+    //     try {
+    //         const response = await fetch('/user-summary/');
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! Status: ${response.status}`);
+    //         }
+
+    //         const data = await response.json();
+
+    //         // Dynamically update the DOM
+    //         document.getElementById('total-users').textContent = data.total_active_users ?? '0';
+    //         document.getElementById('property-owners').textContent = data.total_active_owners ?? '0';
+    //         document.getElementById('regular-users').textContent = data.total_active_users_only ?? '0';
+    //         document.getElementById('suspended-users').textContent = data.total_inactive_owners_and_users ?? '0';
+
+    //     } catch (error) {
+    //         console.error('Failed to load user summary:', error);
+    //     }
+    // }
+
+    // // Call this function when the page loads or when the "User Management" tab is opened
+    // document.addEventListener('DOMContentLoaded', loadUserSummary);
+    //     let users = [
+    //         { id: 1, name: 'John Smith', email: 'john.smith@email.com', role: 'property_owner', status: 'active', regDate: 'May 20, 2025', lastLogin: 'Today 10:30 AM' },
+    //         { id: 2, name: 'Sarah Johnson', email: 'sarah.johnson@email.com', role: 'property_owner', status: 'active', regDate: 'May 19, 2025', lastLogin: 'Yesterday 3:45 PM' },
+    //         { id: 3, name: 'Michael Chen', email: 'michael.chen@email.com', role: 'regular_user', status: 'active', regDate: 'May 18, 2025', lastLogin: 'May 20, 2:15 PM' },
+    //         { id: 4, name: 'Alice Davis', email: 'alice.davis@email.com', role: 'regular_user', status: 'suspended', regDate: 'May 15, 2025', lastLogin: 'May 17, 9:22 AM' },
+    //         { id: 5, name: 'Robert Wilson', email: 'robert.wilson@email.com', role: 'admin', status: 'active', regDate: 'May 10, 2025', lastLogin: 'Today 8:15 AM' }
+    //     ];
+
+    //     // Modal functionality
+    //     const addUserBtn = document.getElementById('add-user-btn');
+    //     const addUserModal = document.getElementById('add-user-modal');
+    //     const editUserModal = document.getElementById('edit-user-modal');
+    //     const viewUserModal = document.getElementById('view-user-modal');
+
+    //     // Show add user modal
+    //     addUserBtn.addEventListener('click', () => {
+    //         addUserModal.classList.remove('hidden');
+    //     });
+
+    //     // Close modals
+    //     document.getElementById('close-add-modal').addEventListener('click', () => {
+    //         addUserModal.classList.add('hidden');
+    //     });
+
+    //     document.getElementById('cancel-add-user').addEventListener('click', () => {
+    //         addUserModal.classList.add('hidden');
+    //     });
+
+    //     document.getElementById('close-edit-modal').addEventListener('click', () => {
+    //         editUserModal.classList.add('hidden');
+    //     });
+
+    //     document.getElementById('cancel-edit-user').addEventListener('click', () => {
+    //         editUserModal.classList.add('hidden');
+    //     });
+
+    //     document.getElementById('close-view-modal').addEventListener('click', () => {
+    //         viewUserModal.classList.add('hidden');
+    //     });
+
+    //     document.getElementById('close-view-user').addEventListener('click', () => {
+    //         viewUserModal.classList.add('hidden');
+    //     });
+
+    //     // Add user form
+    //     document.getElementById('add-user-form').addEventListener('submit', (e) => {
+    //         e.preventDefault();
+    //         const name = document.getElementById('user-name').value;
+    //         const email = document.getElementById('user-email').value;
+    //         const role = document.getElementById('user-role').value;
+            
+    //         // Add new user logic here
+    //         alert('User added successfully!');
+    //         addUserModal.classList.add('hidden');
+    //         document.getElementById('add-user-form').reset();
+    //     });
+
+    //     // Edit user functionality
+    //     document.querySelectorAll('.edit-user-btn').forEach(btn => {
+    //         btn.addEventListener('click', (e) => {
+    //             const userId = e.target.dataset.userId;
+    //             const user = users.find(u => u.id == userId);
+                
+    //             if (user) {
+    //                 document.getElementById('edit-user-name').value = user.name;
+    //                 document.getElementById('edit-user-email').value = user.email;
+    //                 document.getElementById('edit-user-role').value = user.role;
+    //                 document.getElementById('edit-user-status').value = user.status;
+    //                 editUserModal.classList.remove('hidden');
+    //             }
+    //         });
+    //     });
+
+    //     // View user functionality
+    //     document.querySelectorAll('.view-user-btn').forEach(btn => {
+    //         btn.addEventListener('click', (e) => {
+    //             const userId = e.target.dataset.userId;
+    //             const user = users.find(u => u.id == userId);
+                
+    //             if (user) {
+    //                 document.getElementById('user-details').innerHTML = `
+    //                     <div class="border-b pb-2 mb-2">
+    //                         <span class="font-medium text-gray-700">Name:</span>
+    //                         <span class="text-gray-900">${user.name}</span>
+    //                     </div>
+    //                     <div class="border-b pb-2 mb-2">
+    //                         <span class="font-medium text-gray-700">Email:</span>
+    //                         <span class="text-gray-900">${user.email}</span>
+    //                     </div>
+    //                     <div class="border-b pb-2 mb-2">
+    //                         <span class="font-medium text-gray-700">Role:</span>
+    //                         <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">${user.role.replace('_', ' ')}</span>
+    //                     </div>
+    //                     <div class="border-b pb-2 mb-2">
+    //                         <span class="font-medium text-gray-700">Status:</span>
+    //                         <span class="px-2 py-1 text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-full">${user.status}</span>
+    //                     </div>
+    //                     <div class="border-b pb-2 mb-2">
+    //                         <span class="font-medium text-gray-700">Registration Date:</span>
+    //                         <span class="text-gray-900">${user.regDate}</span>
+    //                     </div>
+    //                     <div>
+    //                         <span class="font-medium text-gray-700">Last Login:</span>
+    //                         <span class="text-gray-900">${user.lastLogin}</span>
+    //                     </div>
+    //                 `;
+    //                 viewUserModal.classList.remove('hidden');
+    //             }
+    //         });
+    //     });
+
+    //     // Delete user functionality
+    //     document.querySelectorAll('.delete-user-btn').forEach(btn => {
+    //         btn.addEventListener('click', (e) => {
+    //             if (confirm('Are you sure you want to delete this user?')) {
+    //                 const userId = e.target.dataset.userId;
+    //                 // Delete user logic here
+    //                 alert('User deleted successfully!');
+    //                 e.target.closest('tr').remove();
+    //             }
+    //         });
+    //     });
+
+    //     // Suspend/Reactivate user functionality
+    //     document.querySelectorAll('.suspend-user-btn, .reactivate-user-btn').forEach(btn => {
+    //         btn.addEventListener('click', (e) => {
+    //             const action = e.target.classList.contains('suspend-user-btn') ? 'suspend' : 'reactivate';
+    //             if (confirm(`Are you sure you want to ${action} this user?`)) {
+    //                 alert(`User ${action}d successfully!`);
+    //                 // Update user status logic here
+    //             }
+    //         });
+    //     });
+
+    // User Management Dynamic Data Handler
+class UserManagement {
+    constructor() {
+        this.allUsers = [];
+        this.filteredUsers = [];
+        this.init();
+    }
+
+    // Initialize the user management system
+    async init() {
+        await this.loadUserData();
+        this.setupEventListeners();
+    }
+
+// Add this method to your UserManagement class
+createUserModal(user) {
+    const modal = document.createElement('div');
+    modal.id = 'user-modal';
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    
+    const formattedDate = new Date(user.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const lastLoginDate = new Date(user.updated_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    const roleText = user.role.toLowerCase() === 'owner' ? 'Property Owner' : 
+                    user.role.toLowerCase() === 'admin' ? 'Admin' : 'Regular User';
+    
+    const statusText = user.active ? 'Active' : 'Suspended';
+    const statusClass = user.active ? 'text-green-600' : 'text-red-600';
+    
+    const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
+    
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 xl:w-2/5 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-medium text-gray-900">User Details</h3>
+                    <button class="close-modal text-gray-400 hover:text-gray-600 transition duration-200" aria-label="Close">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- User Info -->
+                <div class="space-y-6">
+                    <!-- Profile Section -->
+                    <div class="flex items-center space-x-4">
+                        <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-xl font-medium text-blue-700">${initials}</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-900">${user.firstName} ${user.lastName}</h4>
+                            <p class="text-gray-600">${user.emailId}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                            <p class="text-sm text-gray-900">${roleText}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <p class="text-sm font-medium ${statusClass}">${statusText}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                            <p class="text-sm text-gray-900">${user.id}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                            <p class="text-sm text-gray-900">${user.contactNumber || 'N/A'}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Verified</label>
+                            <p class="text-sm text-gray-900">${user.verified ? 'Yes' : 'No'}</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Created Date</label>
+                            <p class="text-sm text-gray-900">${formattedDate}</p>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
+                            <p class="text-sm text-gray-900">${lastLoginDate}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- ID Proof Section -->
+                    ${user.idProof ? `
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">ID Proof</label>
+                            <div class="border rounded-lg p-4 bg-gray-50">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm text-gray-600">Click to view ID proof document</span>
+                                    <button class="view-id-proof px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition duration-200" data-id-proof-url="${user.idProof}">
+                                        View Document
+                                    </button>
+                                </div>
+                                <div class="id-proof-container hidden">
+                                    <img src="${user.idProof}" alt="ID Proof" class="max-w-full h-auto rounded border" style="max-height: 400px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <div class="hidden text-center py-8 text-gray-500">
+                                        <p>Unable to display image. <a href="${user.idProof}" target="_blank" class="text-blue-600 hover:underline">Open in new tab</a></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-3 pt-6 border-t">
+                        <button class="close-modal px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add event listeners for modal buttons
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', () => modal.remove());
+    });
+    
+    // Add event listener for ID proof view button
+    const viewIdProofBtn = modal.querySelector('.view-id-proof');
+    if (viewIdProofBtn) {
+        viewIdProofBtn.addEventListener('click', () => {
+            const container = modal.querySelector('.id-proof-container');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                viewIdProofBtn.textContent = 'Hide Document';
+            } else {
+                container.classList.add('hidden');
+                viewIdProofBtn.textContent = 'View Document';
             }
+        });
+    }
+    
+    return modal;
+}
 
+    // Fetch data from the API
+    async loadUserData() {
+        try {
+            const response = await fetch('/userManagementSummary/');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
-
-            // Dynamically update the DOM
-            document.getElementById('total-users').textContent = data.total_active_users ?? '0';
-            document.getElementById('property-owners').textContent = data.total_active_owners ?? '0';
-            document.getElementById('regular-users').textContent = data.total_active_users_only ?? '0';
-            document.getElementById('suspended-users').textContent = data.total_inactive_owners_and_users ?? '0';
-
+            
+            this.allUsers = data.userOwnerData || [];
+            this.filteredUsers = [...this.allUsers];
+            
+            this.updateSummaryStats(data);
+            this.renderUsersTable();
         } catch (error) {
-            console.error('Failed to load user summary:', error);
+            console.error('Error loading user data:', error);
+            this.showError('Failed to load user data. Please try again.');
         }
     }
 
-    // Call this function when the page loads or when the "User Management" tab is opened
-    document.addEventListener('DOMContentLoaded', loadUserSummary);
-        let users = [
-            { id: 1, name: 'John Smith', email: 'john.smith@email.com', role: 'property_owner', status: 'active', regDate: 'May 20, 2025', lastLogin: 'Today 10:30 AM' },
-            { id: 2, name: 'Sarah Johnson', email: 'sarah.johnson@email.com', role: 'property_owner', status: 'active', regDate: 'May 19, 2025', lastLogin: 'Yesterday 3:45 PM' },
-            { id: 3, name: 'Michael Chen', email: 'michael.chen@email.com', role: 'regular_user', status: 'active', regDate: 'May 18, 2025', lastLogin: 'May 20, 2:15 PM' },
-            { id: 4, name: 'Alice Davis', email: 'alice.davis@email.com', role: 'regular_user', status: 'suspended', regDate: 'May 15, 2025', lastLogin: 'May 17, 9:22 AM' },
-            { id: 5, name: 'Robert Wilson', email: 'robert.wilson@email.com', role: 'admin', status: 'active', regDate: 'May 10, 2025', lastLogin: 'Today 8:15 AM' }
-        ];
+    // Update summary statistics
+    updateSummaryStats(data) {
+        document.getElementById('total-users').textContent = data.totalUsers || 0;
+        document.getElementById('property-owners').textContent = data.totalRoleOwner || 0;
+        document.getElementById('regular-users').textContent = data.totalRoleUser || 0;
+        document.getElementById('suspended-users').textContent = data.totalInactive || 0;
+    }
 
-        // Modal functionality
+    // Setup event listeners for search and filters
+    setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('search-users');
+        searchInput.addEventListener('input', (e) => {
+            this.handleSearch(e.target.value);
+        });
+
+        // Filter functionality
+        const filterBtn = document.getElementById('filter-btn');
+        filterBtn.addEventListener('click', () => {
+            this.applyFilters();
+        });
+
+        // Add user button
         const addUserBtn = document.getElementById('add-user-btn');
-        const addUserModal = document.getElementById('add-user-modal');
-        const editUserModal = document.getElementById('edit-user-modal');
-        const viewUserModal = document.getElementById('view-user-modal');
-
-        // Show add user modal
         addUserBtn.addEventListener('click', () => {
-            addUserModal.classList.remove('hidden');
+            this.handleAddUser();
         });
 
-        // Close modals
-        document.getElementById('close-add-modal').addEventListener('click', () => {
-            addUserModal.classList.add('hidden');
+        // Enter key for search
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.handleSearch(e.target.value);
+            }
         });
+    }
 
-        document.getElementById('cancel-add-user').addEventListener('click', () => {
-            addUserModal.classList.add('hidden');
-        });
-
-        document.getElementById('close-edit-modal').addEventListener('click', () => {
-            editUserModal.classList.add('hidden');
-        });
-
-        document.getElementById('cancel-edit-user').addEventListener('click', () => {
-            editUserModal.classList.add('hidden');
-        });
-
-        document.getElementById('close-view-modal').addEventListener('click', () => {
-            viewUserModal.classList.add('hidden');
-        });
-
-        document.getElementById('close-view-user').addEventListener('click', () => {
-            viewUserModal.classList.add('hidden');
-        });
-
-        // Add user form
-        document.getElementById('add-user-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('user-name').value;
-            const email = document.getElementById('user-email').value;
-            const role = document.getElementById('user-role').value;
-            
-            // Add new user logic here
-            alert('User added successfully!');
-            addUserModal.classList.add('hidden');
-            document.getElementById('add-user-form').reset();
-        });
-
-        // Edit user functionality
-        document.querySelectorAll('.edit-user-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const userId = e.target.dataset.userId;
-                const user = users.find(u => u.id == userId);
+    // Handle search functionality
+    handleSearch(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        
+        if (term === '') {
+            this.filteredUsers = [...this.allUsers];
+        } else {
+            this.filteredUsers = this.allUsers.filter(user => {
+                const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+                const email = user.emailId.toLowerCase();
+                const role = user.role.toLowerCase();
                 
-                if (user) {
-                    document.getElementById('edit-user-name').value = user.name;
-                    document.getElementById('edit-user-email').value = user.email;
-                    document.getElementById('edit-user-role').value = user.role;
-                    document.getElementById('edit-user-status').value = user.status;
-                    editUserModal.classList.remove('hidden');
-                }
+                return fullName.includes(term) || 
+                       email.includes(term) || 
+                       role.includes(term);
             });
-        });
+        }
+        
+        this.renderUsersTable();
+    }
 
-        // View user functionality
-        document.querySelectorAll('.view-user-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const userId = e.target.dataset.userId;
-                const user = users.find(u => u.id == userId);
+    // Apply role and status filters
+    applyFilters() {
+        const roleFilter = document.getElementById('role-filter').value;
+        const statusFilter = document.getElementById('status-filter').value;
+        const searchTerm = document.getElementById('search-users').value.toLowerCase().trim();
+        
+        let filtered = [...this.allUsers];
+        
+        // Apply search filter
+        if (searchTerm) {
+            filtered = filtered.filter(user => {
+                const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+                const email = user.emailId.toLowerCase();
+                const role = user.role.toLowerCase();
                 
-                if (user) {
-                    document.getElementById('user-details').innerHTML = `
-                        <div class="border-b pb-2 mb-2">
-                            <span class="font-medium text-gray-700">Name:</span>
-                            <span class="text-gray-900">${user.name}</span>
-                        </div>
-                        <div class="border-b pb-2 mb-2">
-                            <span class="font-medium text-gray-700">Email:</span>
-                            <span class="text-gray-900">${user.email}</span>
-                        </div>
-                        <div class="border-b pb-2 mb-2">
-                            <span class="font-medium text-gray-700">Role:</span>
-                            <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">${user.role.replace('_', ' ')}</span>
-                        </div>
-                        <div class="border-b pb-2 mb-2">
-                            <span class="font-medium text-gray-700">Status:</span>
-                            <span class="px-2 py-1 text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-full">${user.status}</span>
-                        </div>
-                        <div class="border-b pb-2 mb-2">
-                            <span class="font-medium text-gray-700">Registration Date:</span>
-                            <span class="text-gray-900">${user.regDate}</span>
-                        </div>
-                        <div>
-                            <span class="font-medium text-gray-700">Last Login:</span>
-                            <span class="text-gray-900">${user.lastLogin}</span>
-                        </div>
-                    `;
-                    viewUserModal.classList.remove('hidden');
+                return fullName.includes(searchTerm) || 
+                       email.includes(searchTerm) || 
+                       role.includes(searchTerm);
+            });
+        }
+        
+        // Apply role filter
+        if (roleFilter) {
+            filtered = filtered.filter(user => {
+                switch(roleFilter) {
+                    case 'admin': return user.role.toLowerCase() === 'admin';
+                    case 'property_owner': return user.role.toLowerCase() === 'owner';
+                    case 'regular_user': return user.role.toLowerCase() === 'user';
+                    default: return true;
                 }
             });
-        });
+        }
+        
+        // Apply status filter
+        if (statusFilter) {
+            filtered = filtered.filter(user => {
+                switch(statusFilter) {
+                    case 'active': return user.active === true;
+                    case 'suspended': return user.active === false;
+                    case 'pending': return user.verified === false;
+                    default: return true;
+                }
+            });
+        }
+        
+        this.filteredUsers = filtered;
+        this.renderUsersTable();
+    }
 
-        // Delete user functionality
-        document.querySelectorAll('.delete-user-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                if (confirm('Are you sure you want to delete this user?')) {
-                    const userId = e.target.dataset.userId;
-                    // Delete user logic here
-                    alert('User deleted successfully!');
-                    e.target.closest('tr').remove();
-                }
-            });
+    // Render users table
+    renderUsersTable() {
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = '';
+        
+        if (this.filteredUsers.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        No users found matching your criteria.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        this.filteredUsers.forEach(user => {
+            const row = this.createUserRow(user);
+            tbody.appendChild(row);
         });
+    }
 
-        // Suspend/Reactivate user functionality
-        document.querySelectorAll('.suspend-user-btn, .reactivate-user-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const action = e.target.classList.contains('suspend-user-btn') ? 'suspend' : 'reactivate';
-                if (confirm(`Are you sure you want to ${action} this user?`)) {
-                    alert(`User ${action}d successfully!`);
-                    // Update user status logic here
-                }
-            });
+    // Create individual user row
+    createUserRow(user) {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        
+        const initials = `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
+        const statusClass = user.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        const statusText = user.active ? 'Active' : 'Suspended';
+        
+        const roleClass = user.role.toLowerCase() === 'owner' ? 'bg-blue-100 text-blue-800' : 
+                         user.role.toLowerCase() === 'admin' ? 'bg-purple-100 text-purple-800' : 
+                         'bg-green-100 text-green-800';
+        const roleText = user.role.toLowerCase() === 'owner' ? 'Property Owner' : 
+                        user.role.toLowerCase() === 'admin' ? 'Admin' : 'Regular User';
+        
+        const formattedDate = new Date(user.created_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         });
+        
+        const lastLoginDate = new Date(user.updated_at).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-medium text-blue-700">${initials}</span>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${user.firstName} ${user.lastName}</div>
+                        <div class="text-sm text-gray-500">${user.emailId}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-medium ${roleClass} rounded-full">${roleText}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${lastLoginDate}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-medium ${statusClass} rounded-full">${statusText}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                <button class="view-user-btn text-primary-blue hover:text-blue-900 transition duration-200" data-user-id="${user.id}">View</button>
+                <button class="edit-user-btn text-indigo-600 hover:text-indigo-900 transition duration-200" data-user-id="${user.id}">Edit</button>
+                ${user.active ? 
+                    `<button class="suspend-user-btn text-yellow-600 hover:text-yellow-900 transition duration-200" data-user-id="${user.id}">Suspend</button>` :
+                    `<button class="reactivate-user-btn text-green-600 hover:text-green-900 transition duration-200" data-user-id="${user.id}">Reactivate</button>`
+                }
+                <button class="delete-user-btn text-red-600 hover:text-red-900 transition duration-200" data-user-id="${user.id}">Delete</button>
+            </td>
+        `;
+        
+        // Add event listeners for action buttons
+        this.addRowEventListeners(row, user);
+        
+        return row;
+    }
+
+    // Add event listeners to row action buttons
+    addRowEventListeners(row, user) {
+        const viewBtn = row.querySelector('.view-user-btn');
+        const editBtn = row.querySelector('.edit-user-btn');
+        const suspendBtn = row.querySelector('.suspend-user-btn');
+        const reactivateBtn = row.querySelector('.reactivate-user-btn');
+        const deleteBtn = row.querySelector('.delete-user-btn');
+        
+        viewBtn?.addEventListener('click', () => this.handleViewUser(user));
+        editBtn?.addEventListener('click', () => this.handleEditUser(user.id));
+        suspendBtn?.addEventListener('click', () => this.handleSuspendUser(user.id));
+        reactivateBtn?.addEventListener('click', () => this.handleReactivateUser(user.id));
+        deleteBtn?.addEventListener('click', () => this.handleDeleteUser(user.id));
+    }
+
+    // Update pagination
+    updatePagination() {
+        const totalPages = Math.ceil(this.filteredUsers.length / this.usersPerPage);
+        const startIndex = (this.currentPage - 1) * this.usersPerPage + 1;
+        const endIndex = Math.min(startIndex + this.usersPerPage - 1, this.filteredUsers.length);
+        
+        // Update pagination info
+        const paginationInfo = document.querySelector('.text-sm.text-gray-700');
+        if (paginationInfo) {
+            paginationInfo.innerHTML = `
+                Showing <span class="font-medium">${startIndex}</span> to 
+                <span class="font-medium">${endIndex}</span> of 
+                <span class="font-medium">${this.filteredUsers.length}</span> results
+            `;
+        }
+        
+        // Update pagination buttons (simplified for demo)
+        this.updatePaginationButtons(totalPages);
+    }
+
+    // Update pagination buttons
+    updatePaginationButtons(totalPages) {
+        const paginationNav = document.querySelector('nav.relative');
+        if (!paginationNav) return;
+        
+        const prevBtn = paginationNav.querySelector('button:first-child');
+        const nextBtn = paginationNav.querySelector('button:last-child');
+        
+        // Enable/disable prev button
+        if (prevBtn) {
+            prevBtn.disabled = this.currentPage === 1;
+            prevBtn.onclick = () => {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.renderUsersTable();
+                    this.updatePagination();
+                }
+            };
+        }
+        
+        // Enable/disable next button
+        if (nextBtn) {
+            nextBtn.disabled = this.currentPage === totalPages;
+            nextBtn.onclick = () => {
+                if (this.currentPage < totalPages) {
+                    this.currentPage++;
+                    this.renderUsersTable();
+                    this.updatePagination();
+                }
+            };
+        }
+    }
+
+    // Action handlers
+    handleViewUser(user) {
+        // Remove any existing modal
+        const existingModal = document.getElementById('user-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // Create and show modal
+        const modal = this.createUserModal(user);
+        document.body.appendChild(modal);
+        
+        // Add click outside to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Placeholder function for editing user
+    handleEditUser(userId) {
+        console.log('Edit user with ID:', userId);
+        // TODO: Implement edit user functionality
+        // This would typically open an edit form/modal
+        alert(`Edit user functionality for user ID: ${userId}`);
+    }
+
+    // Placeholder function for suspending user
+    handleSuspendUser(userId) {
+        console.log('Suspend user with ID:', userId);
+        // TODO: Implement suspend user API call
+        // Example: await fetch(`/api/users/${userId}/suspend`, { method: 'POST' });
+        if (confirm('Are you sure you want to suspend this user?')) {
+            alert(`Suspend user functionality for user ID: ${userId}`);
+            // After successful API call, refresh the data
+            // this.refreshData();
+        }
+    }
+
+    // Placeholder function for reactivating user
+    handleReactivateUser(userId) {
+        console.log('Reactivate user with ID:', userId);
+        // TODO: Implement reactivate user API call
+        // Example: await fetch(`/api/users/${userId}/reactivate`, { method: 'POST' });
+        if (confirm('Are you sure you want to reactivate this user?')) {
+            alert(`Reactivate user functionality for user ID: ${userId}`);
+            // After successful API call, refresh the data
+            // this.refreshData();
+        }
+    }
+
+    // Placeholder function for deleting user
+    handleDeleteUser(userId) {
+        console.log('Delete user with ID:', userId);
+        // TODO: Implement delete user API call
+        // Example: await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+        if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+            alert(`Delete user functionality for user ID: ${userId}`);
+            // After successful API call, refresh the data
+            // this.refreshData();
+        }
+    }
+
+    handleAddUser() {
+        console.log('Add new user');
+        alert('Add new user functionality would open a modal or form');
+    }
+
+    // Show error message
+    showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50';
+        errorDiv.textContent = message;
+        
+        document.body.appendChild(errorDiv);
+        
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
+    }
+
+    // Refresh data
+    async refreshData() {
+        await this.loadUserData();
+    }
+}
+
+// Initialize the user management system when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.userManagement = new UserManagement();
+});
+
+// Optional: Add refresh button functionality
+function refreshUserData() {
+    if (window.userManagement) {
+        window.userManagement.refreshData();
+    }
+}
     </script>
 </body>
 </html>
