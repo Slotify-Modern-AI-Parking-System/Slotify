@@ -38,13 +38,11 @@ logger = logging.getLogger(__name__)
 # >>>>>>> bcaa875e (Added Admin App and FE and Connected Script Trigger for Parking Lot Division.)
 # =======
 
-# # Define your credentials path relative to the project
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
-# >>>>>>> 627e8a1c (Gitignore)
+# Define your credentials path relative to the project
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
 
-# Load the credentials
-# credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
+credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
 def get_dashboard_data_for_user(user):
     lots = ParkingLot.objects.filter(registered_by=user)

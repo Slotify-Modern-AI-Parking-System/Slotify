@@ -111,11 +111,17 @@ def dashboard_counts(request):
             pending_count = ParkingLot.objects.filter(confirmed=False).count()
             approved_count = ParkingLot.objects.filter(confirmed=True).count()
             total_count = ParkingLot.objects.count()
+
+            # Get user and owner counts from OwnerProfile
+            user_count = OwnerProfile.objects.filter(role__iexact='User').count()
+            owner_count = OwnerProfile.objects.filter(role__iexact='Owner').count()
             
             return JsonResponse({
                 'pendingParkingLots': pending_count,
                 'approvedParkingLots': approved_count,
-                'totalParkingLots': total_count
+                'totalParkingLots': total_count,
+                'totalUsers': user_count,
+                'totalOwners': owner_count
             }, status=200)
             
         except Exception as e:

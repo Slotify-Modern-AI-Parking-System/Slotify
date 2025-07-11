@@ -102,7 +102,7 @@
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                 <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -159,11 +159,30 @@
                             </div>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-gray-900">142</h3>
+                            <h3 id = "active-users" class="text-lg font-semibold text-gray-900">142</h3>
                             <p class="text-sm text-gray-600">Active Users</p>
                         </div>
                     </div>
                 </div>
+
+                <!-- Active Parking Lot Owners -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        d="M5 13l4 4L19 7M16 5a3 3 0 110 6 3 3 0 010-6zm-8 4a3 3 0 100-6 3 3 0 000 6zm0 4a4 4 0 00-4 4v1h16v-1a4 4 0 00-4-4H8z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 id="active-owners" class="text-lg font-semibold text-gray-900">0</h3>
+                            <p class="text-sm text-gray-600">Active Owners</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Parking Lot Rows -->
@@ -798,31 +817,25 @@ document.addEventListener('click', async function(event) {
         }
     }
 });
-async function fetchDashboardCounts() {
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/dashboard/counts/', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/dashboard/counts/")  // Use relative path
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Update dashboard values
+            document.getElementById("pending-count").textContent = data.pendingParkingLots;
+            document.getElementById("approved-count").textContent = data.approvedParkingLots;
+            document.getElementById("total-count").textContent = data.totalParkingLots;
+            document.getElementById("active-users").textContent = data.totalUsers;
+            document.getElementById("active-owners").textContent = data.totalOwners;
+        })
+        .catch(error => {
+            console.error("Error fetching dashboard data:", error);
         });
-        
-        if (response.ok) {
-            const data = await response.json();
-            document.getElementById('pending-count').textContent = data.pendingParkingLots;
-            document.getElementById('approved-count').textContent = data.approvedParkingLots;
-            document.getElementById('total-count').textContent = data.totalParkingLots;
-        } else {
-            console.error('Failed to fetch dashboard counts');
-        }
-    } catch (error) {
-        console.error('Error fetching dashboard counts:', error);
-    }
-}
-
-// Call the function when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    fetchDashboardCounts();
 });
 // Function to fetch and display unconfirmed parking lots
 async function loadUnconfirmedParkingLots() {
