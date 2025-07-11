@@ -1729,3 +1729,75 @@ def user_summary_and_list(request):
             }, status=500)
     else:
         return JsonResponse({'error': 'Only GET method allowed'}, status=405)
+
+@csrf_exempt
+def suspend_account(request):
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body)
+            user_id = body.get("user_id")
+
+            if not user_id:
+                return JsonResponse({"error": "Missing user_id"}, status=400)
+
+            profile = OwnerProfile.objects.get(id=user_id)
+            profile.active = False
+            profile.save()
+
+            return JsonResponse({"message": "Account suspended successfully"}, status=200)
+        
+        except OwnerProfile.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        
+        except Exception as e:
+            return JsonResponse({"error": "Failed to suspend account", "details": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
+@csrf_exempt
+def reactivate_account(request):
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body)
+            user_id = body.get("user_id")
+
+            if not user_id:
+                return JsonResponse({"error": "Missing user_id"}, status=400)
+
+            profile = OwnerProfile.objects.get(id=user_id)
+            profile.active = True
+            profile.save()
+
+            return JsonResponse({"message": "Account reactivated successfully"}, status=200)
+
+        except OwnerProfile.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+
+        except Exception as e:
+            return JsonResponse({"error": "Failed to reactivate account", "details": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)
+
+
+@csrf_exempt
+def delete_account(request):
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body)
+            user_id = body.get("user_id")
+
+            if not user_id:
+                return JsonResponse({"error": "Missing user_id"}, status=400)
+
+            profile = OwnerProfile.objects.get(id=user_id)
+            profile.delete()
+
+            return JsonResponse({"message": "Account deleted successfully"}, status=200)
+
+        except OwnerProfile.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+
+        except Exception as e:
+            return JsonResponse({"error": "Failed to delete account", "details": str(e)}, status=500)
+
+    return JsonResponse({"error": "Only POST method allowed"}, status=405)

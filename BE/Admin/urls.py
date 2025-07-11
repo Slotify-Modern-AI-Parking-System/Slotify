@@ -11,6 +11,9 @@ urlpatterns = [
     path('upload-image/', views.upload_image, name='upload_image'),
     path('api/dashboard/counts/', views.dashboard_counts, name='dashboard_counts'),
     path('userManagement/', views.userManagement, name="UserManagementPage"),
-    path("userManagementSummary/", views.user_summary_and_list, name="UserManagementSummary")
+    path("userManagementSummary/", views.user_summary_and_list, name="UserManagementSummary"),
+    path("suspend_account/", views.suspend_account, name="SuspendAccount"),
+    path("delete_account/", views.delete_account, name="DeleteAccount"),
+    path("reactivate_account/", views.reactivate_account, name="ReactivateAccount"),
 ]
 
