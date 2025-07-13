@@ -490,8 +490,6 @@
       const responseData = await response.json();
 
       if (response.ok) {
-        console.log('Registration successful:', responseData);
-
         // Show OTP popup
         if (response.ok) {
   window.location.href = `/verify-email/?email=${encodeURIComponent(emailId)}`;
@@ -529,7 +527,7 @@
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnText;
     }
-  });
+  });prfo
 
   function closePopup() {
     successPopup.classList.add('hidden');

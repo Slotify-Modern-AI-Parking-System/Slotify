@@ -94,7 +94,8 @@ def resubmitPassword(request):
             data = json.loads(request.body.decode('utf-8')) if request.content_type == 'application/json' else request.POST
             email = data.get("email")
 
-            user = User.objects.get(email=email)
+            owner = OwnerProfile.objects.get(emailId=email)
+            user = owner.user  
             otp = generate_otp()
 
             # Cache OTP and new password
@@ -121,7 +122,8 @@ def verify_reset_otp(request):
             return JsonResponse({'error': 'Invalid or expired OTP.'}, status=400)
 
         try:
-            user = User.objects.get(email=email)
+            owner = OwnerProfile.objects.get(emailId=email)
+            user = owner.user
             user.set_password(new_password)
             user.save()
 
@@ -147,7 +149,8 @@ def update_password(request):
             email = data.get("email")
             new_password = data.get("password")
 
-            user = User.objects.get(email=email)
+            owner = OwnerProfile.objects.get(emailId=email)
+            user = owner.user
             user.set_password(new_password)
             user.save()
 
@@ -169,8 +172,6 @@ def send_verification_email(email, full_name, otp_code):
             'full_name': full_name,
             'otp_code': otp_code
         })
-
-        print("[DEBUG] Rendered HTML Content:\n", html_content)
 
         email_msg = EmailMessage(
             subject=subject,

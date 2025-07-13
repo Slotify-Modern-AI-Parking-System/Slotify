@@ -1,52 +1,473 @@
-<div class="space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="revenue-card rounded-xl p-6 text-white shadow-lg card-hover">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Slotify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .profile-avatar {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .edit-mode {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+        }
+        .save-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="max-w-7xl mx-auto p-6 fade-in">
+        <!-- Profile Header -->
+        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6 card-hover">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-green-100 text-sm font-medium">Total Earnings</p>
-                    <p class="text-3xl font-bold">$106,720</p>
-                    <p class="text-green-200 text-sm">↗ +12% from last month</p>
+                <div class="flex items-center space-x-6">
+                    <div class="relative">
+                        <div id="profileImageContainer" class="w-24 h-24 rounded-full border-4 border-gray-200 profile-avatar flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
+                            <i class="fas fa-user text-3xl text-white"></i>
+                        </div>
+                        <div class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-camera text-sm"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            {{ dashboard_data.firstName }} {{ dashboard_data.lastName }}
+                        </h2>
+                        <p class="text-gray-600">Parking Lot Owner</p>
+                        <div class="flex items-center space-x-2 mt-2">
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                <i class="fas fa-shield-alt mr-1"></i>Verified
+                            </span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                <i class="fas fa-crown mr-1"></i>Premium
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-dollar-sign text-2xl"></i>
+                <div class="flex items-center space-x-4">
+                    <button id="editProfileBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit Profile</span>
+                    </button>
+                    <button id="saveProfileBtn" class="save-button text-white px-4 py-2 rounded-lg font-medium hidden items-center space-x-2">
+                        <i class="fas fa-save"></i>
+                        <span>Save Changes</span>
+                    </button>
                 </div>
             </div>
         </div>
-        
-        <div class="booking-card rounded-xl p-6 text-white shadow-lg card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-blue-100 text-sm font-medium">Total Bookings</p>
-                    <p class="text-3xl font-bold">250,615</p>
-                    <p class="text-blue-200 text-sm">↗ +8% from last month</p>
+
+        <!-- Profile Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Personal Information -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">Personal Information</h3>
+                        <i class="fas fa-user-edit text-gray-400"></i>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">First Name</label>
+                            <input type="text" id="firstName" value="{{ dashboard_data.firstName }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Last Name</label>
+                            <input type="text" id="lastName" value="{{ dashboard_data.lastName }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Email Address</label>
+                            <input type="email" id="email" value="{{ dashboard_data.emailId }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Phone Number</label>
+                            <input type="tel" id="phone" value="{{ dashboard_data.contactNumber }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-calendar-check text-2xl"></i>
+
+                <!-- Address Information -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">Address Information</h3>
+                        <i class="fas fa-map-marker-alt text-gray-400"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Street Address</label>
+                            <input type="text" id="address" value="123 Main Street" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">City</label>
+                                <input type="text" id="city" value="New York" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">State</label>
+                                <input type="text" id="state" value="NY" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">ZIP Code</label>
+                                <input type="text" id="zipCode" value="10001" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Settings -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold text-gray-800">Security Settings</h3>
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-100 p-2 rounded-full">
+                                    <i class="fas fa-key text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Password</h4>
+                                    <p class="text-sm text-gray-600">Last updated 2 months ago</p>
+                                </div>
+                            </div>
+                            <button class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                                Change Password
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="fas fa-mobile-alt text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Two-Factor Authentication</h4>
+                                    <p class="text-sm text-gray-600">Enabled via SMS</p>
+                                </div>
+                            </div>
+                            <button class="text-green-600 hover:text-green-800 font-medium transition-colors">
+                                Configure
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="occupancy-card rounded-xl p-6 text-white shadow-lg card-hover">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-orange-100 text-sm font-medium">Occupancy Rate</p>
-                    <p class="text-3xl font-bold">87%</p>
-                    <p class="text-orange-200 text-sm">↗ +5% from last month</p>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Business Statistics -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Business Statistics</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-100 p-2 rounded-full">
+                                    <i class="fas fa-parking text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Total Parking Lots</p>
+                                    <p class="text-3xl font-bold text-gray-800">{{ dashboard_data.totalParkingLots }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Confirmed Lots</p>
+                                    <p class="text-3xl font-bold text-green-600">{{ dashboard_data.totalConfirmedLots }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-indigo-100 p-2 rounded-full">
+                                    <i class="fas fa-car text-indigo-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Available Spaces</p>
+                                    <p class="text-3xl font-bold text-indigo-600">{{ dashboard_data.availableSpaces }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-orange-100 p-2 rounded-full">
+                                    <i class="fas fa-chart-pie text-orange-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-600">Occupancy Rate</p>
+                                    <p class="text-3xl font-bold text-orange-600" id="occupancyRate">{{ dashboard_data.occupancyRate }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white/20 p-3 rounded-lg">
-                    <i class="fas fa-chart-pie text-2xl"></i>
+
+                <!-- ID Verification -->
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200 card-hover">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-green-100 p-3 rounded-lg">
+                            <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">ID Verification</h3>
+                            <p class="text-gray-600">Your identity has been verified</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Document Type</span>
+                            <span class="font-medium">Driver's License</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Verified Date</span>
+                            <span class="font-medium">Jan 15, 2025</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Status</span>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                <i class="fas fa-check mr-1"></i>Verified
+                            </span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors flex items-center justify-center space-x-2">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>View Document</span>
+                    </button>
+                </div>
+
+                <!-- Account Activity -->
+                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Activity</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                            <div class="bg-blue-100 p-2 rounded-full">
+                                <i class="fas fa-user-edit text-blue-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Profile updated</p>
+                                <p class="text-xs text-gray-500">2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                            <div class="bg-green-100 p-2 rounded-full">
+                                <i class="fas fa-key text-green-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">Password changed</p>
+                                <p class="text-xs text-gray-500">1 week ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                            <div class="bg-purple-100 p-2 rounded-full">
+                                <i class="fas fa-shield-alt text-purple-600 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-800">2FA enabled</p>
+                                <p class="text-xs text-gray-500">2 weeks ago</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Revenue Trend</h3>
-        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-            <div class="text-center">
-                <i class="fas fa-chart-line text-4xl text-gray-400 mb-4"></i>
-                <p class="text-gray-600">Revenue chart will be displayed here</p>
-            </div>
-        </div>
-    </div>
-</div>
+    <script>
+        // Edit Profile Functionality
+        let isEditMode = false;
+        const editBtn = document.getElementById('editProfileBtn');
+        const saveBtn = document.getElementById('saveProfileBtn');
+        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+
+        editBtn.addEventListener('click', function() {
+            isEditMode = !isEditMode;
+            toggleEditMode();
+        });
+
+        saveBtn.addEventListener('click', function() {
+            saveProfile();
+        });
+
+        function toggleEditMode() {
+            inputs.forEach(input => {
+                if (isEditMode) {
+                    input.removeAttribute('readonly');
+                    input.classList.remove('bg-gray-50');
+                    input.classList.add('bg-white', 'edit-mode');
+                } else {
+                    input.setAttribute('readonly', true);
+                    input.classList.add('bg-gray-50');
+                    input.classList.remove('bg-white', 'edit-mode');
+                }
+            });
+
+            if (isEditMode) {
+                editBtn.innerHTML = '<i class="fas fa-times"></i><span>Cancel</span>';
+                editBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                editBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                saveBtn.classList.remove('hidden');
+                saveBtn.classList.add('flex');
+            } else {
+                editBtn.innerHTML = '<i class="fas fa-edit"></i><span>Edit Profile</span>';
+                editBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                editBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+                saveBtn.classList.add('hidden');
+                saveBtn.classList.remove('flex');
+            }
+        }
+
+        function saveProfile() {
+            // Show loading state
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Saving...</span>';
+            saveBtn.disabled = true;
+
+            // Simulate API call
+            setTimeout(() => {
+                showNotification('Profile updated successfully!', 'success');
+                isEditMode = false;
+                toggleEditMode();
+                
+                // Reset save button
+                saveBtn.innerHTML = '<i class="fas fa-save"></i><span>Save Changes</span>';
+                saveBtn.disabled = false;
+            }, 1500);
+        }
+
+        // Notification System
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 transform translate-x-full transition-all duration-300 ${
+                type === 'success' ? 'bg-green-50 border-green-400 text-green-800' :
+                type === 'error' ? 'bg-red-50 border-red-400 text-red-800' :
+                type === 'warning' ? 'bg-yellow-50 border-yellow-400 text-yellow-800' :
+                'bg-blue-50 border-blue-400 text-blue-800'
+            }`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <i class="fas ${
+                        type === 'success' ? 'fa-check-circle' :
+                        type === 'error' ? 'fa-exclamation-circle' :
+                        type === 'warning' ? 'fa-exclamation-triangle' :
+                        'fa-info-circle'
+                    }"></i>
+                    <span class="font-medium">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Profile Image Upload
+        document.getElementById('profileImageContainer').addEventListener('click', function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('profileImageContainer').innerHTML = `
+                            <img src="${e.target.result}" alt="Profile" class="w-full h-full object-cover rounded-full">
+                        `;
+                        showNotification('Profile image uploaded successfully!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        });
+
+        // Enhanced interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add entrance animations
+            const elements = document.querySelectorAll('.card-hover');
+            elements.forEach((element, index) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    element.style.transition = 'all 0.5s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Form validation
+        function validateForm() {
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phoneRegex = /^\+?[\d\s\-\(\)]+$/;
+
+            if (!emailRegex.test(email)) {
+                showNotification('Please enter a valid email address', 'error');
+                return false;
+            }
+
+            if (!phoneRegex.test(phone)) {
+                showNotification('Please enter a valid phone number', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Auto-save functionality
+        let autoSaveTimeout;
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (isEditMode) {
+                    clearTimeout(autoSaveTimeout);
+                    autoSaveTimeout = setTimeout(() => {
+                        showNotification('Changes auto-saved', 'info');
+                    }, 2000);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
