@@ -1343,6 +1343,10 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+def customerRegister(request):
+    return render(request, "customerRegister.html")
+def customerLogin(request):
+    return render(request, "customerLogin.html")
 
 def trigger_car_detector():
     """Trigger the carDetector.py script in a separate thread"""
@@ -1368,6 +1372,116 @@ def trigger_car_detector():
     except Exception as e:
         logging.error(f"Error triggering car detector: {str(e)}")
 
+@csrf_exempt
+def register_customer(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            full_name = data.get('name')
+            email = data.get('email')
+            phone = data.get('phone')
+            address = data.get('address')
+            password = data.get('password')  # Optional for now — store plain or hash manually
+
+            # Basic validation
+            if not all([full_name, email, phone, address,password]):
+                return JsonResponse({'error': 'All fields are required.'}, status=400)
+
+            if Customer.objects.filter(email=email).exists():
+                return JsonResponse({'error': 'Email already registered.'}, status=400)
+
+            
+            customer = Customer.objects.create(
+                full_name=full_name,
+                email=email,
+                password = password,
+                phone=phone,
+                address=address,
+            )
+
+            return JsonResponse({
+                'message': 'Customer registered successfully.',
+                'customer_id': customer.id
+            }, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        except Exception as e:
+            logger.error(f"Error during customer registration: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
+# @csrf_exempt
+# def login_customer(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             email = data.get('email')
+#             password = data.get('password')
+
+#             if not email or not password:
+#                 return JsonResponse({'error': 'Email and password are required.'}, status=400)
+
+#             try:
+#                 customer = Customer.objects.get(email=email)
+#             except Customer.DoesNotExist:
+#                 return JsonResponse({'error': 'Invalid email or password.'}, status=401)
+
+#             if not check_password(password, customer.password):
+#                 return JsonResponse({'error': 'Invalid email or password.'}, status=401)
+
+#             # Login successful – here you can set a session or return token
+#             return JsonResponse({
+#                 'message': 'Login successful.',
+#                 'customer_id': customer.id,
+#                 'name': customer.full_name,
+#                 'email': customer.email
+#             }, status=200)
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+#         except Exception as e:
+#             logger.error(f"Login error: {str(e)}")
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
+
+@csrf_exempt
+def login_customer(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+            password = data.get('password')
+
+            if not email or not password:
+                return JsonResponse({'error': 'Email and password are required.'}, status=400)
+
+            try:
+                customer = Customer.objects.get(email=email)
+            except Customer.DoesNotExist:
+                return JsonResponse({'error': 'Invalid email or password.'}, status=401)
+
+            if customer.password != password:
+                return JsonResponse({'error': 'Invalid email or password.'}, status=401)
+
+            return JsonResponse({
+                'message': 'Login successful.',
+                'customer_id': customer.id,
+                'name': customer.full_name,
+                'email': customer.email
+            }, status=200)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+        except Exception as e:
+            logger.error(f"Login error: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 @csrf_exempt
 @require_POST
 def assign_nearest_parking_slot(request):
@@ -1451,6 +1565,7 @@ def assign_nearest_parking_slot(request):
         return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
 
 
 @csrf_exempt

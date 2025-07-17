@@ -19,7 +19,11 @@ urlpatterns = [
    path('reservation/', views.reservation_form, name='reservation_form'),
     path('create-reservation/', views.create_reservation, name='create_reservation'),
     path('payment-success/', views.payment_success, name='payment_success'),
-    path("logCarEntry/", views.log_car_entry, name="LogCarEntryAPI")
+    path("logCarEntry/", views.log_car_entry, name="LogCarEntryAPI"),
+    path('loginCustomer/', views.login_customer, name='loginCustomer'),
+    path('registerCustomer/', views.register_customer, name='registerCustomer'),
+    path('customerRegister/', views.customerRegister, name="customerRegister"),
+    path('customerLogin/', views.customerLogin, name="customerLogin")
 
 
     

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - Slotify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes logoFloat {
+            from { transform: translateY(-10px); }
+            to { transform: translateY(10px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 1s ease-out;
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .animate-logoFloat {
+            animation: logoFloat 2s ease-in-out infinite alternate;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-pulse-custom {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-1000 { animation-delay: 1s; }
+        .delay-1500 { animation-delay: 1.5s; }
+        .delay-2000 { animation-delay: 2s; }
+        .delay-3000 { animation-delay: 3s; }
+        .delay-4000 { animation-delay: 4s; }
+        .delay-5000 { animation-delay: 5s; }
+
+        .bg-gradient-navy-green {
+            background: linear-gradient(135deg, #001f3f 0%, #2d5a2d 100%);
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(107, 114, 128, 0.3);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .welcome-back {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .feature-highlight {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-navy-green min-h-screen flex items-center justify-center py-8 px-4 font-sans">
+    <!-- Background floating icons -->
+    <div class="absolute inset-0 pointer-events-none z-0">
+        <div class="absolute top-[10%] left-[10%] text-3xl text-white opacity-10 animate-float">🔐</div>
+        <div class="absolute top-[20%] right-[15%] text-3xl text-white opacity-10 animate-float delay-1000">📧</div>
+        <div class="absolute bottom-[30%] left-[20%] text-3xl text-white opacity-10 animate-float delay-2000">🚗</div>
+        <div class="absolute bottom-[20%] right-[10%] text-3xl text-white opacity-10 animate-float delay-3000">🅿️</div>
+        <div class="absolute top-[50%] left-[5%] text-3xl text-white opacity-10 animate-float delay-4000">⚡</div>
+        <div class="absolute top-[60%] right-[5%] text-3xl text-white opacity-10 animate-float delay-5000">🎯</div>
+        <div class="absolute top-[30%] right-[30%] text-3xl text-white opacity-10 animate-float delay-2000">✨</div>
+        <div class="absolute bottom-[40%] right-[25%] text-3xl text-white opacity-10 animate-float delay-3500">🏆</div>
+    </div>
+
+    <!-- Main container -->
+    <div class="form-card rounded-2xl p-8 w-full max-w-md mx-auto animate-slideIn z-10">
+        <!-- Header with logo -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white animate-logoFloat shadow-lg">
+                S
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+            <p class="text-gray-600">Sign in to your Slotify account</p>
+        </div>
+
+        <!-- Welcome message for returning users -->
+        <div class="welcome-back opacity-0 animate-fadeInUp delay-300">
+            <h3 class="text-lg font-semibold mb-1">🎉 Great to see you again!</h3>
+            <p class="text-sm opacity-90">Ready to find your perfect parking spot?</p>
+        </div>
+
+        <!-- Messages -->
+        <div id="message-container"></div>
+        
+        <form id="login-form" class="space-y-6 opacity-0 animate-fadeInUp delay-500">
+            <!-- Email Field -->
+            <div class="form-group">
+                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <span class="mr-2">📧</span>
+                    Email Address
+                </label>
+                <input type="email" id="email" name="email" required 
+                       class="input-field w-full px-4 py-3 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none"
+                       placeholder="your.email@example.com">
+            </div>
+            
+            <!-- Password Field -->
+            <div class="form-group">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <span class="mr-2">🔑</span>
+                    Password
+                </label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" required 
+                           class="input-field w-full px-4 py-3 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none pr-12"
+                           placeholder="Enter your password">
+                    <button type="button" id="toggle-password" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors">
+                        👁️
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Remember Me & Forgot Password -->
+            <div class="flex items-center justify-between">
+                <label class="flex items-center">
+                    <input type="checkbox" id="remember" name="remember" 
+                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                </label>
+                <a href="#" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                    Forgot password?
+                </a>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" 
+                    class="btn-primary w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                🚀 Sign In
+            </button>
+        </form>
+        
+        <!-- Feature Highlight -->
+        <div class="feature-highlight opacity-0 animate-fadeInUp delay-1000">
+            <div class="flex items-center justify-center mb-2">
+                <span class="text-xl mr-2">⚡</span>
+                <span class="font-semibold">Fast & Secure</span>
+            </div>
+            <p class="text-sm opacity-90">AI-powered parking detection & instant reservations</p>
+        </div>
+        
+        <!-- Register Link -->
+        <div class="text-center mt-6 opacity-0 animate-fadeInUp delay-1500">
+            <p class="text-gray-600">Don't have an account? 
+                <a href="/customer-register/" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+                    Create one now
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const isPassword = passwordField.type === 'password';
+            passwordField.type = isPassword ? 'text' : 'password';
+            this.textContent = isPassword ? '🙈' : '👁️';
+        });
+
+        function showMessage(message, type = 'success') {
+            const messageContainer = document.getElementById('message-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <span class="mr-2">${type === 'success' ? '✅' : '❌'}</span>
+                    <span>${message}</span>
+                </div>
+            `;
+            messageContainer.innerHTML = '';
+            messageContainer.appendChild(messageDiv);
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.opacity = '0';
+                    setTimeout(() => messageDiv.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '🔄 Signing in...';
+            submitBtn.disabled = true;
+            
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                remember: document.getElementById('remember').checked
+            };
+            
+            try {
+                // Updated the URL to match your Django endpoint
+                const response = await fetch('/loginCustomer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                console.log('Response:', data); // Debug log
+                
+                if (response.ok) {
+                    showMessage('Login successful! Redirecting to reservations...', 'success');
+                    
+                    // Store user data in sessionStorage for later use
+                    sessionStorage.setItem('user_id', data.customer_id);
+                    sessionStorage.setItem('user_name', data.name);
+                    sessionStorage.setItem('user_email', data.email);
+                    
+                    // Redirect to reservation page - update this URL to match your Django URL pattern
+                    setTimeout(() => {
+                        window.location.href = '/reservation/'; // Changed from reservation.html
+                    }, 1000);
+                } else {
+                    showMessage(data.error || 'Login failed. Please check your credentials.', 'error');
+                }
+            } catch (error) {
+                console.error('Login error:', error); // Debug log
+                showMessage('Network error. Please check your connection and try again.', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Auto-focus email field when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('email').focus();
+        });
+    </script>
+</body>
+</html>

@@ -10,9 +10,22 @@ class LicensePlateDetection(models.Model):
 
     def __str__(self):
         return f"{self.plate_number} - {self.location.location}"
+     
+class Customer(models.Model):
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255, blank = True, null=False)
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.license_plate})"
     
 
 class ParkingReservation(models.Model):
+    # models.py
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, null=True, blank=True, related_name='reservations')
     name = models.CharField(max_length=100)
     email = models.EmailField()
     license_plate = models.CharField(max_length=20)
