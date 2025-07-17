@@ -4,20 +4,13 @@ from slotifyBE.models import ParkingLot, ParkingLotCoordinate
 
 class LicensePlateDetection(models.Model):
     plate_number = models.CharField(max_length=20)
-    camera_id = models.IntegerField()
-    detection_time = models.DateTimeField(default=timezone.now)
-    confidence_score = models.FloatField(default=0.0)
-    is_confirmed = models.BooleanField(default=False)
-    user_confirmed = models.BooleanField(default=False)
-    session_id = models.CharField(max_length=100, unique=True)
-    
-    class Meta:
-        ordering = ['-detection_time']
-    
+    location = models.ForeignKey(ParkingLot, on_delete=models.CASCADE, null=True, blank=True)
+    entry_time = models.DateTimeField(null=True, blank=True)
+    exit_time = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
-        return f"{self.plate_number} - Camera {self.camera_id}"
-
-
+        return f"{self.plate_number} - {self.location.location}"
+    
 
 class ParkingReservation(models.Model):
     name = models.CharField(max_length=100)
@@ -44,4 +37,3 @@ class Payment(models.Model):
         return f"Payment for {self.reservation.name}"
 
 
-# Create your models here.

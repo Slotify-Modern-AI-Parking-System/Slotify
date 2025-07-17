@@ -264,6 +264,8 @@
                 
                 // Get car number from API
                 const carNumber = await fetchCarNumber();
+
+                localStorage.setItem("currentCarItem", carNumber);
                 
                 // Update car number in DOM
                 document.getElementById('carNumber').textContent = carNumber;
@@ -308,9 +310,43 @@
             });
 
             // Confirm correct button
-            confirmBtn.addEventListener('click', function() {
-                proceedWithPlateNumber(editInput.value);
+            confirmBtn.addEventListener('click', async function () {
+                const plateNumber = editInput.value;
+                proceedWithPlateNumber(plateNumber);  // Keep existing functionality
+
+                const lotId = localStorage.getItem("lotId");
+                const currentCarItem = localStorage.getItem("currentCarItem");
+
+                if (!lotId || !currentCarItem) {
+                    console.error("Missing lotId or currentCarItem in localStorage");
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/logCarEntry/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            plate_number: currentCarItem,
+                            lotid: lotId
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        console.log("Car entry logged successfully:", data);
+                        localStorage.removeItem("currentCarItem");
+                    } else {
+                        console.error("Failed to log car entry:", data);
+                    }
+                } catch (error) {
+                    console.error("Error calling logCarEntry API:", error);
+                }
             });
+
 
             // Edit plate button
             editBtn.addEventListener('click', function() {
@@ -318,14 +354,50 @@
             });
 
             // Save changes button
-            saveBtn.addEventListener('click', function() {
+            saveBtn.addEventListener('click', async function() {
                 const newPlateNumber = editInput.value.trim();
+                const lotId = localStorage.getItem("lotId");
+
                 if (newPlateNumber.length >= 2) {
                     proceedWithPlateNumber(newPlateNumber);
+
+                    // Update localStorage with new plate number
+                    localStorage.setItem("currentCarItem", newPlateNumber);
+
+                    if (!lotId) {
+                        console.error("Missing lotId in localStorage");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/logCarEntry/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                plate_number: newPlateNumber,
+                                lotid: lotId
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            console.log("Car entry logged successfully (edited):", data);
+                            localStorage.removeItem("currentCarItem");
+                        } else {
+                            console.error("Failed to log edited car entry:", data);
+                        }
+                    } catch (error) {
+                        console.error("Error calling logCarEntry API (edited plate):", error);
+                    }
+
                 } else {
                     alert('Please enter a valid license plate number (at least 2 characters)');
                 }
             });
+
 
             // Cancel edit button
             cancelBtn.addEventListener('click', function() {

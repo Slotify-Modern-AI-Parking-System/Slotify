@@ -19,6 +19,7 @@ urlpatterns = [
    path('reservation/', views.reservation_form, name='reservation_form'),
     path('create-reservation/', views.create_reservation, name='create_reservation'),
     path('payment-success/', views.payment_success, name='payment_success'),
+    path("logCarEntry/", views.log_car_entry, name="LogCarEntryAPI")
 
 
     
