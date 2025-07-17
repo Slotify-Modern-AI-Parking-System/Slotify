@@ -1267,6 +1267,107 @@ def get_directions(zone):
     """
     return ZONE_DIRECTIONS.get(zone, "Zone not found")
 
+# @csrf_exempt
+# @require_POST
+# def assign_nearest_parking_slot(request):
+#     try:
+#         data = json.loads(request.body)
+#         slot_type = data.get('type')
+#         lot_id = data.get('lotId')
+        
+#         if slot_type not in ['Regular', 'Reserved', 'Accessible']:
+#             return JsonResponse({'success': False, 'message': 'Invalid slot type'}, status=400)
+        
+#         # Get lot location to determine zone file
+#         try:
+#             lot = ParkingLot.objects.get(id=lot_id)
+#             # HARDCODED FOR TESTING - ignore the actual location
+#             # location = lot.location.strip().lower().replace(" ", "_")
+#             location = "hardcoded_for_testing"  # This parameter is now ignored in load_zone_data
+#         except ParkingLot.DoesNotExist:
+#             return JsonResponse({'success': False, 'message': 'Parking lot not found'}, status=404)
+        
+#         # Load zone data from file (now hardcoded)
+#         slot_to_zone = load_zone_data(location)
+#         if not slot_to_zone:
+#             return JsonResponse({'success': False, 'message': 'Zone data not available'}, status=404)
+        
+#         # Build filter for slot type
+#         slot_filter = {
+#             'lotId_id': lot_id,
+#             'slot_assigned': False
+#         }
+        
+#         if slot_type == 'Regular':
+#             slot_filter['is_regular'] = True
+#         elif slot_type == 'Reserved':
+#             slot_filter['is_reservation'] = True
+#         elif slot_type == 'Accessible':
+#             slot_filter['is_accessible'] = True
+        
+#         # Get all matching available slots
+#         available_slots = ParkingLotCoordinate.objects.filter(**slot_filter)
+        
+#         if not available_slots.exists():
+#             return JsonResponse({'success': False, 'message': 'No available slots of this type'}, status=404)
+        
+#         # Randomly assign an available slot
+#         assigned_slot = random.choice(available_slots)
+        
+#         # Mark slot as assigned
+#         assigned_slot.slot_assigned = True
+#         assigned_slot.save()
+        
+#         # Get zone from loaded zone data
+#         zone = slot_to_zone.get(assigned_slot.label, 'Unknown')
+#         directions = get_directions(zone)
+        
+#         return JsonResponse({
+#             'success': True,
+#             'message': f'{slot_type} slot assigned successfully',
+#             'slot': {
+#                 'label': assigned_slot.label,
+#                 'zone': zone,
+#                 'directions': directions
+#             }
+#         })
+        
+#     except json.JSONDecodeError:
+#         return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+#     except Exception as e:
+#         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+
+# Setup logging for the car detector trigger
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+def trigger_car_detector():
+    """Trigger the carDetector.py script in a separate thread"""
+    try:
+        car_detector_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/carDetector.py"
+        
+        logging.info("🚗 Triggering car detector script...")
+        
+        # Run the car detector script
+        result = subprocess.run([
+            sys.executable, car_detector_path
+        ], capture_output=True, text=True, timeout=300)  # 5 minute timeout
+        
+        if result.returncode == 0:
+            logging.info("✅ Car detector script completed successfully")
+            if result.stdout:
+                logging.info(f"Car detector output: {result.stdout}")
+        else:
+            logging.error(f"❌ Car detector script failed: {result.stderr}")
+            
+    except subprocess.TimeoutExpired:
+        logging.error("⏰ Car detector script timed out")
+    except Exception as e:
+        logging.error(f"Error triggering car detector: {str(e)}")
+
 @csrf_exempt
 @require_POST
 def assign_nearest_parking_slot(request):
@@ -1322,6 +1423,20 @@ def assign_nearest_parking_slot(request):
         zone = slot_to_zone.get(assigned_slot.label, 'Unknown')
         directions = get_directions(zone)
         
+        # 🚗 TRIGGER CAR DETECTOR SCRIPT AFTER SUCCESSFUL ASSIGNMENT
+        try:
+            # Start car detector in a separate daemon thread so it doesn't block the response
+            car_detector_thread = threading.Thread(target=trigger_car_detector)
+            car_detector_thread.daemon = True
+            car_detector_thread.start()
+            
+            logging.info(f"🎯 Assignment completed for slot {assigned_slot.label} - Car detector triggered")
+            
+        except Exception as e:
+            # Log the error but don't affect the main response
+            logging.error(f"Failed to trigger car detector: {str(e)}")
+        
+        # Return the same success response as before
         return JsonResponse({
             'success': True,
             'message': f'{slot_type} slot assigned successfully',
@@ -1336,7 +1451,6 @@ def assign_nearest_parking_slot(request):
         return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
 
 
 @csrf_exempt

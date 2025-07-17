@@ -28,6 +28,7 @@ from django.views.decorators.http import require_http_methods
 from django.conf import settings
 import logging
 from slotifyBE.models import *
+from .models import *
 
 
 # Create your views here.
@@ -70,6 +71,42 @@ def login_admin(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
+# Working API with Admin Profile
+
+# @csrf_exempt
+# def login_admin(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             email = data.get('email')
+#             password = data.get('password')
+
+#             if not email or not password:
+#                 return JsonResponse({'error': 'Email and password are required'}, status=400)
+
+#             # Check if admin with this email exists
+#             try:
+#                 admin = AdminProfile.objects.get(emailId=email)
+#             except AdminProfile.DoesNotExist:
+#                 return JsonResponse({'error': 'Invalid email or password'}, status=401)
+
+#             # Plain-text password match (if stored as plain text – NOT recommended)
+#             if admin.password != password:
+#                 return JsonResponse({'error': 'Invalid email or password'}, status=401)
+
+#             # If passwords are hashed (recommended):
+#             # if not check_password(password, admin.password):
+#             #     return JsonResponse({'error': 'Invalid email or password'}, status=401)
+
+#             return JsonResponse({'message': 'Login successful'}, status=200)
+
+#         except json.JSONDecodeError:
+#             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=500)
+
+#     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
 
 @csrf_exempt
 def unconfirmed_parkinglots(request):

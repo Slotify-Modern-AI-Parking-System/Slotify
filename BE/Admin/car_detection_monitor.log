@@ -376,3 +376,26 @@
 2025-06-25 01:49:49,995 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-25 01:50:07,128 - ERROR - Main function error: Unknown C++ exception from OpenCV code
 2025-06-25 01:50:34,617 - ERROR - Main function error: Unknown C++ exception from OpenCV code
+2025-07-17 02:23:34,621 - INFO - 🎯 Car ID 1 persistent for 15.5s - TRIGGERING MAIN.PY
+2025-07-17 02:23:34,622 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-07-17 02:23:34,650 - ERROR - ❌ Main script execution failed: /opt/homebrew/Caskroom/miniconda/base/envs/ALPR/bin/python: can't open file '/Users/jainamdoshi/Desktop/Projects/Slotify/BE/Admin/main2.py': [Errno 2] No such file or directory
+
+2025-07-17 02:23:34,650 - INFO - ⏰ Scheduling script termination in 5 seconds...
+2025-07-17 02:23:39,655 - INFO - ⏰ 5 seconds elapsed - Terminating script as requested
+2025-07-17 02:27:01,813 - INFO - 🎯 Car ID 1 persistent for 16.2s - TRIGGERING MAIN.PY
+2025-07-17 02:27:01,814 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 1
+2025-07-17 02:27:01,843 - ERROR - ❌ Main script execution failed: /opt/homebrew/Caskroom/miniconda/base/envs/ALPR/bin/python: can't open file '/Users/jainamdoshi/Desktop/Projects/Slotify/BE/Admin/main2.py': [Errno 2] No such file or directory
+
+2025-07-17 02:27:01,843 - INFO - ⏰ Scheduling script termination in 5 seconds...
+2025-07-17 02:27:06,848 - INFO - ⏰ 5 seconds elapsed - Terminating script as requested
+2025-07-17 02:36:24,916 - INFO - 🎯 Car ID 1 persistent for 17.0s - TRIGGERING MAIN.PY
+2025-07-17 02:36:24,917 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 0
+2025-07-17 02:36:24,953 - ERROR - ❌ Main script execution failed: /opt/homebrew/Caskroom/miniconda/base/envs/ALPR/bin/python: can't open file '/Users/jainamdoshi/Desktop/Projects/Slotify/BE/Admin/main2.py': [Errno 2] No such file or directory
+
+2025-07-17 02:36:24,954 - INFO - ⏰ Scheduling script termination in 5 seconds...
+2025-07-17 02:36:29,959 - INFO - ⏰ 5 seconds elapsed - Terminating script as requested
+2025-07-17 02:48:26,646 - INFO - 🎯 Car ID 1 persistent for 15.9s - TRIGGERING MAIN.PY
+2025-07-17 02:48:26,647 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 0
+2025-07-17 02:48:26,673 - INFO - ✅ Main script started with PID: 24516
+2025-07-17 02:48:26,673 - INFO - ⏰ Scheduling script termination in 5 seconds from main2.py start...
+2025-07-17 02:48:31,678 - INFO - ⏰ 5 seconds elapsed - Terminating script as requested
