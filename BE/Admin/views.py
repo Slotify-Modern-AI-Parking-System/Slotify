@@ -41,6 +41,9 @@ def adminDashboard(request):
 def userManagement(request):
     return render(request, 'userManagement.html')
 
+def reports(request):
+    return render(request, 'reports.html')
+
 @csrf_exempt
 def login_admin(request):
     if request.method == 'POST':

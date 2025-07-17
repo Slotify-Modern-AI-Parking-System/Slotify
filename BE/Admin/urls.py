@@ -15,5 +15,6 @@ urlpatterns = [
     path("suspend_account/", views.suspend_account, name="SuspendAccount"),
     path("delete_account/", views.delete_account, name="DeleteAccount"),
     path("reactivate_account/", views.reactivate_account, name="ReactivateAccount"),
+    path('reports/', views.reports, name="ReportsPage")
 ]
 
