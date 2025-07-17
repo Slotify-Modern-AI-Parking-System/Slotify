@@ -302,7 +302,7 @@ def main():
     print("  • Optimized OpenCV operations")
     
     try:
-        camera_id = 2
+        camera_id = 1
         print(f"📹 Using camera ID: {camera_id}")
         
         # Test camera connection
@@ -1166,4 +1166,3 @@ if __name__ == "__main__":
 
 # if __name__ == "__main__":
 #     main()
-
