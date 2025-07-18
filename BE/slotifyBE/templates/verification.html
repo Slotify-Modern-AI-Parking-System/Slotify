@@ -1,0 +1,431 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verification Required - Slotify</title>
+    <link rel="icon" href="https://i.postimg.cc/9FDXtjBK/Logo.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(30, 129, 176, 0.4);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .bg-pattern {
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+        }
+        
+        .pulse-ring {
+            animation: pulseRing 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+        }
+        
+        @keyframes pulseRing {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+        }
+        
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .popup-container {
+            background: white;
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            position: relative;
+            animation: slideUp 0.4s ease-out;
+        }
+        
+        .popup-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.3);
+            position: relative;
+        }
+        
+        .popup-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            opacity: 0.3;
+            animation: pulseRing 2s ease-in-out infinite;
+        }
+        
+        .popup-icon svg {
+            font-size: 36px;
+            color: white;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .popup-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+        
+        .popup-message {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+        
+        .popup-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 160px;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f9fafb;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .btn-secondary:hover {
+            background: #f3f4f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #fbbf24;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 32px 0;
+            display: flex;
+            align-items: start;
+            gap: 16px;
+            text-align: left;
+        }
+        
+        .info-box svg {
+            color: #f59e0b;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        
+        .info-box-content {
+            flex: 1;
+        }
+        
+        .info-box-title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .info-box-text {
+            color: #b45309;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @media (max-width: 640px) {
+            .popup-container {
+                padding: 32px 24px;
+                margin: 20px;
+            }
+            
+            .popup-title {
+                font-size: 28px;
+            }
+            
+            .popup-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup-container slide-up">
+            <button class="close-btn" onclick="closePopup()">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            
+            <div class="popup-icon floating">
+                <svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            
+            <h2 class="popup-title stagger-1">Account Verification Required</h2>
+            
+            <p class="popup-message stagger-2">
+                You need to verify your account before accessing the dashboard. Click the button below to resend the one time password to your email for re-verification.
+            </p>
+            
+            <div class="info-box stagger-3">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="info-box-content">
+                    <div class="info-box-title">Why verify your account?</div>
+                    <div class="info-box-text">
+                        Account verification helps us ensure the security of your account and provides access to all dashboard features including booking management and notifications.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="popup-actions">
+            <button class="btn btn-primary" onclick="handleVerifyClick(event)">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+                Verify Account
+            </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    async function handleVerifyClick(event) {
+        event.preventDefault();
+        const email = "{{ email|escapejs }}";
+        const button = event.currentTarget;
+        const originalHTML = button.innerHTML;
+
+        button.disabled = true;
+        button.innerHTML = 'Sending...';
+
+        try {
+            const response = await fetch("/resend-otp/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie('csrftoken')
+                },
+                body: JSON.stringify({ email: email })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                window.location.href = `/verify-email/?email=${encodeURIComponent(email)}`;
+            } else {
+                alert(result.error || "Failed to resend OTP.");
+                button.disabled = false;
+                button.innerHTML = originalHTML;
+            }
+        } catch (err) {
+            console.error(err);
+            alert("An unexpected error occurred.");
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+        }
+    }
+</script>
+
+    <script>
+        const userEmail = "{{ email }}";
+        // Close popup function
+        function closePopup() {
+            const popup = document.getElementById('popupOverlay');
+            popup.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+                // Redirect to login or home page
+                window.location.href = '/login/';
+            }, 300);
+        }
+
+        // Get CSRF token (for Django)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Close popup when clicking outside
+        document.getElementById('popupOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePopup();
+            }
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePopup();
+            }
+        });
+
+        // Auto-focus and fade in effect
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('popupOverlay');
+            popup.classList.add('fade-in');
+        });
+    </script>
+</body>
+</html>

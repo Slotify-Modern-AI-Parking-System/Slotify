@@ -24,11 +24,14 @@ from .models import ContactQuery
 from django.template.loader import render_to_string
 from django.core.cache import cache
 from django.db import models
-from User.models import ParkingReservation
+from User.models import ParkingReservation, LicensePlateDetection
 from django.utils import timezone
 from django.db.models.functions import ExtractHour, TruncDate
 from django.db.models import Count, Sum, Avg
 from django.utils.timezone import now, timedelta
+from collections import defaultdict
+from django.utils.decorators import method_decorator
+
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +52,63 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
 
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
+
+@csrf_exempt
+@login_required
+def update_profile(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            first_name = data.get("firstName")
+            last_name = data.get("lastName")
+            email = data.get("emailId")
+            phone = data.get("contactNumber")
+
+            owner = OwnerProfile.objects.get(user=request.user)
+            owner.firstName = first_name
+            owner.lastName = last_name
+            owner.emailId = email
+            owner.contactNumber = phone
+            owner.save()
+
+            # Also update user model's email (optional)
+            request.user.email = email
+            request.user.save()
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=400)
+
+    return JsonResponse({"success": False, "message": "Invalid request"}, status=405)
+
+@login_required
+def revenue_chart_api(request):
+    user = request.user
+    range = request.GET.get("range", "30d")
+    days = {"7d": 7, "30d": 30, "90d": 90, "1y": 365}.get(range, 30)
+
+    now_time = timezone.now()
+    start_date = now_time - timedelta(days=days)
+
+    reservations = ParkingReservation.objects.filter(
+        parking_lot__registered_by=user,
+        created_at__gte=start_date
+    )
+
+    revenue_trend = (
+        reservations.annotate(day=TruncDate('created_at'))
+        .values('day')
+        .annotate(total=Sum('total_amount'))
+        .order_by('day')
+    )
+
+    chart_labels = [entry['day'].strftime('%Y-%m-%d') for entry in revenue_trend]
+    chart_data = [float(entry['total']) for entry in revenue_trend]
+
+    return JsonResponse({
+        "labels": chart_labels,
+        "data": chart_data,
+    })
 
 @csrf_exempt
 @login_required
@@ -85,6 +145,21 @@ def revenue_view(request):
         if total_earnings else 0
     )
 
+    # Total distinct customers (ever)
+    all_customers = reservations.values('customer').distinct().count()
+
+    # Customers who booked before the last month
+    past_customers = reservations.filter(created_at__lt=one_month_ago).values_list('customer', flat=True).distinct()
+
+    # Those who came back this month
+    retained_customers = recent_reservations.filter(customer__in=past_customers).values('customer').distinct().count()
+
+    # Final retention % calculation
+    if all_customers > 0:
+        customer_retention = round((retained_customers / all_customers) * 100, 1)
+    else:
+        customer_retention = 0
+
     # Additional metrics
     peak_hours_revenue = reservations.filter(created_at__hour__range=(17, 21)).aggregate(
         total=Sum('total_amount')
@@ -116,13 +191,11 @@ def revenue_view(request):
         breakdown = {
             "Hourly Parking": 0,
             "Daily Rates": 0,
-            "Monthly Passes": 0,
         }
     else:
         breakdown = {
             "Hourly Parking": round(hourly_count / total * 100, 1),
             "Daily Rates": round(daily_count / total * 100, 1),
-            "Monthly Passes": round(monthly_count / total * 100, 1),
         }
 
     # Chart.js dynamic data: revenue grouped by date
@@ -149,7 +222,7 @@ def revenue_view(request):
         "peak_hours_revenue": peak_hours_revenue,
         "weekend_revenue": weekend_revenue,
         "average_session": average_session,
-        "customer_retention": 78,
+        "customer_retention": customer_retention,
         "top_lots": top_lots,
         "breakdown": breakdown,
     }
@@ -178,32 +251,34 @@ def resend_otp(request):
 def occupancy_rate_data(request):
     lot_id = request.GET.get("lot_id")
     now = timezone.now()
-    week_ago = now - timedelta(days=7)
+    start_time = now - timedelta(days=7)
 
-    # Filter last 7 days
-    reservations = ParkingReservation.objects.filter(
-        created_at__gte=week_ago,
-        created_at__lte=now
-    )
-
+    lots = ParkingLot.objects.filter(registered_by=request.user)
     if lot_id:
-        reservations = reservations.filter(parking_lot_id=lot_id)
+        lots = lots.filter(id=lot_id)
 
-    # Annotate with hour and count by hour
-    hourly_counts = (
-        reservations.annotate(hour=ExtractHour("created_at"))
-        .values("hour")
-        .annotate(count=Count("id"))
-        .order_by("hour")
+    total_spaces = lots.aggregate(total=Sum('total_spaces'))['total'] or 1
+
+    detections = LicensePlateDetection.objects.filter(
+        entry_time__lte=now,
+        exit_time__gte=start_time,
+        location__in=lots
     )
 
-    # Format: {hour: count}
-    data = {f"{item['hour']}:00": item["count"] for item in hourly_counts}
+    hourly_occupancy = defaultdict(int)
 
-    # Fill missing hours with 0s
-    full_data = {f"{h}:00": data.get(f"{h}:00", 0) for h in range(24)}
+    # Build occupancy rate over past 7 days, hour by hour
+    for hour_offset in range(0, 7 * 24):
+        hour = start_time + timedelta(hours=hour_offset)
+        hour_key = hour.strftime("%Y-%m-%d %H:00")
+        count = 0
+        for detection in detections:
+            if detection.entry_time and detection.exit_time:
+                if detection.entry_time <= hour and detection.exit_time >= hour:
+                    count += 1
+        hourly_occupancy[hour_key] = round((count / total_spaces) * 100, 1)
 
-    return JsonResponse(full_data)
+    return JsonResponse(hourly_occupancy)
 
 @login_required
 def revenue_data(request):
@@ -224,13 +299,14 @@ def get_dashboard_data_for_user(user):
     lots = ParkingLot.objects.filter(registered_by=user)
     total_lots = lots.count()
     confirmed_lots = lots.filter(confirmed=True).count()
-    available_spaces = lots.aggregate(total=models.Sum('available_spaces'))['total'] or 0
-    recent_activities = ParkingReservation.objects.filter(parking_lot__registered_by=user).order_by('-created_at')[:2]
-    total_spaces = lots.aggregate(total=models.Sum('total_spaces'))['total'] or 0
+    available_spaces = lots.aggregate(total=Sum('available_spaces'))['total'] or 0
+    total_spaces = lots.aggregate(total=Sum('total_spaces'))['total'] or 1
 
-    occupancy_rate = 0
-    if total_spaces > 0:
-        occupancy_rate = int(((total_spaces - available_spaces) / total_spaces) * 100)
+    # Calculate overall occupancy rate
+    occupancy_rate = int(((total_spaces - available_spaces) / total_spaces) * 100)
+
+    # Get recent bookings
+    recent_activities = ParkingReservation.objects.filter(parking_lot__registered_by=user).order_by('-created_at')[:2]
 
     try:
         owner = OwnerProfile.objects.get(user=user)
@@ -252,15 +328,21 @@ def get_dashboard_data_for_user(user):
         'occupancyRate': f"{occupancy_rate}%",
         'verified': owner.verified if owner else False,
         'verificationTime': owner.verification_time.strftime("%b %d, %Y %H:%M") if owner and owner.verification_time else '',
+        'owned_lots': list(lots.values("id", "name")),
     }
-
 @login_required
 def overview_partial(request):
     data = get_dashboard_data_for_user(request.user)
+
+    # ADD THIS: Inject owned lots
+    parking_lots = ParkingLot.objects.filter(registered_by=request.user)
+    data["owned_lots"] = list(parking_lots.values("id", "name"))
+
     return render(request, 'partials/overview.html', {'dashboard_data': data})
 
 def revenue_partial(request):
     return revenue_view(request)
+
 
 @login_required
 def profile_partial(request):

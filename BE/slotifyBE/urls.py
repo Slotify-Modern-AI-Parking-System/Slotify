@@ -37,4 +37,6 @@ urlpatterns = [
     path('resend-otp/', views.resend_otp, name='resend_otp'),
     path('revenue/', views.revenue_view, name='revenue'),
     path('update-logged-in-password/', views.update_logged_in_password, name='update_logged_in_password'),
+    path('api/revenue-chart/', views.revenue_chart_api, name='revenue_chart_api'),
+    path('update-profile/', views.update_profile, name='update_profile'),
 ]

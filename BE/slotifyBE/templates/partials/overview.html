@@ -63,7 +63,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Occupancy Rate</p>
-                        <p class="text-3xl font-bold text-orange-600" id="occupancyRate">{{ dashboard_data.occupancyRate }}</p>
+                        <p class="text-3xl font-bold text-orange-600">{{ dashboard_data.occupancyRate }}</p>
                     </div>
                     <div class="bg-orange-100 p-3 rounded-lg">
                         <i class="fas fa-chart-pie text-2xl text-orange-600"></i>
@@ -132,9 +132,9 @@
                     </button>
                 </div>
             </div>
-            <div style="height: 400px; position: relative;">
-                <canvas id="occupancyChart" style="width: 100%; height: 100%;"></canvas>
-            </div>
+                <div class="relative w-full h-[700px]">
+                    <canvas id="occupancyChart" class="w-full h-full"></canvas>
+                </div>
         </div>
 
 
@@ -159,7 +159,7 @@
     </div>
 
     <!-- Revenue Chart Modal -->
-    <div id="revenueModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="revenueModal" class="hidden fixed inset-0 backdrop-blur-md bg-transparent flex items-center justify-center z-50">
         <div class="bg-white rounded-xl p-6 w-11/12 max-w-3xl shadow-lg">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold">Revenue Report</h2>
@@ -173,20 +173,6 @@
 
     <script>
         // Real-time occupancy rate updates
-        function updateOccupancyRate() {
-            const occupancyElement = document.getElementById('occupancyRate');
-            if (occupancyElement) {
-                const currentRate = parseInt(occupancyElement.textContent);
-                const newRate = Math.max(75, Math.min(95, currentRate + Math.floor(Math.random() * 3) - 1));
-                occupancyElement.textContent = newRate + '%';
-                
-                // Add pulse effect
-                occupancyElement.style.transform = 'scale(1.1)';
-                setTimeout(() => {
-                    occupancyElement.style.transform = 'scale(1)';
-                }, 200);
-            }
-        }
 
         // Initialize entrance animations
         function initializeAnimations() {
@@ -205,9 +191,6 @@
         // Initialize when content loads
         document.addEventListener('DOMContentLoaded', function() {
             initializeAnimations();
-            
-            // Start real-time updates
-            setInterval(updateOccupancyRate, 15000);
         });
 
         // If loaded dynamically, initialize immediately
@@ -266,92 +249,75 @@
     }
 }
     </script>
-   <script>
-function initOccupancyChart() {
+<script>
     let occupancyChart;
 
-    async function fetchOccupancyData(lotId = "") {
-        const response = await fetch(`/occupancy-rate-data/?lot_id=${lotId}`);
-        return await response.json();
-    }
+    async function initOccupancyChart() {
+        const dropdown = document.getElementById("lotSelect");
+        const refreshBtn = document.getElementById("refreshChartBtn");
+        const canvas = document.getElementById("occupancyChart");
 
-    function renderChart(data) {
-        const ctx = document.getElementById("occupancyChart")?.getContext("2d");
-        if (!ctx) {
-            console.warn("Canvas not found for occupancy chart.");
+        if (!canvas) {
+            console.warn("occupancyChart canvas not found. Retrying...");
+            setTimeout(initOccupancyChart, 200);  // Retry if DOM not ready yet
             return;
         }
 
-        const labels = Object.keys(data);
-        const values = Object.values(data);
+        async function fetchOccupancyData(lotId = "") {
+            const response = await fetch(`/occupancy-rate-data/?lot_id=${lotId}`);
+            return await response.json();
+        }
 
-        if (occupancyChart) occupancyChart.destroy();
+        async function updateChart(lotId = "") {
+            const data = await fetchOccupancyData(lotId);
+            renderChart(data);
+        }
 
-        occupancyChart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: "Reservations per Hour (Past 7 Days)",
-                    data: values,
-                    fill: false,
-                    borderColor: "#3b82f6",
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: "Reservations" }
-                    },
-                    x: {
-                        title: { display: true, text: "Hour of Day" }
+        function renderChart(data) {
+            const ctx = canvas.getContext("2d");
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+
+            if (occupancyChart) occupancyChart.destroy();
+
+            occupancyChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Hourly Occupancy (Past 7 Days)",
+                        data: values,
+                        fill: false,
+                        borderColor: "#3b82f6",
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: "Reservations" }
+                        },
+                        x: {
+                            title: { display: true, text: "Hour of Day" }
+                        }
                     }
-                }
-            }
-        });
-    }
-
-    async function updateChart(lotId = "") {
-        const data = await fetchOccupancyData(lotId);
-        renderChart(data);
-    }
-
-    const dropdown = document.getElementById("lotSelect");
-    if (dropdown) {
-        dropdown.addEventListener("change", (e) => {
-            updateChart(e.target.value);
-        });
-    }
-
-    const refreshBtn = document.getElementById("refreshChartBtn");
-    if (refreshBtn) {
-        refreshBtn.addEventListener("click", () => {
-            updateChart(dropdown?.value || "");
-        });
-    }
-
-    updateChart(); // initial load
-}
-
-    document.addEventListener("overviewLoaded", function () {
-        const refreshBtn = document.getElementById("refreshChartBtn");
-        const lotSelect = document.getElementById("lotSelect");
-
-        if (refreshBtn && typeof initOccupancyChart === "function") {
-            refreshBtn.addEventListener("click", () => {
-                const canvas = document.getElementById("occupancyChart");
-                if (canvas) {
-                    const selectedLot = lotSelect?.value || "";
-                    // Re-initialize with the selected lot
-                    initOccupancyChart(); // this assumes initOccupancyChart will internally pick up the selected lot
                 }
             });
         }
-    });
 
+        dropdown?.addEventListener("change", () => updateChart(dropdown.value));
+        refreshBtn?.addEventListener("click", () => updateChart(dropdown.value));
+
+        // Always update on init
+        updateChart(dropdown?.value || "");
+    }
+
+    document.addEventListener("overviewLoaded", function () {
+        initOccupancyChart();
+    });
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {

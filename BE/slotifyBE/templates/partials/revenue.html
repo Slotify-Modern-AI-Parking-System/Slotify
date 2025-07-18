@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         .card-hover {
             transition: all 0.3s ease;
@@ -95,10 +96,6 @@
                         <div>
                             <p class="text-green-100 text-sm font-medium mb-1">Total Earnings</p>
                             <p class="text-3xl font-bold mb-2" id="totalEarnings">${{ total_earnings|floatformat:2 }}</p>
-                            <p class="text-green-200 text-sm flex items-center">
-                                <i class="fas fa-arrow-up mr-1"></i>
-                                <span>+12% from last month</span>
-                            </p>
                         </div>
                         <div class="bg-white/20 p-3 rounded-lg">
                             <i class="fas fa-dollar-sign text-2xl"></i>
@@ -111,10 +108,6 @@
                         <div>
                             <p class="text-blue-100 text-sm font-medium mb-1">Total Bookings</p>
                             <p class="text-3xl font-bold mb-2" id="totalBookings">{{ total_bookings }}</p>
-                            <p class="text-blue-200 text-sm flex items-center">
-                                <i class="fas fa-arrow-up mr-1"></i>
-                                <span>+8% from last month</span>
-                            </p>
                         </div>
                         <div class="bg-white/20 p-3 rounded-lg">
                             <i class="fas fa-calendar-check text-2xl"></i>
@@ -127,10 +120,6 @@
                         <div>
                             <p class="text-orange-100 text-sm font-medium mb-1">Average Rate</p>
                             <p class="text-3xl font-bold mb-2" id="averageRate">${{ average_rate|floatformat:2 }}</p>
-                            <p class="text-orange-200 text-sm flex items-center">
-                                <i class="fas fa-arrow-up mr-1"></i>
-                                <span>+5% from last month</span>
-                            </p>
                         </div>
                         <div class="bg-white/20 p-3 rounded-lg">
                             <i class="fas fa-chart-line text-2xl"></i>
@@ -143,10 +132,6 @@
                         <div>
                             <p class="text-purple-100 text-sm font-medium mb-1">Growth Rate</p>
                             <p class="text-3xl font-bold mb-2" id="growthRate">+{{ growth_rate|floatformat:1 }}%</p>
-                            <p class="text-purple-200 text-sm flex items-center">
-                                <i class="fas fa-arrow-up mr-1"></i>
-                                <span>YoY Growth</span>
-                            </p>
                         </div>
                         <div class="bg-white/20 p-3 rounded-lg">
                             <i class="fas fa-trending-up text-2xl"></i>
@@ -178,11 +163,17 @@
                 <!-- Sidebar -->
                 <div class="space-y-6">
                     <!-- Top Performing Lots -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6" 
+                         data-lot-name="{{ lot.parking_lot__name }}"
+                        data-bookings="{{ lot.bookings }}"
+                        data-revenue="{{ lot.revenue|floatformat:2 }}">>
                         <h3 class="text-lg font-bold text-gray-900 mb-4">Top Performing Lots</h3>
                         <div class="space-y-3">
                             {% for lot in top_lots %}
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            data-lot-name="{{ lot.parking_lot__name }}"
+                            data-bookings="{{ lot.bookings }}"
+                            data-revenue="{{ lot.revenue|floatformat:2 }}">
                                 <div>
                                     <p class="font-medium text-gray-900">{{ lot.parking_lot__name }}</p>
                                     <p class="text-sm text-gray-600">{{ lot.bookings }} bookings</p>
@@ -201,7 +192,7 @@
                         <h3 class="text-lg font-bold text-white mb-4">Revenue Breakdown</h3>
                         <div class="space-y-4">
                             {% for label, percentage in breakdown.items %}
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between" >
                                 <div class="flex items-center space-x-3">
                                     <div class="w-3 h-3 rounded-full 
                                         {% if 'Hourly' in label %}bg-blue-500
@@ -285,13 +276,18 @@
     </div>
 {{ chart_labels|json_script:"chart-labels" }}
 {{ chart_data|json_script:"chart-data" }}
-    <script>
-        // Initialize chart
-        let revenueChart;
-        
+ <script>
+let revenueChart;
+
+function setupRevenuePage() {
+    initializeChart();
+    attachTimeRangeListeners();
+    changeTimeRange('30d'); 
+    fadeInCards();
+}
+
 function initializeChart() {
     const ctx = document.getElementById('revenueChart').getContext('2d');
-    
     const labels = JSON.parse(document.getElementById('chart-labels').textContent);
     const data = JSON.parse(document.getElementById('chart-data').textContent);
 
@@ -313,203 +309,106 @@ function initializeChart() {
         }]
     };
 
-    new Chart(ctx, {
+    revenueChart = new Chart(ctx, {
         type: 'line',
         data: chartData,
-        options: chartOptions  // you already defined this elsewhere
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9CA3AF' }
+                },
+                y: {
+                    grid: { color: 'rgba(255,255,255,0.1)' },
+                    ticks: { color: '#9CA3AF' }
+                }
+            }
+        }
     });
 }
 
-            const chartOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#3b82f6',
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        displayColors: false,
-                        callbacks: {
-                            label: function(context) {
-                                return '$' + context.parsed.y.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            },
-                            color: '#6b7280'
-                        },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#6b7280'
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            };
-        
+function attachTimeRangeListeners() {
+    document.querySelectorAll('.time-filter').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            const range = e.target.innerText.trim().toLowerCase(); // 7d, 30d, etc.
+            changeTimeRange(range);
+        });
+    });
+}
 
-        // Time range filter functionality
-        function changeTimeRange(range) {
-            document.querySelectorAll('.time-filter').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-200', 'text-gray-700');
-            });
-            event.target.classList.add('bg-blue-600', 'text-white');
-            event.target.classList.remove('bg-gray-200', 'text-gray-700');
-
-            showLoadingAnimation();
-            
-            // Here you would typically make an AJAX call to get new data
-            // For now, we'll just simulate the loading
-            setTimeout(() => {
-                hideLoadingAnimation();
-                showNotification('Chart updated for ' + range + ' range', 'success');
-            }, 1000);
-        }
-
-        // Export functionality
-        function exportData() {
-            showNotification('Revenue data exported successfully!', 'success');
-            
-            const exportBtn = event.target.closest('button');
-            const originalContent = exportBtn.innerHTML;
-            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Exporting...</span>';
-            exportBtn.disabled = true;
-            
-            setTimeout(() => {
-                exportBtn.innerHTML = originalContent;
-                exportBtn.disabled = false;
-            }, 2000);
-        }
-
-        // Refresh functionality
-        function refreshData() {
-            showLoadingAnimation();
-            showNotification('Refreshing data...', 'info');
-            
-            setTimeout(() => {
-                hideLoadingAnimation();
-                showNotification('Data refreshed successfully!', 'success');
-            }, 1500);
-        }
-
-        // Animation and UI functions
-        function showLoadingAnimation() {
-            const cards = document.querySelectorAll('.card-hover');
-            cards.forEach(card => {
-                card.style.opacity = '0.7';
-                card.style.transform = 'scale(0.98)';
-            });
-        }
-
-        function hideLoadingAnimation() {
-            const cards = document.querySelectorAll('.card-hover');
-            cards.forEach(card => {
-                card.style.opacity = '1';
-                card.style.transform = 'scale(1)';
-            });
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg border-l-4 transform translate-x-full transition-all duration-300 ${
-                type === 'success' ? 'bg-green-50 border-green-400 text-green-800' :
-                type === 'error' ? 'bg-red-50 border-red-400 text-red-800' :
-                type === 'warning' ? 'bg-yellow-50 border-yellow-400 text-yellow-800' :
-                'bg-blue-50 border-blue-400 text-blue-800'
-            }`;
-            
-            notification.innerHTML = `
-                <div class="flex items-center space-x-3">
-                    <i class="fas ${
-                        type === 'success' ? 'fa-check-circle' :
-                        type === 'error' ? 'fa-exclamation-circle' :
-                        type === 'warning' ? 'fa-exclamation-triangle' :
-                        'fa-info-circle'
-                    }"></i>
-                    <span class="font-medium">${message}</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => notification.remove(), 300);
-            }, 4000);
-        }
-
-        // Add ripple effect to interactive elements
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('button, .card-hover')) {
-                const element = e.target.closest('button, .card-hover');
-                const ripple = document.createElement('span');
-                const rect = element.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-                
-                ripple.style.width = ripple.style.height = size + 'px';
-                ripple.style.left = x + 'px';
-                ripple.style.top = y + 'px';
-                ripple.classList.add('ripple');
-                
-                element.style.position = 'relative';
-                element.style.overflow = 'hidden';
-                element.appendChild(ripple);
-                
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
+function changeTimeRange(range) {
+    showLoadingAnimation();
+    fetch(`/api/revenue-chart/?range=${range}`)
+        .then(response => response.json())
+        .then(data => {
+            if (revenueChart) {
+                revenueChart.data.labels = data.labels;
+                revenueChart.data.datasets[0].data = data.data;
+                revenueChart.update();
             }
+            hideLoadingAnimation();
+            showNotification(`Updated chart for ${range.toUpperCase()}`, 'success');
+        })
+        .catch(error => {
+            console.error("Failed to load chart data:", error);
+            hideLoadingAnimation();
+            showNotification("Error updating chart", 'error');
         });
+}
 
-        // Initialize everything when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeChart();
-            
-            // Add entrance animations
-            const elements = document.querySelectorAll('.animate-fadeIn');
-            elements.forEach((element, index) => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    element.style.transition = 'all 0.5s ease';
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
-        });
-    </script>
+function fadeInCards() {
+    const elements = document.querySelectorAll('.animate-fadeIn');
+    elements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            element.style.transition = 'all 0.5s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+}
+</script>
+<script>
+function exportData() {
+    const earnings = document.getElementById("totalEarnings").innerText.replace('$', '');
+    const bookings = document.getElementById("totalBookings").innerText;
+    const averageRate = document.getElementById("averageRate").innerText.replace('$', '');
+    const growthRate = document.getElementById("growthRate").innerText.replace('+', '').replace('%', '');
+
+    // Extract data from top performing lots
+    const lots = Array.from(document.querySelectorAll('[data-lot-name]')).map(el => ({
+        'Parking Lot': el.getAttribute('data-lot-name'),
+        'Bookings': el.getAttribute('data-bookings'),
+        'Revenue ($)': el.getAttribute('data-revenue')
+    }));
+
+    // Summary Sheet
+    const summarySheet = [
+        ['Metric', 'Value'],
+        ['Total Earnings', parseFloat(earnings)],
+        ['Total Bookings', parseInt(bookings)],
+        ['Average Rate', parseFloat(averageRate)],
+        ['Growth Rate (%)', parseFloat(growthRate)],
+    ];
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    const wsSummary = XLSX.utils.aoa_to_sheet(summarySheet);
+    const wsLots = XLSX.utils.json_to_sheet(lots);
+
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+    XLSX.utils.book_append_sheet(wb, wsLots, "Top Lots");
+
+    XLSX.writeFile(wb, "Revenue_Analytics.xlsx");
+}
+</script>
+
 </body>
 </html>

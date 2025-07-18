@@ -207,65 +207,54 @@
                     </div>
                 </div>
 
-                <!-- ID Verification -->
-                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200 card-hover">
-                    <div class="flex items-center space-x-4 mb-4">
-                        <div class="bg-green-100 p-3 rounded-lg">
-                            <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+            <!-- ✅ ID Verification Card (keep border) -->
+            <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-200 card-hover">
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <i class="fas fa-shield-alt text-2xl text-green-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">ID Verification</h3>
+                        <p class="text-gray-600">Your identity has been verified</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Verified Date</span>
+                        <span class="font-medium">{{ dashboard_data.verificationTime }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Status</span>
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-check mr-1"></i>Verified
+                        </span>
+                    </div>
+                </div>
+                <a href="{{ dashboard_data.idProof }}" target="_blank" rel="noopener noreferrer" class="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors flex items-center justify-center space-x-2">
+                    <i class="fas fa-external-link-alt"></i>
+                    <span>View Document</span>
+                </a>
+            </div>
+
+            <!-- ✅ Recent Activity Card (separated, no border-green-200) -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Activity</h3>
+                <div class="space-y-3">
+                    {% for activity in dashboard_data.recentActivities %}
+                    <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div class="bg-green-100 p-2 rounded-full">
+                            <i class="fas fa-check text-green-600 text-sm"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-gray-800">ID Verification</h3>
-                            <p class="text-gray-600">Your identity has been verified</p>
+                            <p class="text-sm font-medium text-gray-800">{{ activity.event }}</p>
+                            <p class="text-xs text-gray-500">{{ activity.time }}</p>
                         </div>
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Verified Date</span>
-                            <span class="font-medium">{{ dashboard_data.verificationTime }}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Status</span>
-                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                <i class="fas fa-check mr-1"></i>Verified
-                            </span>
-                        </div>
-                    </div>
-                    <button onclick="showIDProof()" class="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors flex items-center justify-center space-x-2">
-                        <i class="fas fa-external-link-alt"></i>
-                        <span>View Document</span>
-                    </button>
-
-                    <!-- Modal or popup -->
-                    <div id="idProofModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-                        <div class="bg-white p-4 rounded-lg shadow-lg max-w-md w-full relative">
-                            <button onclick="closeIDProof()" class="absolute top-2 right-2 text-gray-500 hover:text-red-500">
-                                &times;
-                            </button>
-                            <img src="{{ dashboard_data.idProof }}" alt="ID Proof" class="w-full h-auto rounded-lg">
-                        </div>
-                    </div>
+                    {% empty %}
+                    <div class="text-sm text-gray-500">No recent activity.</div>
+                    {% endfor %}
                 </div>
-
-                <!-- Account Activity -->
-                <!-- Recent Activity (Dynamic) -->
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Activity</h3>
-                    <div class="space-y-3">
-                        {% for activity in dashboard_data.recentActivities %}
-                        <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div class="bg-green-100 p-2 rounded-full">
-                                <i class="fas fa-check text-green-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">{{ activity.event }}</p>
-                                <p class="text-xs text-gray-500">{{ activity.time }}</p>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="text-sm text-gray-500">No recent activity.</div>
-                        {% endfor %}
-                    </div>
-                </div>
+            </div>
             </div>
         </div>
     </div>
@@ -313,22 +302,47 @@
                 saveBtn.classList.remove('flex');
             }
         }
-
         function saveProfile() {
-            // Show loading state
+            if (!validateForm()) return;
+
+            const csrfToken = getCookie('csrftoken');
+
+            const data = {
+                firstName: document.getElementById("firstName").value,
+                lastName: document.getElementById("lastName").value,
+                emailId: document.getElementById("email").value,
+                contactNumber: document.getElementById("phone").value
+            };
+
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Saving...</span>';
             saveBtn.disabled = true;
 
-            // Simulate API call
-            setTimeout(() => {
-                showNotification('Profile updated successfully!', 'success');
-                isEditMode = false;
-                toggleEditMode();
-                
-                // Reset save button
+            fetch('/update-profile/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    showNotification("Profile updated successfully!", "success");
+                    isEditMode = false;
+                    toggleEditMode();
+                } else {
+                    showNotification(response.message || "Update failed", "error");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showNotification("Something went wrong!", "error");
+            })
+            .finally(() => {
                 saveBtn.innerHTML = '<i class="fas fa-save"></i><span>Save Changes</span>';
                 saveBtn.disabled = false;
-            }, 1500);
+            });
         }
 
         // Notification System
