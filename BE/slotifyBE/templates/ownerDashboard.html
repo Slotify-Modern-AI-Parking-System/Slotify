@@ -83,6 +83,7 @@
             min-height: 400px;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="bg-gray-50 font-sans">
@@ -155,8 +156,8 @@
             </div>
 
             <!-- Content Area -->
-            <div class="p-6">
-                <div id="content" class="content-container">
+        <div class="p-6 max-w-[1400px] mx-auto">
+            <div id="content" class="content-container">
                     <!-- Loading state will be shown here initially -->
                     <div class="loading-state">
                         <div class="text-center">
@@ -168,6 +169,23 @@
             </div>
         </div>
     </div>
+
+            <!-- Logout Confirmation Modal -->
+        <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4 transform transition-all duration-300 slide-up">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1m0-8v1" />
+            </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Log Out?</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to log out of your account?</p>
+            <div class="flex justify-center space-x-4">
+            <button onclick="cancelLogout()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-lg transition">Cancel</button>
+            <button onclick="confirmLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition">Logout</button>
+            </div>
+        </div>
+        </div>
 
     <script>
         let currentSection = 'overview';
@@ -246,6 +264,29 @@
                 
                 // Execute any scripts in the loaded content
                 executeScripts();
+            setTimeout(() => {
+                document.dispatchEvent(new Event("overviewLoaded"));
+            }, 100);
+
+        if (section === 'overview') {
+            setTimeout(() => {
+                if (typeof initOccupancyChart === "function") {
+                    // Ensure canvas exists before initializing the chart
+                    const tryInit = () => {
+                        const canvas = document.getElementById("occupancyChart");
+                        if (canvas) {
+                            window.requestAnimationFrame(() => initOccupancyChart());
+                        } else {
+                            // Retry after short delay (in case DOM is still rendering)
+                            setTimeout(tryInit, 100);
+                        }
+                    };
+                    tryInit();
+                } else {
+                    console.warn("initOccupancyChart not defined.");
+                }
+            }, 100);  // Small delay to ensure DOM is populated
+        }
                 
                 // Update active navigation
                 setActiveNavItem(section);
@@ -281,23 +322,30 @@
             }, 100);
         }
 
-        function handleLogout() {
-            if (confirm("Are you sure you want to logout?")) {
-                showLoading();
-                document.getElementById('content').innerHTML = `
-                    <div class="loading-state">
-                        <div class="text-center">
-                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                            <p class="text-gray-600">Logging out...</p>
-                        </div>
-                    </div>
-                `;
-                
-                setTimeout(() => {
-                    window.location.href = "/";
-                }, 1500);
-            }
-        }
+    function handleLogout() {
+    document.getElementById('logoutModal').classList.remove('hidden');
+    }
+
+    function cancelLogout() {
+    document.getElementById('logoutModal').classList.add('hidden');
+    }
+
+    function confirmLogout() {
+    document.getElementById('logoutModal').classList.add('hidden');
+
+    showLoading();
+    document.getElementById('content').innerHTML = `
+        <div class="loading-state">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Logging out...</p>
+        </div>
+        </div>
+    `;
+    setTimeout(() => {
+        window.location.href = "/";
+    }, 1500);
+    }
 
         // Add ripple effect to nav items
         document.querySelectorAll('.nav-item').forEach(item => {

@@ -32,4 +32,9 @@ urlpatterns = [
     path('partials/overview/', views.overview_partial, name='overview_partial'),
     path('partials/revenue/', views.revenue_partial, name='revenue_partial'),
     path('partials/profile/', views.profile_partial, name='profile_partial'),
+    path('revenue-data/', views.revenue_data, name='revenue-data'),
+    path("occupancy-rate-data/", views.occupancy_rate_data, name="occupancy_rate_data"),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
+    path('revenue/', views.revenue_view, name='revenue'),
+    path('update-logged-in-password/', views.update_logged_in_password, name='update_logged_in_password'),
 ]

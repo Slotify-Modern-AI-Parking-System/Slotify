@@ -64,9 +64,11 @@
                             <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                                 <i class="fas fa-shield-alt mr-1"></i>Verified
                             </span>
-                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                <i class="fas fa-crown mr-1"></i>Premium
-                            </span>
+                        {% if dashboard_data.totalParkingLots >= 10 %}
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                            <i class="fas fa-crown mr-1"></i>Premium
+                        </span>
+                        {% endif %}
                         </div>
                     </div>
                 </div>
@@ -112,34 +114,6 @@
                     </div>
                 </div>
 
-                <!-- Address Information -->
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-gray-800">Address Information</h3>
-                        <i class="fas fa-map-marker-alt text-gray-400"></i>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-2">Street Address</label>
-                            <input type="text" id="address" value="123 Main Street" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-2">City</label>
-                                <input type="text" id="city" value="New York" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-2">State</label>
-                                <input type="text" id="state" value="NY" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-2">ZIP Code</label>
-                                <input type="text" id="zipCode" value="10001" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-gray-50" readonly>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Security Settings -->
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
                     <div class="flex items-center justify-between mb-4">
@@ -157,26 +131,38 @@
                                     <p class="text-sm text-gray-600">Last updated 2 months ago</p>
                                 </div>
                             </div>
-                            <button class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                            <button onclick="openPasswordModal()" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
                                 Change Password
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="bg-green-100 p-2 rounded-full">
-                                    <i class="fas fa-mobile-alt text-green-600"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-medium text-gray-800">Two-Factor Authentication</h4>
-                                    <p class="text-sm text-gray-600">Enabled via SMS</p>
-                                </div>
-                            </div>
-                            <button class="text-green-600 hover:text-green-800 font-medium transition-colors">
-                                Configure
                             </button>
                         </div>
                     </div>
                 </div>
+
+                <!-- Change Password Modal -->
+            <div id="changePasswordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+                    <button onclick="closePasswordModal()" class="absolute top-2 right-2 text-gray-500 hover:text-red-500">
+                        &times;
+                    </button>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Change Password</h3>
+                    <form id="changePasswordForm" onsubmit="submitPasswordChange(event)">
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-700 font-medium mb-2">Current Password</label>
+                            <input type="password" id="currentPassword" class="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-700 font-medium mb-2">New Password</label>
+                            <input type="password" id="newPassword" class="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-700 font-medium mb-2">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">Update Password</button>
+                    </form>
+                </div>
+            </div>
+
             </div>
 
             <!-- Sidebar -->
@@ -207,17 +193,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="bg-indigo-100 p-2 rounded-full">
-                                    <i class="fas fa-car text-indigo-600"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-medium text-gray-600">Available Spaces</p>
-                                    <p class="text-3xl font-bold text-indigo-600">{{ dashboard_data.availableSpaces }}</p>
-                                </div>
-                            </div>
-                        </div>
                         <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
                             <div class="flex items-center space-x-3">
                                 <div class="bg-orange-100 p-2 rounded-full">
@@ -245,12 +220,8 @@
                     </div>
                     <div class="space-y-3">
                         <div class="flex items-center justify-between text-sm">
-                            <span class="text-gray-600">Document Type</span>
-                            <span class="font-medium">Driver's License</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Verified Date</span>
-                            <span class="font-medium">Jan 15, 2025</span>
+                            <span class="font-medium">{{ dashboard_data.verificationTime }}</span>
                         </div>
                         <div class="flex items-center justify-between text-sm">
                             <span class="text-gray-600">Status</span>
@@ -259,43 +230,40 @@
                             </span>
                         </div>
                     </div>
-                    <button class="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors flex items-center justify-center space-x-2">
+                    <button onclick="showIDProof()" class="w-full mt-4 bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors flex items-center justify-center space-x-2">
                         <i class="fas fa-external-link-alt"></i>
                         <span>View Document</span>
                     </button>
+
+                    <!-- Modal or popup -->
+                    <div id="idProofModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                        <div class="bg-white p-4 rounded-lg shadow-lg max-w-md w-full relative">
+                            <button onclick="closeIDProof()" class="absolute top-2 right-2 text-gray-500 hover:text-red-500">
+                                &times;
+                            </button>
+                            <img src="{{ dashboard_data.idProof }}" alt="ID Proof" class="w-full h-auto rounded-lg">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Account Activity -->
+                <!-- Recent Activity (Dynamic) -->
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Activity</h3>
                     <div class="space-y-3">
-                        <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div class="bg-blue-100 p-2 rounded-full">
-                                <i class="fas fa-user-edit text-blue-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">Profile updated</p>
-                                <p class="text-xs text-gray-500">2 hours ago</p>
-                            </div>
-                        </div>
+                        {% for activity in dashboard_data.recentActivities %}
                         <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
                             <div class="bg-green-100 p-2 rounded-full">
-                                <i class="fas fa-key text-green-600 text-sm"></i>
+                                <i class="fas fa-check text-green-600 text-sm"></i>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-800">Password changed</p>
-                                <p class="text-xs text-gray-500">1 week ago</p>
+                                <p class="text-sm font-medium text-gray-800">{{ activity.event }}</p>
+                                <p class="text-xs text-gray-500">{{ activity.time }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors">
-                            <div class="bg-purple-100 p-2 rounded-full">
-                                <i class="fas fa-shield-alt text-purple-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-800">2FA enabled</p>
-                                <p class="text-xs text-gray-500">2 weeks ago</p>
-                            </div>
-                        </div>
+                        {% empty %}
+                        <div class="text-sm text-gray-500">No recent activity.</div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -469,5 +437,80 @@
             });
         });
     </script>
+    <script>
+        function showIDProof() {
+            document.getElementById("idProofModal").classList.remove("hidden");
+            document.getElementById("idProofModal").classList.add("flex");
+        }
+
+        function closeIDProof() {
+            document.getElementById("idProofModal").classList.remove("flex");
+            document.getElementById("idProofModal").classList.add("hidden");
+        }
+</script>
+
+<script>
+    function openPasswordModal() {
+        document.getElementById('changePasswordModal').classList.remove('hidden');
+        document.getElementById('changePasswordModal').classList.add('flex');
+    }
+
+    function closePasswordModal() {
+        document.getElementById('changePasswordModal').classList.remove('flex');
+        document.getElementById('changePasswordModal').classList.add('hidden');
+    }
+
+    function submitPasswordChange(event) {
+        event.preventDefault();
+
+        const current = document.getElementById('currentPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('confirmPassword').value;
+
+        if (newPass !== confirm) {
+            showNotification('New passwords do not match.', 'error');
+            return;
+        }
+
+        fetch('/update-logged-in-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                current_password: current,
+                new_password: newPass
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Password updated successfully!', 'success');
+                closePasswordModal();
+            } else {
+                showNotification(data.message || 'Password update failed.', 'error');
+            }
+        })
+        .catch(() => {
+            showNotification('Error updating password.', 'error');
+        });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 </body>
 </html>

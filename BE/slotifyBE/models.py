@@ -12,6 +12,7 @@ class OwnerProfile(models.Model):
     idProof = models.URLField(max_length=500, blank=True, null=True)
     verified = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
+    verification_time = models.DateTimeField(null=True, blank=True)
     
     # New fields
     role = models.CharField(max_length=50, default="Owner")
