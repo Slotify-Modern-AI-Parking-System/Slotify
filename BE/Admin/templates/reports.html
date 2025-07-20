@@ -275,154 +275,72 @@
                 <!-- Top Performing Lots -->
                 <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Performing Lots</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">147 Fairway Road N</p>
-                                <p class="text-xs text-gray-600">Kitchener, ON</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-primary-green">$3,240</p>
-                                <p class="text-xs text-gray-500">162 bookings</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">85 Queen Street S</p>
-                                <p class="text-xs text-gray-600">Waterloo, ON</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-primary-green">$2,890</p>
-                                <p class="text-xs text-gray-500">145 bookings</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="text-sm font-medium text-gray-900">256 University Avenue W</p>
-                                <p class="text-xs text-gray-600">Waterloo, ON</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm font-bold text-primary-green">$2,675</p>
-                                <p class="text-xs text-gray-500">134 bookings</p>
-                            </div>
-                        </div>
+                    <div class="space-y-3" id="top-performing-lots-container">
+                        <!-- Dynamic data will be inserted here -->
                     </div>
                 </div>
 
-                <!-- Financial Summary -->
-                <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Gross Revenue</span>
-                            <span class="text-sm font-bold text-gray-900">$24,847</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Platform Fee (5%)</span>
-                            <span class="text-sm font-bold text-red-600">-$1,242</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Payment Processing</span>
-                            <span class="text-sm font-bold text-red-600">-$372</span>
-                        </div>
-                        <div class="border-t pt-2">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm font-medium text-gray-900">Net Revenue</span>
-                                <span class="text-sm font-bold text-primary-green">$23,233</span>
-                            </div>
-                        </div>
-                        <div class="bg-green-50 p-3 rounded-lg mt-4">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-green-800">Average per Booking</span>
-                                <span class="text-sm font-bold text-green-600">$13.46</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+<!-- Financial Summary -->
+<div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Financial Summary (Reservations)</h3>
+    <div class="space-y-3">
+        <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">Gross Revenue</span>
+            <span id="grossRevenue" class="text-sm font-bold text-gray-900">$0.00</span>
+        </div>
+
+        <div class="flex justify-between items-center">
+            <span class="text-sm text-gray-600">Payment Processing</span>
+            <span id="stripeFee" class="text-sm font-bold text-red-600">-$0.00</span>
+        </div>
+
+        <div class="border-t pt-2">
+            <div class="flex justify-between items-center">
+                <span class="text-sm font-medium text-gray-900">Net Revenue</span>
+                <span id="netRevenue" class="text-sm font-bold text-primary-green">$0.00</span>
+            </div>
+        </div>
+
+        <div class="bg-green-50 p-3 rounded-lg mt-4">
+            <div class="flex justify-between items-center">
+                <span class="text-sm text-green-800">Average per Booking</span>
+                <span id="avgBooking" class="text-sm font-bold text-green-600">$0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
             </div>
 
-            <!-- Detailed Reports Table -->
-            <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                    <div class="flex items-center space-x-2">
-                        <button class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Export CSV</button>
-                        <button class="px-3 py-1 text-sm bg-gradient-to-r from-primary-blue to-primary-green text-white rounded-lg hover:from-blue-700 hover:to-green-700">View All</button>
-                    </div>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parking Lot</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Plate</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jul 16, 2025</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">John Smith</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">147 Fairway Road N</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">ABC-123</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3 hours</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$18.00</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Completed</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jul 16, 2025</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Sarah Johnson</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">85 Queen Street S</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">XYZ-789</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 hours</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$12.00</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Active</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jul 16, 2025</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Michael Chen</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">256 University Avenue W</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">DEF-456</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4 hours</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$24.00</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Completed</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jul 15, 2025</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Emma Wilson</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">147 Fairway Road N</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">GHI-789</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1.5 hours</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$9.00</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Cancelled</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Jul 15, 2025</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">David Brown</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">85 Queen Street S</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">JKL-012</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6 hours</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$36.00</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Completed</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<!-- Detailed Reports Table -->
+<div class="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+        <!-- <div class="flex items-center space-x-2">
+            <button class="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">Export CSV</button>
+            <button class="px-3 py-1 text-sm bg-gradient-to-r from-primary-blue to-primary-green text-white rounded-lg hover:from-blue-700 hover:to-green-700">View All</button>
+        </div> -->
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parking Lot</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Plate</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+            </thead>
+            <tbody id="recent-activity-body" class="bg-white divide-y divide-gray-200">
+                <!-- Rows will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
             <!-- License Plate Detection Analytics -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -968,6 +886,103 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
     startAutoRefresh();
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    fetchTopPerformingLots();
+});
+
+function fetchTopPerformingLots() {
+    fetch('/top-performing-parking-lots/')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('top-performing-lots-container');
+            container.innerHTML = '';  // Clear existing content
+
+            data.top_parking_lots.forEach(lot => {
+                const lotElement = document.createElement('div');
+                lotElement.className = "flex items-center justify-between p-3 bg-gray-50 rounded-lg";
+                lotElement.innerHTML = `
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">${lot.location}</p>
+                        <p class="text-xs text-gray-600">${lot.name}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-bold text-primary-green">$${lot.total_revenue.toFixed(2)}</p>
+                        <p class="text-xs text-gray-500">${lot.reservation_count} bookings</p>
+                    </div>
+                `;
+                container.appendChild(lotElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching top performing lots:', error);
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    fetch('/reservations_financial_summary/')
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById("grossRevenue").textContent = `$${data.gross_revenue.toFixed(2)}`;
+            document.getElementById("stripeFee").textContent = `-$${data.stripe_payment_processing.toFixed(2)}`;
+            document.getElementById("netRevenue").textContent = `$${data.net_revenue.toFixed(2)}`;
+            document.getElementById("avgBooking").textContent = `$${data.average_booking_value.toFixed(2)}`;
+        })
+        .catch(error => {
+            console.error("Error fetching financial summary:", error);
+        });
+});
+
+async function loadRecentActivity() {
+    const tbody = document.getElementById('recent-activity-body');
+    tbody.innerHTML = '';  // Clear existing rows
+    
+    try {
+        const response = await fetch('/recent_parking_reservations/');
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+
+        data.forEach(item => {
+            // Format the date string into "MMM dd yyyy HH:mm:ss" (24-hour)
+            const dateObj = new Date(item.date);
+            const formattedDate = dateObj.toLocaleString('en-US', {
+                month: 'short',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).replace(',', '');
+
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formattedDate}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.customer_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.parking_lot}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.license_plate}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.duration} hours</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${item.amount.toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">${item.status}</span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error('Failed to load recent activity:', error);
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-red-500">Failed to load data</td></tr>`;
+    }
+}
+
+// Call on page load
+loadRecentActivity();
+
     </script>
 </body>
 </html>

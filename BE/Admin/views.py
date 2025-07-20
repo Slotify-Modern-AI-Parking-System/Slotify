@@ -34,6 +34,8 @@ from django.db.models import Sum, Avg, Count
 from datetime import date
 from django.db.models.functions import ExtractYear, ExtractMonth, ExtractQuarter, ExtractWeekDay
 import calendar
+from django.utils.dateformat import DateFormat
+from django.utils.timezone import localtime
 
 
 # Create your views here.
@@ -1050,3 +1052,79 @@ def reservations_trends(request):
         return JsonResponse(data, status=200)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def top_performing_parking_lots(request):
+    # Aggregate reservation count and total amount per parking lot
+    lots_data = (
+        ParkingReservation.objects
+        .values('parking_lot')
+        .annotate(
+            reservation_count=Count('id'),
+            total_revenue=Sum('total_amount')
+        )
+        .order_by('-reservation_count')[:3]
+    )
+
+    result = []
+
+    for entry in lots_data:
+        lot_id = entry['parking_lot']
+        try:
+            lot = ParkingLot.objects.get(id=lot_id)
+            result.append({
+                'parking_lot_id': lot.id,
+                'name': lot.name,
+                'location': lot.location,
+                'reservation_count': entry['reservation_count'],
+                'total_revenue': float(entry['total_revenue']),
+            })
+        except ParkingLot.DoesNotExist:
+            continue
+
+    return JsonResponse({'top_parking_lots': result}, status=200)
+
+@csrf_exempt
+def reservations_financial_summary(request):
+    if request.method == "GET":
+        totals = ParkingReservation.objects.aggregate(
+            gross_revenue=Sum('total_amount'),
+            average_booking=Avg('total_amount')
+        )
+
+        gross = float(totals['gross_revenue'] or 0)
+        avg_booking = float(totals['average_booking'] or 0)
+        stripe_fee = round(gross * 0.03, 2)
+        net = round(gross - stripe_fee, 2)
+
+        return JsonResponse({
+            "gross_revenue": round(gross, 2),
+            "stripe_payment_processing": stripe_fee,
+            "net_revenue": net,
+            "average_booking_value": round(avg_booking, 2)
+        }, status=200)
+    
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def recent_parking_reservations(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET method is allowed'}, status=405)
+
+    reservations = ParkingReservation.objects.order_by('-created_at')[:10]
+
+    data = []
+    for r in reservations:
+        formatted_date = DateFormat(localtime(r.created_at)).format('Y-m-d H:i:s')
+        data.append({
+            "date": formatted_date,
+            "customer_name": r.name,
+            "parking_lot": r.location,
+            "license_plate": r.license_plate,
+            "duration": r.hours,
+            "amount": float(r.total_amount),
+            "status": "Completed"
+        })
+
+    return JsonResponse(data, safe=False, status=200)
