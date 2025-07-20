@@ -16,6 +16,9 @@ from slotifyBE.models import *
 from django.views.decorators.http import require_POST
 from math import sqrt
 import random
+from django.utils import timezone
+from django.db import transaction
+
 
 from .models import *
 # Global variables to manage detection state
@@ -683,16 +686,18 @@ parking_lot_logged_out = Signal()
 running_processes = {}
 running_threads = {}
 
-# Choose one approach - I recommend subprocess approach for better isolation
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Slotify/BE/User
 USE_SUBPROCESS = True  # Set to False to use threading approach
 
 @receiver(parking_lot_logged_in)
 def start_car_detectors(sender, lot_id, **kwargs):
     """Start both car detector scripts when parking lot logs in"""
     
+    entry_script_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'carDetector.py'))
+    exit_script_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'carExit.py'))
     # Define script paths with absolute paths
-    entry_script_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/carDetector.py"
-    exit_script_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/carExit.py"
+    # entry_script_path = "../../ALPR/carDetector.py"
+    # exit_script_path = "../../ALPR/carExit.py"
     
     print(f"Starting car detectors for lot {lot_id}")
     print(f"Entry script path: {entry_script_path}")
@@ -1058,7 +1063,10 @@ def get_license_plate(request):
     """
     GET API to read license plate detection from entry file and clear it
     """
-    file_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/detection.txt"
+    # file_path = "../../ALPR/detection.txt"
+    file_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'detection.txt'))
+
+    # Define script paths with absolute paths
     
     try:
         # Check if file exists
@@ -1118,13 +1126,16 @@ def get_license_plate(request):
         }, status=500)
         
 
+
 @require_http_methods(["GET"])
 @csrf_exempt
 def get_exit_license_plate(request):
     """
-    GET API to read license plate detection from exit file and clear it
+    GET API to read license plate detection from exit file, update exit_time in database, and clear it
     """
-    file_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/exitDetection.txt"
+    # file_path = "../../ALPR/exitDetection.txt"
+    file_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'exitDetection.txt'))
+
     
     try:
         # Check if file exists
@@ -1147,7 +1158,29 @@ def get_exit_license_plate(request):
                 'license_plate': None
             }, status=200)
         
-        # Clear the file after reading
+        # Update exit_time in database for the detected license plate
+        try:
+            with transaction.atomic():
+                # Find the license plate record and update exit_time
+                license_plate_record = LicensePlateDetection.objects.filter(
+                    plate_number=content,
+                    exit_time__isnull=True  # Only update records without exit_time
+                ).first()
+                
+                if license_plate_record:
+                    license_plate_record.exit_time = timezone.now()
+                    license_plate_record.save()
+                    logger.info(f"Updated exit_time for license plate: {content}")
+                    db_update_message = "Database updated successfully"
+                else:
+                    logger.warning(f"No matching license plate record found for: {content}")
+                    db_update_message = "No matching record found in database"
+                    
+        except Exception as db_error:
+            logger.error(f"Database update error for license plate {content}: {str(db_error)}")
+            db_update_message = f"Database update failed: {str(db_error)}"
+        
+        # Clear the file after reading and processing
         with open(file_path, 'w', encoding='utf-8') as file:
             file.write('')
         
@@ -1156,7 +1189,8 @@ def get_exit_license_plate(request):
         return JsonResponse({
             'success': True,
             'message': 'Exit license plate detected successfully',
-            'license_plate': content
+            'license_plate': content,
+            'database_update': db_update_message
         }, status=200)
         
     except FileNotFoundError:
@@ -1182,7 +1216,6 @@ def get_exit_license_plate(request):
             'message': f'Error reading exit detection file: {str(e)}',
             'license_plate': None
         }, status=500)
-
 
 
 # Zone direction mappings
@@ -1351,7 +1384,9 @@ def customerLogin(request):
 def trigger_car_detector():
     """Trigger the carDetector.py script in a separate thread"""
     try:
-        car_detector_path = "/Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/carDetector.py"
+        # car_detector_path = "../../ALPR/carDetector.py"
+        car_detector_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'carDetector.py'))
+
         
         logging.info("🚗 Triggering car detector script...")
         

@@ -7,6 +7,7 @@ class LicensePlateDetection(models.Model):
     location = models.ForeignKey(ParkingLot, on_delete=models.CASCADE, null=True, blank=True)
     entry_time = models.DateTimeField(null=True, blank=True)
     exit_time = models.DateTimeField(null=True, blank=True)
+    detection_similarity_percentage = models.FloatField(null=True, blank=True, default=85)
 
     def __str__(self):
         return f"{self.plate_number} - {self.location.location}"
