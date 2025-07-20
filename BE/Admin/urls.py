@@ -15,6 +15,12 @@ urlpatterns = [
     path("suspend_account/", views.suspend_account, name="SuspendAccount"),
     path("delete_account/", views.delete_account, name="DeleteAccount"),
     path("reactivate_account/", views.reactivate_account, name="ReactivateAccount"),
-    path('reports/', views.reports, name="ReportsPage")
+    path('reports/', views.reports, name="ReportsPage"),
+    path('api/parking-stats/', views.parking_lot_stats, name='parking_lot_stats'),
+    path('revenueTrends/',views.revenue_trend_chart,name="RevenuTrendChart"),
+    path('reservationsTrends/',views.reservations_trends,name="ReservationsTrendsChart"),
+    path('top-performing-parking-lots/', views.top_performing_parking_lots, name='top-performing-parking-lots'),
+     path('reservations_financial_summary/', views.reservations_financial_summary, name='reservations_financial_summary'),
+     path('recent_parking_reservations/', views.recent_parking_reservations, name='recent_parking_reservations'),
 ]
 

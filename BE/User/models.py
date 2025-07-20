@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from slotifyBE.models import ParkingLot, ParkingLotCoordinate
+from slotifyBE.models import *
 
 class LicensePlateDetection(models.Model):
     plate_number = models.CharField(max_length=20)
