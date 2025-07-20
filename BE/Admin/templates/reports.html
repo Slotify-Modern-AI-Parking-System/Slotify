@@ -343,18 +343,18 @@
 </div>
 
             <!-- License Plate Detection Analytics -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
                 <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">License Plate Detection Stats</h3>
                     <div class="space-y-4">
                         <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Total Detections</p>
-                                <p class="text-xs text-gray-600">Last 30 days</p>
+                                <!-- <p class="text-xs text-gray-600">Last 30 days</p> -->
                             </div>
-                            <span class="text-2xl font-bold text-blue-600">2,347</span>
+                            <span id ="total-detections" class="text-2xl font-bold text-blue-600">2,347</span>
                         </div>
-                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <!-- <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Confirmed Detections</p>
                                 <p class="text-xs text-gray-600">Auto + Manual</p>
@@ -367,18 +367,18 @@
                                 <p class="text-xs text-gray-600">Manual verifications</p>
                             </div>
                             <span class="text-2xl font-bold text-yellow-600">1,967</span>
-                        </div>
+                        </div> -->
                         <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
                             <div>
                                 <p class="text-sm font-medium text-gray-900">Average Confidence</p>
                                 <p class="text-xs text-gray-600">Detection accuracy</p>
                             </div>
-                            <span class="text-2xl font-bold text-purple-600">94.2%</span>
+                            <span id="average-confidence" class="text-2xl font-bold text-purple-600">94.2%</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+                <!-- <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Camera Performance</h3>
                     <div class="space-y-3">
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -412,35 +412,36 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
-            <!-- Payment Analytics -->
-            <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-8">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Analytics</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="text-center p-4 bg-green-50 rounded-lg">
-                        <div class="text-2xl font-bold text-green-600">96.8%</div>
-                        <div class="text-sm text-gray-600">Success Rate</div>
-                        <div class="text-xs text-gray-500 mt-1">1,789 successful</div>
-                    </div>
-                    <div class="text-center p-4 bg-red-50 rounded-lg">
-                        <div class="text-2xl font-bold text-red-600">3.2%</div>
-                        <div class="text-sm text-gray-600">Failed Payments</div>
-                        <div class="text-xs text-gray-500 mt-1">58 failed</div>
-                    </div>
-                    <div class="text-center p-4 bg-blue-50 rounded-lg">
-                        <div class="text-2xl font-bold text-blue-600">$13.46</div>
-                        <div class="text-sm text-gray-600">Avg Transaction</div>
-                        <div class="text-xs text-gray-500 mt-1">Per booking</div>
-                    </div>
-                    <div class="text-center p-4 bg-purple-50 rounded-lg">
-                        <div class="text-2xl font-bold text-purple-600">2.3 hrs</div>
-                        <div class="text-sm text-gray-600">Avg Duration</div>
-                        <div class="text-xs text-gray-500 mt-1">Per session</div>
-                    </div>
-                </div>
-            </div>
+<!-- Payment Analytics -->
+<div class="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Payment Analytics</h3>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center p-4 bg-green-50 rounded-lg">
+            <div id="successRate" class="text-2xl font-bold text-green-600">--%</div>
+            <div class="text-sm text-gray-600">Success Rate</div>
+            <div class="text-xs text-gray-500 mt-1"><span id="successfulCount">--</span> successful</div>
+        </div>
+        <div class="text-center p-4 bg-red-50 rounded-lg">
+            <div id="failRate" class="text-2xl font-bold text-red-600">--%</div>
+            <div class="text-sm text-gray-600">Failed Payments</div>
+            <div class="text-xs text-gray-500 mt-1"><span id="failedCount">--</span> failed</div>
+        </div>
+        <div class="text-center p-4 bg-blue-50 rounded-lg">
+            <div id="avgTransaction" class="text-2xl font-bold text-blue-600">$--</div>
+            <div class="text-sm text-gray-600">Avg Transaction</div>
+            <div class="text-xs text-gray-500 mt-1">Per booking</div>
+        </div>
+        <div class="text-center p-4 bg-purple-50 rounded-lg">
+            <div id="avgDuration" class="text-2xl font-bold text-purple-600">-- hrs</div>
+            <div class="text-sm text-gray-600">Avg Duration</div>
+            <div class="text-xs text-gray-500 mt-1">Per session</div>
+        </div>
+    </div>
+</div>
+
         </div>
 
         <!-- Parking Lot Tab -->
@@ -982,6 +983,51 @@ async function loadRecentActivity() {
 
 // Call on page load
 loadRecentActivity();
+
+async function loadDetectionStats() {
+    try {
+        const response = await fetch('/detectionSummary/');
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+
+        // Update DOM
+        document.getElementById('total-detections').textContent = data.total_detections.toLocaleString();
+        document.getElementById('average-confidence').textContent = `${data.average_similarity_percentage.toFixed(1)}%`;
+
+    } catch (error) {
+        console.error('Failed to load detection stats:', error);
+        document.getElementById('total-detections').textContent = 'N/A';
+        document.getElementById('average-confidence').textContent = 'N/A';
+    }
+}
+
+// Call on page load
+loadDetectionStats();
+
+function fetchPaymentAnalytics() {
+    fetch('/paymentAnalytics/')
+        .then(response => {
+            if (!response.ok) throw new Error("Network response was not ok");
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById("successRate").textContent = `${data.successful_transaction_percentage}%`;
+            document.getElementById("successfulCount").textContent = data.total_transactions;
+
+            document.getElementById("failRate").textContent = `${data.failed_payment_percentage}%`;
+            document.getElementById("failedCount").textContent = data.failed_payments;
+
+            document.getElementById("avgTransaction").textContent = `$${parseFloat(data.average_transaction_value).toFixed(2)}`;
+            document.getElementById("avgDuration").textContent = `${parseFloat(data.average_hours_booked).toFixed(2)} hrs`;
+        })
+        .catch(error => {
+            console.error("Error fetching payment analytics:", error);
+        });
+}
+
+// Fetch data on page load
+document.addEventListener("DOMContentLoaded", fetchPaymentAnalytics);
 
     </script>
 </body>

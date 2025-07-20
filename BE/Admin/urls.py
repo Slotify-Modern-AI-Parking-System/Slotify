@@ -22,5 +22,7 @@ urlpatterns = [
     path('top-performing-parking-lots/', views.top_performing_parking_lots, name='top-performing-parking-lots'),
      path('reservations_financial_summary/', views.reservations_financial_summary, name='reservations_financial_summary'),
      path('recent_parking_reservations/', views.recent_parking_reservations, name='recent_parking_reservations'),
+     path('detectionSummary/', views.detection_summary, name="DetectionSummaryStats"),
+     path('paymentAnalytics/',views.payment_analytics, name="PaymentStats")
 ]
 

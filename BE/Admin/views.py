@@ -1128,3 +1128,39 @@ def recent_parking_reservations(request):
         })
 
     return JsonResponse(data, safe=False, status=200)
+
+@csrf_exempt
+def detection_summary(request):
+    try:
+        total_detections = LicensePlateDetection.objects.count()
+        avg_similarity = LicensePlateDetection.objects.aggregate(avg=Avg('detection_similarity_percentage'))['avg'] or 0
+
+        return JsonResponse({
+            "total_detections": total_detections,
+            "average_similarity_percentage": round(avg_similarity, 2)
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            "error": str(e)
+        }, status=500)
+
+
+def payment_analytics(request):
+    if request.method != 'GET':
+        return HttpResponseBadRequest("Only GET method is allowed.")
+
+    total_transactions = ParkingReservation.objects.count()
+    average_transaction_value = ParkingReservation.objects.aggregate(avg_amount=Avg('total_amount'))['avg_amount'] or Decimal('0.00')
+    average_hours = ParkingReservation.objects.aggregate(avg_hours=Avg('hours'))['avg_hours'] or 0
+
+    data = {
+        "successful_transaction_percentage": 100,
+        "total_transactions": total_transactions,
+        "failed_payment_percentage": 0,
+        "failed_payments": 0,
+        "average_transaction_value": round(average_transaction_value, 2),
+        "average_hours_booked": round(average_hours, 2)
+    }
+
+    return JsonResponse(data)
