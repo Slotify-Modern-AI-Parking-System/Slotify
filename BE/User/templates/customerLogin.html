@@ -248,7 +248,7 @@
         <!-- Register Link -->
         <div class="text-center mt-6 opacity-0 animate-fadeInUp delay-1500">
             <p class="text-gray-600">Don't have an account? 
-                <a href="/customer-register/" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+                <a href="/customerRegister/" class="text-blue-600 hover:text-blue-800 font-semibold transition-colors">
                     Create one now
                 </a>
             </p>
@@ -319,14 +319,31 @@
                 if (response.ok) {
                     showMessage('Login successful! Redirecting to reservations...', 'success');
                     
-                    // Store user data in sessionStorage for later use
+                    // Store user data in localStorage for persistence
+                    localStorage.setItem('user_id', data.customer_id);
+                    localStorage.setItem('user_name', data.name);
+                    localStorage.setItem('user_email', data.email);
+                    localStorage.setItem('user_phone', data.phone || '');
+                    localStorage.setItem('login_timestamp', new Date().toISOString());
+                    
+                    // Also store in sessionStorage for backward compatibility
                     sessionStorage.setItem('user_id', data.customer_id);
                     sessionStorage.setItem('user_name', data.name);
                     sessionStorage.setItem('user_email', data.email);
                     
-                    // Redirect to reservation page - update this URL to match your Django URL pattern
+                    // Create user info object to pass as URL parameter
+                    const userInfo = {
+                        id: data.customer_id,
+                        name: data.name,
+                        email: data.email,
+                        phone: data.phone || '',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // Redirect to reservation page with user info as URL parameter
+                    const userInfoParam = encodeURIComponent(JSON.stringify(userInfo));
                     setTimeout(() => {
-                        window.location.href = '/reservation/'; // Changed from reservation.html
+                        window.location.href = `/reservation/?user=${userInfoParam}`;
                     }, 1000);
                 } else {
                     showMessage(data.error || 'Login failed. Please check your credentials.', 'error');

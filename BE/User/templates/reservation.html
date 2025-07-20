@@ -532,6 +532,17 @@
                 submitBtn.disabled = false;
             }
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    // Retrieve email from localStorage
+    const savedEmail = localStorage.getItem('user_email');
+    
+    // Pre-fill the email field if email exists in localStorage
+    if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+    }
+});
+
         
         // Handle payment
         document.getElementById('pay-button').addEventListener('click', async function() {
