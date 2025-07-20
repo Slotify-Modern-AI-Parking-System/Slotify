@@ -1,12 +1,13 @@
 from django.db import models
 from django.utils import timezone
-from slotifyBE.models import ParkingLot, ParkingLotCoordinate
+from slotifyBE.models import *
 
 class LicensePlateDetection(models.Model):
     plate_number = models.CharField(max_length=20)
     location = models.ForeignKey(ParkingLot, on_delete=models.CASCADE, null=True, blank=True)
     entry_time = models.DateTimeField(null=True, blank=True)
     exit_time = models.DateTimeField(null=True, blank=True)
+    detection_similarity_percentage = models.FloatField(null=True, blank=True, default=85)
 
     def __str__(self):
         return f"{self.plate_number} - {self.location.location}"

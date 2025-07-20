@@ -54,14 +54,18 @@
     <nav class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex space-x-8" role="tablist">
-                <button class="tab-button py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition duration-200 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="parking-lot">
-                    <div class="flex items-center space-x-2">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span>Parking Lots</span>
-                    </div>
-                </button>
+            <button 
+                class="tab-button py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition duration-200 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                data-tab="parking-lot"
+                onclick="window.location.href='/adminDashboardPage/'">
+                <div class="flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Parking Lots</span>
+                </div>
+            </button>
+
                 <a href="/userManagement/" class="tab-button py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition duration-200 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
                     <div class="flex items-center space-x-2">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,76 +114,81 @@
                 </div>
             </div>
 
-            <!-- Key Performance Indicators -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                                <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-2xl font-bold text-gray-900">$24,847</h3>
-                            <p class="text-sm text-gray-600">Total Revenue</p>
-                            <p class="text-xs text-green-600">+12.5% from last month</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-2xl font-bold text-gray-900">1,847</h3>
-                            <p class="text-sm text-gray-600">Total Reservations</p>
-                            <p class="text-xs text-blue-600">+8.2% from last month</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                                <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-2xl font-bold text-gray-900">87.5%</h3>
-                            <p class="text-sm text-gray-600">Occupancy Rate</p>
-                            <p class="text-xs text-purple-600">+5.1% from last month</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-2xl font-bold text-gray-900">94.2%</h3>
-                            <p class="text-sm text-gray-600">Detection Accuracy</p>
-                            <p class="text-xs text-orange-600">+2.1% from last month</p>
-                        </div>
-                    </div>
+<!-- Key Performance Indicators -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <!-- Total Revenue -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
                 </div>
             </div>
+            <div class="ml-4">
+                <h3 id="total-revenue" class="text-2xl font-bold text-gray-900">$0.00</h3>
+                <p class="text-sm text-gray-600">Total Revenue</p>
+                <p class="text-xs text-green-600">+12.5% from last month</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Reservations -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <h3 id="total-reservations" class="text-2xl font-bold text-gray-900">0</h3>
+                <p class="text-sm text-gray-600">Total Reservations</p>
+                <p class="text-xs text-blue-600">+8.2% from last month</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Occupancy Rate -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <h3 id="occupancy-rate" class="text-2xl font-bold text-gray-900">0%</h3>
+                <p class="text-sm text-gray-600">Occupancy Rate</p>
+                <p class="text-xs text-purple-600">+5.1% from last month</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detection Accuracy -->
+    <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="ml-4">
+                <h3 id="detection-accuracy" class="text-2xl font-bold text-gray-900">0%</h3>
+                <p class="text-sm text-gray-600">Detection Accuracy</p>
+                <p class="text-xs text-orange-600">+2.1% from last month</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 
             <!-- Charts Row -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -540,111 +549,365 @@
     </main>
 
     <script>
-        // Tab switching functionality
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const tabId = e.currentTarget.getAttribute('data-tab');
-                if (!tabId) return;
+        // // Tab switching functionality
+        // document.querySelectorAll('.tab-button').forEach(button => {
+        //     button.addEventListener('click', (e) => {
+        //         const tabId = e.currentTarget.getAttribute('data-tab');
+        //         if (!tabId) return;
 
-                // Remove active class from all tabs
-                document.querySelectorAll('.tab-button').forEach(tab => {
-                    tab.classList.remove('active-tab', 'border-primary-blue', 'text-primary-blue');
-                    tab.classList.add('border-transparent', 'text-gray-500');
-                });
+        //         // Remove active class from all tabs
+        //         document.querySelectorAll('.tab-button').forEach(tab => {
+        //             tab.classList.remove('active-tab', 'border-primary-blue', 'text-primary-blue');
+        //             tab.classList.add('border-transparent', 'text-gray-500');
+        //         });
 
-                // Add active class to clicked tab
-                e.currentTarget.classList.add('active-tab', 'border-primary-blue', 'text-primary-blue');
-                e.currentTarget.classList.remove('border-transparent', 'text-gray-500');
+        //         // Add active class to clicked tab
+        //         e.currentTarget.classList.add('active-tab', 'border-primary-blue', 'text-primary-blue');
+        //         e.currentTarget.classList.remove('border-transparent', 'text-gray-500');
 
-                // Hide all tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
+        //         // Hide all tab content
+        //         document.querySelectorAll('.tab-content').forEach(content => {
+        //             content.classList.add('hidden');
+        //         });
 
-                // Show selected tab content
-                document.getElementById(tabId).classList.remove('hidden');
-            });
-        });
+        //         // Show selected tab content
+        //         document.getElementById(tabId).classList.remove('hidden');
+        //     });
+        // });
 
-        // Chart.js configurations
-        const ctx1 = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(ctx1, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: [18500, 19200, 22100, 20800, 23400, 24847],
-                    borderColor: '#1e40af',
-                    backgroundColor: 'rgba(30, 64, 175, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }]
+// Revenue Chart Variables
+let revenueData = {};
+let revenueChart;
+
+// Reservations Chart Variables
+let reservationsData = {};
+let reservationsChart;
+
+// Revenue Chart Functions
+async function fetchRevenueData() {
+    try {
+        const response = await fetch('/revenueTrends/');
+        revenueData = await response.json();
+        createYearDropdown();
+        initializeChart();
+    } catch (error) {
+        console.error('Error fetching revenue data:', error);
+    }
+}
+
+function createYearDropdown() {
+    // Find the chart header more specifically
+    const chartContainer = document.querySelector('#revenueChart').closest('.bg-white');
+    const chartHeader = chartContainer.querySelector('.flex.items-center.justify-between');
+    
+    if (!chartHeader) {
+        console.error('Chart header not found');
+        return;
+    }
+    
+    // Remove existing legend/right side content
+    const existingRightContent = chartHeader.children[1];
+    if (existingRightContent) {
+        existingRightContent.remove();
+    }
+    
+    // Create new container for dropdown and legend
+    const rightContainer = document.createElement('div');
+    rightContainer.className = 'flex items-center space-x-4';
+    
+    // Create year dropdown
+    const yearSelect = document.createElement('select');
+    yearSelect.id = 'yearSelect';
+    yearSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+    
+    // Add years to dropdown
+    const years = Object.keys(revenueData).sort((a, b) => b - a); // Sort descending
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    });
+    
+    // Set current year as default
+    const currentYear = new Date().getFullYear().toString();
+    if (years.includes(currentYear)) {
+        yearSelect.value = currentYear;
+    } else {
+        yearSelect.value = years[0]; // Select first available year
+    }
+    
+    // Add change event listener
+    yearSelect.addEventListener('change', (e) => {
+        updateChart(e.target.value);
+    });
+    
+    // Create legend
+    const legend = document.createElement('div');
+    legend.className = 'flex items-center space-x-2';
+    legend.innerHTML = `
+        <span class="w-3 h-3 bg-blue-600 rounded-full"></span>
+        <span class="text-sm text-gray-600">Revenue</span>
+    `;
+    
+    // Add dropdown and legend to container
+    rightContainer.appendChild(yearSelect);
+    rightContainer.appendChild(legend);
+    
+    // Add to header
+    chartHeader.appendChild(rightContainer);
+}
+
+function initializeChart() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Revenue',
+                data: [],
+                borderColor: '#1e40af',
+                backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
                         }
                     }
                 }
             }
-        });
+        }
+    });
+    
+    // Load initial data
+    const yearSelect = document.getElementById('yearSelect');
+    const selectedYear = yearSelect ? yearSelect.value : Object.keys(revenueData)[0];
+    updateChart(selectedYear);
+}
 
-        const ctx2 = document.getElementById('reservationsChart').getContext('2d');
-        const reservationsChart = new Chart(ctx2, {
-            type: 'bar',
-            data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Completed',
-                    data: [145, 167, 152, 189, 201, 234, 178],
-                    backgroundColor: '#059669',
-                    borderRadius: 4
-                }, {
-                    label: 'Pending',
-                    data: [23, 31, 28, 34, 29, 41, 35],
-                    backgroundColor: '#fbbf24',
-                    borderRadius: 4
-                }]
+function updateChart(year) {
+    if (!revenueData[year]) return;
+    
+    const yearData = revenueData[year];
+    const months = Object.keys(yearData);
+    const values = Object.values(yearData);
+    
+    // Convert month names to short format
+    const shortMonths = months.map(month => month.substring(0, 3));
+    
+    revenueChart.data.labels = shortMonths;
+    revenueChart.data.datasets[0].data = values;
+    revenueChart.update();
+}
+
+// Reservations Chart Functions
+async function fetchReservationsData() {
+    try {
+        const response = await fetch('/reservationsTrends/');
+        reservationsData = await response.json();
+        createReservationsDropdowns();
+        setupReservationsChart();
+    } catch (error) {
+        console.error('Error fetching reservations data:', error);
+    }
+}
+
+function createReservationsDropdowns() {
+    // Find the reservations chart container
+    const chartContainer = document.querySelector('#reservationsChart').closest('.bg-white');
+    const chartHeader = chartContainer.querySelector('.flex.items-center.justify-between');
+    
+    if (!chartHeader) {
+        console.error('Reservations chart header not found');
+        return;
+    }
+    
+    // Remove existing right content (legend)
+    const existingRightContent = chartHeader.children[1];
+    if (existingRightContent) {
+        existingRightContent.remove();
+    }
+    
+    // Create new container for dropdowns
+    const rightContainer = document.createElement('div');
+    rightContainer.className = 'flex items-center space-x-4';
+    
+    // Create year dropdown
+    const yearSelect = document.createElement('select');
+    yearSelect.id = 'reservationsYearSelect';
+    yearSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+    
+    // Add years to dropdown
+    const years = Object.keys(reservationsData).sort((a, b) => b - a);
+    years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+    });
+    
+    // Set current year as default
+    const currentYear = new Date().getFullYear().toString();
+    if (years.includes(currentYear)) {
+        yearSelect.value = currentYear;
+    } else {
+        yearSelect.value = years[0];
+    }
+    
+    // Create quarter dropdown
+    const quarterSelect = document.createElement('select');
+    quarterSelect.id = 'reservationsQuarterSelect';
+    quarterSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+    
+    // Add quarters to dropdown
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    quarters.forEach(quarter => {
+        const option = document.createElement('option');
+        option.value = quarter;
+        option.textContent = quarter;
+        quarterSelect.appendChild(option);
+    });
+    
+    // Set current quarter as default
+    const currentMonth = new Date().getMonth();
+    const currentQuarter = Math.floor(currentMonth / 3);
+    quarterSelect.value = quarters[currentQuarter];
+    
+    // Add change event listeners
+    yearSelect.addEventListener('change', () => {
+        updateReservationsChart(yearSelect.value, quarterSelect.value);
+    });
+    
+    quarterSelect.addEventListener('change', () => {
+        updateReservationsChart(yearSelect.value, quarterSelect.value);
+    });
+    
+    // Add dropdowns to container
+    rightContainer.appendChild(yearSelect);
+    rightContainer.appendChild(quarterSelect);
+    
+    // Add to header
+    chartHeader.appendChild(rightContainer);
+}
+
+function setupReservationsChart() {
+    const ctx = document.getElementById('reservationsChart').getContext('2d');
+    
+    reservationsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            datasets: [{
+                label: 'Reservations',
+                data: [],
+                backgroundColor: '#059669',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: true
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true
-                    }
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
-        });
+        }
+    });
+    
+    // Load initial data
+    const yearSelect = document.getElementById('reservationsYearSelect');
+    const quarterSelect = document.getElementById('reservationsQuarterSelect');
+    const selectedYear = yearSelect ? yearSelect.value : Object.keys(reservationsData)[0];
+    const selectedQuarter = quarterSelect ? quarterSelect.value : 'Q1';
+    updateReservationsChart(selectedYear, selectedQuarter);
+}
 
-        // Generate Report functionality
-        document.querySelector('[data-tab="reports"] + * + * button').addEventListener('click', function() {
-            const period = document.querySelector('select').value;
-            alert(`Generating report for the last ${period} days...`);
-        });
+function updateReservationsChart(year, quarter) {
+    if (!reservationsData[year] || !reservationsData[year][quarter]) {
+        console.warn(`No data found for ${year} ${quarter}`);
+        return;
+    }
+    
+    const quarterData = reservationsData[year][quarter];
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    // Initialize array for reservations data
+    const reservationsChartData = new Array(7).fill(0);
+    
+    // Process the data
+    daysOfWeek.forEach((day, index) => {
+        if (quarterData[day]) {
+            reservationsChartData[index] = quarterData[day];
+        }
+    });
+    
+    // Update chart data
+    reservationsChart.data.datasets[0].data = reservationsChartData;
+    reservationsChart.update();
+}
+
+// Initialize both charts
+function initializeAllCharts() {
+    // Initialize revenue chart
+    fetchRevenueData();
+    
+    // Initialize reservations chart
+    fetchReservationsData();
+}
+
+// Call this function when your page loads
+initializeAllCharts();
+// Initialize reservations chart when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeReservationsChart);
+
+        async function updateParkingStats() {
+    try {
+        const response = await fetch('/api/parking-stats/');
+        if (!response.ok) throw new Error('Failed to fetch stats');
+
+        const data = await response.json();
+
+        document.getElementById('total-revenue').textContent =
+            `$${parseFloat(data.total_revenue).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+        document.getElementById('total-reservations').textContent =
+            data.total_reservations.toLocaleString();
+
+        document.getElementById('occupancy-rate').textContent =
+            `${parseFloat(data.occupancy_rate_percent).toFixed(2)}%`;
+
+        document.getElementById('detection-accuracy').textContent =
+            `${parseFloat(data.detection_accuracy_percent).toFixed(2)}%`;
+
+    } catch (error) {
+        console.error('Error loading parking stats:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', updateParkingStats);
     </script>
 </body>
 </html>
