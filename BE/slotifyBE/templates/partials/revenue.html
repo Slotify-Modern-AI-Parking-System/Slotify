@@ -147,12 +147,6 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-lg font-bold text-gray-900">Revenue Trend</h3>
-                            <div class="flex space-x-2">
-                                <button onclick="changeTimeRange('7d')" class="time-filter px-3 py-1 text-sm rounded-lg bg-blue-600 text-white transition-colors duration-200">7D</button>
-                                <button onclick="changeTimeRange('30d')" class="time-filter px-3 py-1 text-sm rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200">30D</button>
-                                <button onclick="changeTimeRange('90d')" class="time-filter px-3 py-1 text-sm rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200">90D</button>
-                                <button onclick="changeTimeRange('1y')" class="time-filter px-3 py-1 text-sm rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors duration-200">1Y</button>
-                            </div>
                         </div>
                         <div class="chart-container">
                             <canvas id="revenueChart"></canvas>
@@ -276,137 +270,133 @@
     </div>
 {{ chart_labels|json_script:"chart-labels" }}
 {{ chart_data|json_script:"chart-data" }}
- <script>
-let revenueChart;
-
+<script type="text/javascript">
 function setupRevenuePage() {
+    console.log("📊 setupRevenuePage is executing");
     initializeChart();
     attachTimeRangeListeners();
-    changeTimeRange('30d'); 
+
+    // ✅ Make 30D active on page load
+    const defaultBtn = document.querySelector('.time-filter[data-range="30D"]');
+    if (defaultBtn) {
+        defaultBtn.classList.add('bg-blue-600', 'text-white');
+        defaultBtn.classList.remove('bg-gray-200', 'text-gray-700');
+    }
+
+    changeTimeRange('30D');
     fadeInCards();
 }
 
+
 function initializeChart() {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    const labels = JSON.parse(document.getElementById('chart-labels').textContent);
-    const data = JSON.parse(document.getElementById('chart-data').textContent);
+    console.log("📈 initializeChart triggered");
 
-    const chartData = {
-        labels: labels,
-        datasets: [{
-            label: 'Revenue',
-            data: data,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#3b82f6',
-            pointBorderColor: '#ffffff',
-            pointBorderWidth: 2,
-            pointRadius: 6,
-            pointHoverRadius: 8
-        }]
-    };
+    const canvas = document.getElementById('revenueChart');
+    if (!canvas) {
+        console.warn("❌ Chart canvas not found in DOM");
+        return;
+    }
 
-    revenueChart = new Chart(ctx, {
+    const ctx = canvas.getContext('2d');
+    const labelsEl = document.getElementById('chart-labels');
+    const dataEl = document.getElementById('chart-data');
+
+    console.log("📦 Raw chart label element:", labelsEl);
+    console.log("📦 Raw chart data element:", dataEl);
+
+    const labels = JSON.parse(labelsEl?.textContent || '[]');
+    const data = JSON.parse(dataEl?.textContent || '[]');
+
+    console.log("✅ Parsed labels:", labels);
+    console.log("✅ Parsed data:", data);
+
+    if (window.revenueChartInstance) {
+        window.revenueChartInstance.destroy();
+    }
+
+    window.revenueChartInstance = new Chart(ctx, {
         type: 'line',
-        data: chartData,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue',
+                data: data,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: { mode: 'index', intersect: false }
-            },
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#9CA3AF' }
-                },
-                y: {
-                    grid: { color: 'rgba(255,255,255,0.1)' },
-                    ticks: { color: '#9CA3AF' }
-                }
-            }
+            maintainAspectRatio: false
         }
     });
+
+    console.log("✅ Chart successfully initialized");
+}
+
+
+function changeTimeRange(range) {
+    console.log(`📤 Fetching data for range: ${range}`);
+    fetch(`/api/revenue-chart/?range=${range}`)
+        .then(res => res.json())
+    .then(data => {
+        console.log("📥 Fetched chart data:", data);
+
+        if (!data || data.labels.length < 2 || data.data.length < 2) {
+            alert("Not enough data to display chart for this range.");
+            return;
+        }
+
+        if (window.revenueChartInstance) {
+            window.revenueChartInstance.data.labels = [...data.labels];
+            window.revenueChartInstance.data.datasets[0].data = [...data.data];
+            window.revenueChartInstance.update();
+            console.log("✅ Chart updated with new data");
+        } else {
+            console.warn("⚠️ Chart instance not found");
+        }
+    })
 }
 
 function attachTimeRangeListeners() {
-    document.querySelectorAll('.time-filter').forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            const range = e.target.innerText.trim().toLowerCase(); // 7d, 30d, etc.
-            changeTimeRange(range);
-        });
-    });
+  document.querySelectorAll('.time-filter').forEach(btn => {
+    if (!btn._listenerAttached) {
+      btn.addEventListener('click', onTimeFilterClick);
+      btn._listenerAttached = true;
+    }
+  });
 }
 
-function changeTimeRange(range) {
-    showLoadingAnimation();
-    fetch(`/api/revenue-chart/?range=${range}`)
-        .then(response => response.json())
-        .then(data => {
-            if (revenueChart) {
-                revenueChart.data.labels = data.labels;
-                revenueChart.data.datasets[0].data = data.data;
-                revenueChart.update();
-            }
-            hideLoadingAnimation();
-            showNotification(`Updated chart for ${range.toUpperCase()}`, 'success');
-        })
-        .catch(error => {
-            console.error("Failed to load chart data:", error);
-            hideLoadingAnimation();
-            showNotification("Error updating chart", 'error');
-        });
+function onTimeFilterClick() {
+  const range = this.dataset.range;
+  changeTimeRange(range);
+
+  document.querySelectorAll('.time-filter').forEach(b => {
+    b.classList.remove('bg-blue-600', 'text-white');
+    b.classList.add('bg-gray-200', 'text-gray-700');
+  });
+  this.classList.add('bg-blue-600', 'text-white');
+  this.classList.remove('bg-gray-200', 'text-gray-700');
 }
 
 function fadeInCards() {
-    const elements = document.querySelectorAll('.animate-fadeIn');
-    elements.forEach((element, index) => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
+    document.querySelectorAll('.animate-fadeIn').forEach((el, index) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
         setTimeout(() => {
-            element.style.transition = 'all 0.5s ease';
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0)';
+            el.style.transition = 'all 0.5s ease';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
         }, index * 100);
     });
 }
-</script>
-<script>
-function exportData() {
-    const earnings = document.getElementById("totalEarnings").innerText.replace('$', '');
-    const bookings = document.getElementById("totalBookings").innerText;
-    const averageRate = document.getElementById("averageRate").innerText.replace('$', '');
-    const growthRate = document.getElementById("growthRate").innerText.replace('+', '').replace('%', '');
 
-    // Extract data from top performing lots
-    const lots = Array.from(document.querySelectorAll('[data-lot-name]')).map(el => ({
-        'Parking Lot': el.getAttribute('data-lot-name'),
-        'Bookings': el.getAttribute('data-bookings'),
-        'Revenue ($)': el.getAttribute('data-revenue')
-    }));
-
-    // Summary Sheet
-    const summarySheet = [
-        ['Metric', 'Value'],
-        ['Total Earnings', parseFloat(earnings)],
-        ['Total Bookings', parseInt(bookings)],
-        ['Average Rate', parseFloat(averageRate)],
-        ['Growth Rate (%)', parseFloat(growthRate)],
-    ];
-
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    const wsSummary = XLSX.utils.aoa_to_sheet(summarySheet);
-    const wsLots = XLSX.utils.json_to_sheet(lots);
-
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
-    XLSX.utils.book_append_sheet(wb, wsLots, "Top Lots");
-
-    XLSX.writeFile(wb, "Revenue_Analytics.xlsx");
+function refreshData() {
+    const active = document.querySelector('.time-filter.bg-blue-600');
+    const range = active?.dataset.range || '30d';
+    changeTimeRange(range);
 }
 </script>
 

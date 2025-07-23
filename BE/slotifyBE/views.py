@@ -52,6 +52,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'credentials', 'slotify_key.json')
 
 credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
+        
 
 @csrf_exempt
 @login_required

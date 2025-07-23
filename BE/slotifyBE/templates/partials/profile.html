@@ -48,11 +48,8 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-6">
                     <div class="relative">
-                        <div id="profileImageContainer" class="w-24 h-24 rounded-full border-4 border-gray-200 profile-avatar flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
-                            <i class="fas fa-user text-3xl text-white"></i>
-                        </div>
-                        <div class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
-                            <i class="fas fa-camera text-sm"></i>
+                        <div id="profileImageContainer" class="w-24 h-24 rounded-full border-4 border-gray-200 overflow-hidden">
+                            <img src="/static/images/default-avatar.png" alt="Profile" class="w-full h-full object-cover rounded-full">
                         </div>
                     </div>
                     <div>
@@ -381,28 +378,6 @@
                 setTimeout(() => notification.remove(), 300);
             }, 4000);
         }
-
-        // Profile Image Upload
-        document.getElementById('profileImageContainer').addEventListener('click', function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('profileImageContainer').innerHTML = `
-                            <img src="${e.target.result}" alt="Profile" class="w-full h-full object-cover rounded-full">
-                        `;
-                        showNotification('Profile image uploaded successfully!', 'success');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.click();
-        });
-
         // Enhanced interactions
         document.addEventListener('DOMContentLoaded', function() {
             // Add entrance animations
