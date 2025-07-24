@@ -317,7 +317,7 @@
                 console.log('Response:', data); // Debug log
                 
                 if (response.ok) {
-                    showMessage('Login successful! Redirecting to reservations...', 'success');
+                    showMessage('Login successful! Redirecting to dashboard...', 'success');
                     
                     // Store user data in localStorage for persistence
                     localStorage.setItem('user_id', data.customer_id);
@@ -331,19 +331,9 @@
                     sessionStorage.setItem('user_name', data.name);
                     sessionStorage.setItem('user_email', data.email);
                     
-                    // Create user info object to pass as URL parameter
-                    const userInfo = {
-                        id: data.customer_id,
-                        name: data.name,
-                        email: data.email,
-                        phone: data.phone || '',
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    // Redirect to reservation page with user info as URL parameter
-                    const userInfoParam = encodeURIComponent(JSON.stringify(userInfo));
+                    // Simple redirect without URL parameters
                     setTimeout(() => {
-                        window.location.href = `/reservation/?user=${userInfoParam}`;
+                        window.location.href = '/customerDashboard/';
                     }, 1000);
                 } else {
                     showMessage(data.error || 'Login failed. Please check your credentials.', 'error');

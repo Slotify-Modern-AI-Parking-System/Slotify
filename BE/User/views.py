@@ -39,6 +39,9 @@ from django.conf import settings
 import stripe
 import json
 from .models import ParkingReservation, Payment
+from django.db.models import Sum, Count, Avg
+from django.db.models.functions import TruncMonth
+from datetime import datetime, timedelta
 
 
 from .models import *
@@ -78,11 +81,161 @@ def destination(request):
 def thankyou(request):
     return render(request, "thankyou.html")
 
+def customer_dashboard(request):
+    """
+    Render the customer dashboard page
+    """
+    return render(request, 'customerDashboard.html')
 
+def get_dashboard_data(request):
+    """
+    API endpoint to fetch dashboard analytics data based on user email
+    """
+    if request.method == 'GET':
+        email = request.GET.get('email')
+        
+        if not email:
+            return JsonResponse({
+                'error': 'Email parameter is required'
+            }, status=400)
+        
+        try:
+            # Get all reservations for the user
+            user_reservations = ParkingReservation.objects.filter(email=email)
+            
+            if not user_reservations.exists():
+                return JsonResponse({
+                    'total_spent': 0,
+                    'total_reservations': 0,
+                    'average_spending': 0,
+                    'monthly_spending': [],
+                    'recent_reservations': []
+                })
+            
+            # Calculate total spending
+            total_spent = user_reservations.aggregate(
+                total=Sum('total_amount')
+            )['total'] or 0
+            
+            # Calculate total reservations
+            total_reservations = user_reservations.count()
+            
+            # Calculate average spending per reservation
+            average_spending = total_spent / total_reservations if total_reservations > 0 else 0
+            
+            # Get monthly spending for the last 6 months
+            six_months_ago = datetime.now() - timedelta(days=180)
+            monthly_data = user_reservations.filter(
+                created_at__gte=six_months_ago
+            ).annotate(
+                month=TruncMonth('created_at')
+            ).values('month').annotate(
+                total=Sum('total_amount'),
+                count=Count('id')
+            ).order_by('month')
+            
+            monthly_spending = []
+            for item in monthly_data:
+                monthly_spending.append({
+                    'month': item['month'].strftime('%B %Y'),
+                    'amount': float(item['total']),
+                    'reservations': item['count']
+                })
+            
+            # Get recent reservations (last 10)
+            recent_reservations = []
+            for reservation in user_reservations.order_by('-created_at')[:10]:
+                recent_reservations.append({
+                    'id': reservation.id,
+                    'location': reservation.location,
+                    'hours': reservation.hours,
+                    'total_amount': float(reservation.total_amount),
+                    'license_plate': reservation.license_plate,
+                    'created_at': reservation.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'status': getattr(reservation, 'status', 'Completed')  # Assuming you have a status field
+                })
+            
+            return JsonResponse({
+                'total_spent': float(total_spent),
+                'total_reservations': total_reservations,
+                'average_spending': float(round(average_spending, 2)),
+                'monthly_spending': monthly_spending,
+                'recent_reservations': recent_reservations
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'An error occurred: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({
+        'error': 'Only GET method is allowed'
+    }, status=405)
 
-
-
-
+def get_reservation_history(request):
+    """
+    API endpoint to fetch complete reservation history with pagination
+    """
+    if request.method == 'GET':
+        email = request.GET.get('email')
+        page = int(request.GET.get('page', 1))
+        limit = int(request.GET.get('limit', 20))
+        
+        if not email:
+            return JsonResponse({
+                'error': 'Email parameter is required'
+            }, status=400)
+        
+        try:
+            # Calculate offset
+            offset = (page - 1) * limit
+            
+            # Get total count
+            total_count = ParkingReservation.objects.filter(email=email).count()
+            
+            # Get paginated reservations
+            reservations = ParkingReservation.objects.filter(
+                email=email
+            ).order_by('-created_at')[offset:offset + limit]
+            
+            reservation_list = []
+            for reservation in reservations:
+                reservation_list.append({
+                    'id': reservation.id,
+                    'name': reservation.name,
+                    'location': reservation.location,
+                    'hours': reservation.hours,
+                    'total_amount': float(reservation.total_amount),
+                    'license_plate': reservation.license_plate,
+                    'created_at': reservation.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'status': getattr(reservation, 'status', 'Completed')
+                })
+            
+            # Calculate pagination info
+            total_pages = (total_count + limit - 1) // limit
+            has_next = page < total_pages
+            has_prev = page > 1
+            
+            return JsonResponse({
+                'reservations': reservation_list,
+                'pagination': {
+                    'current_page': page,
+                    'total_pages': total_pages,
+                    'total_count': total_count,
+                    'has_next': has_next,
+                    'has_prev': has_prev,
+                    'limit': limit
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': f'An error occurred: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({
+        'error': 'Only GET method is allowed'
+    }, status=405)
 
 
 def reservation_form(request):

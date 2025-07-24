@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Parking Reservations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate-slideIn { animation: slideIn 1s ease-out; }
+        .animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-pulse-custom { animation: pulse 2s ease-in-out infinite; }
+
+        .bg-gradient-navy-green {
+            background: linear-gradient(135deg, #001f3f 0%, #2d5a2d 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Chart container responsive styles */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chart-container {
+                height: 200px;
+            }
+        }
+
+        /* Responsive table styles */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Mobile-first responsive design */
+        @media (max-width: 640px) {
+            .glass-card {
+                margin: 0 -0.5rem;
+                border-radius: 1rem;
+            }
+            
+            .stat-card {
+                text-align: center;
+            }
+            
+            .btn-primary {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Ensure proper spacing on small screens */
+        @media (max-width: 1024px) {
+            .lg\:grid-cols-2 {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-navy-green min-h-screen py-4 sm:py-8 px-2 sm:px-4 font-sans">
+    <!-- Background floating icons -->
+    <div class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[10%] left-[10%] text-2xl sm:text-3xl text-white opacity-10 animate-float">🚗</div>
+        <div class="absolute top-[20%] right-[15%] text-2xl sm:text-3xl text-white opacity-10 animate-float delay-1000">📊</div>
+        <div class="absolute bottom-[30%] left-[20%] text-2xl sm:text-3xl text-white opacity-10 animate-float delay-2000">💰</div>
+        <div class="absolute bottom-[20%] right-[10%] text-2xl sm:text-3xl text-white opacity-10 animate-float delay-3000">🅿️</div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto z-10 relative">
+        <!-- Header -->
+        <div class="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-8 mb-4 sm:mb-8 animate-slideIn">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center w-full sm:w-auto">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-full flex items-center justify-center text-lg sm:text-xl font-bold text-white mr-3 sm:mr-4 flex-shrink-0">
+                        📊
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 truncate">Customer Dashboard</h1>
+                        <p class="text-gray-600 text-sm sm:text-base" id="welcome-message">Welcome back!</p>
+                    </div>
+                </div>
+                <a href="/reservation/" class="btn-primary px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-white font-bold shadow-lg hover:shadow-xl transition-all text-sm sm:text-base w-full sm:w-auto text-center flex-shrink-0">
+                    🆕 New Reservation
+                </a>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="glass-card rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-gray-600">Loading your dashboard...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="glass-card rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center hidden">
+            <div class="text-red-500 text-4xl sm:text-6xl mb-4">⚠️</div>
+            <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h3>
+            <p class="text-gray-600 mb-4 text-sm sm:text-base" id="error-message"></p>
+            <button onclick="loadDashboard()" class="btn-primary px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-white font-bold">
+                Try Again
+            </button>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" class="hidden">
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <div class="stat-card rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-blue-100 text-xs sm:text-sm font-medium">Total Spent</p>
+                            <p class="text-2xl sm:text-3xl font-bold truncate" id="total-spent">$0</p>
+                        </div>
+                        <div class="text-3xl sm:text-4xl opacity-80 flex-shrink-0 ml-2">💰</div>
+                    </div>
+                </div>
+
+                <div class="stat-card rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-blue-100 text-xs sm:text-sm font-medium">Total Reservations</p>
+                            <p class="text-2xl sm:text-3xl font-bold truncate" id="total-reservations">0</p>
+                        </div>
+                        <div class="text-3xl sm:text-4xl opacity-80 flex-shrink-0 ml-2">🅿️</div>
+                    </div>
+                </div>
+
+                <div class="stat-card rounded-xl sm:rounded-2xl p-4 sm:p-6 text-white sm:col-span-2 lg:col-span-1">
+                    <div class="flex items-center justify-between">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-blue-100 text-xs sm:text-sm font-medium">Average Spending</p>
+                            <p class="text-2xl sm:text-3xl font-bold truncate" id="average-spending">$0</p>
+                        </div>
+                        <div class="text-3xl sm:text-4xl opacity-80 flex-shrink-0 ml-2">📊</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Recent Activity -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+                <!-- Monthly Spending Chart -->
+                <div class="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">📈</span>
+                        <span class="truncate">Monthly Spending Trend</span>
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Reservations -->
+                <div class="glass-card rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🕒</span>
+                        <span class="truncate">Recent Activity</span>
+                    </h3>
+                    <div id="recent-activity" class="space-y-3 max-h-64 sm:max-h-80 overflow-y-auto">
+                        <!-- Recent reservations will be inserted here -->
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button onclick="showFullHistory()" class="text-blue-600 hover:text-blue-800 font-medium text-sm sm:text-base">
+                            View Full History →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Reservation History Modal -->
+            <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-2 sm:p-4">
+                <div class="glass-card rounded-xl sm:rounded-2xl max-w-6xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+                    <div class="p-4 sm:p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg sm:text-2xl font-bold text-gray-800 truncate pr-4">Complete Reservation History</h3>
+                            <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-gray-700 text-2xl sm:text-3xl flex-shrink-0 leading-none">×</button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-120px)]">
+                        <div id="history-loading" class="text-center py-8">
+                            <div class="loading-spinner mx-auto mb-4"></div>
+                            <p class="text-gray-600">Loading reservation history...</p>
+                        </div>
+                        
+                        <div id="history-content" class="hidden">
+                            <div id="history-table" class="table-responsive"></div>
+                            <div id="history-pagination" class="mt-6 flex items-center justify-between flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userEmail = null;
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get user email from localStorage
+            userEmail = localStorage.getItem('user_email');
+            
+            if (!userEmail) {
+                showError('No user email found. Please log in again.');
+                return;
+            }
+
+            // Update welcome message
+            document.getElementById('welcome-message').textContent = `Welcome back, ${userEmail}!`;
+            
+            // Load dashboard data
+            loadDashboard();
+        });
+
+        async function loadDashboard() {
+            try {
+                showLoading();
+                
+                const response = await fetch(`/api/dashboard-data/?email=${encodeURIComponent(userEmail)}`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load dashboard data');
+                }
+                
+                populateDashboard(data);
+                showDashboard();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showError(error.message);
+            }
+        }
+
+        function populateDashboard(data) {
+            // Update statistics
+            document.getElementById('total-spent').textContent = `$${data.total_spent.toFixed(2)}`;
+            document.getElementById('total-reservations').textContent = data.total_reservations;
+            document.getElementById('average-spending').textContent = `$${data.average_spending.toFixed(2)}`;
+            
+            // Create monthly spending chart
+            createMonthlyChart(data.monthly_spending);
+            
+            // Populate recent activity
+            populateRecentActivity(data.recent_reservations);
+        }
+
+        function createMonthlyChart(monthlyData) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: monthlyData.map(item => item.month),
+                    datasets: [{
+                        label: 'Monthly Spending ($)',
+                        data: monthlyData.map(item => item.amount),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 0
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 6
+                        }
+                    }
+                }
+            });
+        }
+
+        function populateRecentActivity(reservations) {
+            const container = document.getElementById('recent-activity');
+            
+            if (reservations.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No reservations found</p>';
+                return;
+            }
+            
+            container.innerHTML = reservations.map(reservation => `
+                <div class="bg-gray-50 rounded-lg p-3 sm:p-4 hover:bg-gray-100 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-medium text-gray-800 truncate">${reservation.location}</p>
+                            <p class="text-sm text-gray-600">${reservation.hours} hours • ${reservation.license_plate}</p>
+                            <p class="text-xs text-gray-500">${reservation.created_at}</p>
+                        </div>
+                        <div class="text-left sm:text-right flex-shrink-0">
+                            <p class="font-bold text-green-600">$${reservation.total_amount.toFixed(2)}</p>
+                            <span class="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                ${reservation.status}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function showFullHistory() {
+            document.getElementById('history-modal').classList.remove('hidden');
+            document.getElementById('history-loading').classList.remove('hidden');
+            document.getElementById('history-content').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`/api/reservation-history/?email=${encodeURIComponent(userEmail)}&page=1&limit=50`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load reservation history');
+                }
+                
+                populateHistoryTable(data);
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+                document.getElementById('history-loading').innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-red-500 text-4xl mb-2">⚠️</div>
+                        <p class="text-gray-600">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function populateHistoryTable(data) {
+            const { reservations, pagination } = data;
+            
+            const tableHTML = `
+                <div class="table-responsive">
+                    <table class="w-full min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Date</th>
+                                <th class="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Location</th>
+                                <th class="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Duration</th>
+                                <th class="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">License Plate</th>
+                                <th class="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Amount</th>
+                                <th class="px-3 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            ${reservations.map(reservation => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-600 whitespace-nowrap">${reservation.created_at}</td>
+                                    <td class="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-800 max-w-[150px] truncate" title="${reservation.location}">${reservation.location}</td>
+                                    <td class="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-600 whitespace-nowrap">${reservation.hours} hours</td>
+                                    <td class="px-3 sm:px-4 py-3 text-xs sm:text-sm text-gray-600 font-mono whitespace-nowrap">${reservation.license_plate}</td>
+                                    <td class="px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium text-green-600 whitespace-nowrap">$${reservation.total_amount.toFixed(2)}</td>
+                                    <td class="px-3 sm:px-4 py-3 whitespace-nowrap">
+                                        <span class="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                            ${reservation.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('history-table').innerHTML = tableHTML;
+            document.getElementById('history-loading').classList.add('hidden');
+            document.getElementById('history-content').classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('dashboard-content').classList.add('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+            document.getElementById('dashboard-content').classList.add('hidden');
+        }
+
+        function showDashboard() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('dashboard-content').classList.remove('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('history-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHistoryModal();
+            }
+        });
+
+        // Handle window resize for chart responsiveness
+        window.addEventListener('resize', function() {
+            // Chart.js automatically handles resize, but we can trigger it manually if needed
+            if (window.Chart && window.Chart.instances.length > 0) {
+                window.Chart.instances.forEach(chart => {
+                    chart.resize();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

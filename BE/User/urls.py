@@ -23,7 +23,11 @@ urlpatterns = [
     path('loginCustomer/', views.login_customer, name='loginCustomer'),
     path('registerCustomer/', views.register_customer, name='registerCustomer'),
     path('customerRegister/', views.customerRegister, name="customerRegister"),
-    path('customerLogin/', views.customerLogin, name="customerLogin")
+    path('customerLogin/', views.customerLogin, name="customerLogin"),
+    path('customerDashboard/', views.customer_dashboard, name='customer_dashboard'),
+    path('api/dashboard-data/', views.get_dashboard_data, name='dashboard_data'),
+    path('api/reservation-history/', views.get_reservation_history, name='reservation_history'),
+    
 
 
     
