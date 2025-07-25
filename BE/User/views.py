@@ -993,31 +993,73 @@ def customerRegister(request):
 def customerLogin(request):
     return render(request, "customerLogin.html")
 
-def trigger_car_detector():
-    """Trigger the carDetector.py script in a separate thread"""
-    try:
-        # car_detector_path = "../../ALPR/carDetector.py"
-        car_detector_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'carDetector.py'))
+# def trigger_car_detector():
+#     """Trigger the carDetector.py script in a separate thread"""
+#     try:
+#         # car_detector_path = "../../ALPR/carDetector.py"
+#         car_detector_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'carDetector.py'))
 
         
-        logging.info("🚗 Triggering car detector script...")
+#         logging.info("🚗 Triggering car detector script...")
         
-        # Run the car detector script
-        result = subprocess.run([
-            sys.executable, car_detector_path
-        ], capture_output=True, text=True, timeout=300)  # 5 minute timeout
+#         # Run the car detector script
+#         result = subprocess.run([
+#             sys.executable, car_detector_path
+#         ], capture_output=True, text=True, timeout=300)  # 5 minute timeout
         
-        if result.returncode == 0:
-            logging.info("✅ Car detector script completed successfully")
-            if result.stdout:
-                logging.info(f"Car detector output: {result.stdout}")
-        else:
-            logging.error(f"❌ Car detector script failed: {result.stderr}")
+#         if result.returncode == 0:
+#             logging.info("✅ Car detector script completed successfully")
+#             if result.stdout:
+#                 logging.info(f"Car detector output: {result.stdout}")
+#         else:
+#             logging.error(f"❌ Car detector script failed: {result.stderr}")
             
-    except subprocess.TimeoutExpired:
-        logging.error("⏰ Car detector script timed out")
+#     except subprocess.TimeoutExpired:
+#         logging.error("⏰ Car detector script timed out")
+#     except Exception as e:
+#         logging.error(f"Error triggering car detector: {str(e)}")
+
+
+def trigger_car_detector():
+    """Enhanced version with better process management"""
+    try:
+        car_detector_path = os.path.abspath(os.path.join(current_dir, '..', '..', 'ALPR', 'carDetector.py'))
+        
+        # Check if the script exists
+        if not os.path.exists(car_detector_path):
+            logging.error(f"❌ Car detector script not found at: {car_detector_path}")
+            return False
+            
+        logging.info(f"🚗 Triggering car detector script at: {car_detector_path}")
+        
+        # Create a log file for the car detector output
+        log_file_path = os.path.join(os.path.dirname(car_detector_path), 'car_detector_api_trigger.log')
+        
+        # Set up environment
+        env = os.environ.copy()
+        if 'DISPLAY' not in env:
+            env['DISPLAY'] = ':0'
+        
+        # Start the process with output redirection to log file
+        with open(log_file_path, 'w') as log_file:
+            process = subprocess.Popen([
+                sys.executable, car_detector_path
+            ], 
+            env=env,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,  # Combine stderr with stdout
+            text=True
+            )
+        
+        logging.info(f"✅ Car detector script started with PID: {process.pid}")
+        logging.info(f"📝 Output logged to: {log_file_path}")
+        
+        # Return immediately - don't wait for completion
+        return True
+        
     except Exception as e:
         logging.error(f"Error triggering car detector: {str(e)}")
+        return False
 
 @csrf_exempt
 def register_customer(request):
@@ -1094,6 +1136,8 @@ def login_customer(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid HTTP method. Only POST is allowed.'}, status=405)
+
+
 @csrf_exempt
 @require_POST
 def assign_nearest_parking_slot(request):
@@ -1177,6 +1221,7 @@ def assign_nearest_parking_slot(request):
         return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
 
 
 
