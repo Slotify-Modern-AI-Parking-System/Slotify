@@ -239,33 +239,89 @@
             highlightStars(selectedRating);
         }
 
-        function submitFeedback() {
-            if (selectedRating === 0) {
-                alert('Please select a rating before submitting!');
-                return;
-            }
+function submitFeedback() {
+    if (selectedRating === 0) {
+        alert('Please select a rating before submitting!');
+        return;
+    }
 
-            // Hide the current content
-            feedbackSection.style.opacity = '0';
-            
-            setTimeout(() => {
-                feedbackSection.style.display = 'none';
-                successMessage.classList.remove('hidden');
-                successMessage.style.opacity = '1';
-                
-                // Redirect after showing success message
-                setTimeout(() => {
-                    window.location.href = '/'; // Redirect to home or dashboard
-                }, 3000);
-            }, 500);
-        }
+    // Hide current content
+    feedbackSection.style.opacity = '0';
 
-        // Auto-redirect after 30 seconds if no interaction
+    // Call the API to update exit license plate
+    fetch('/get-exit-license-plate/', {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('API Response:', data); // Optional logging
+        // Optionally show a message or use data.license_plate
+    })
+    .catch(error => {
+        console.error('API Error:', error);
+    });
+
+    // Continue with the rest of the logic (UI success message + redirect)
+    setTimeout(() => {
+        feedbackSection.style.display = 'none';
+        successMessage.classList.remove('hidden');
+        successMessage.style.opacity = '1';
+
+        // Redirect after showing success message
         setTimeout(() => {
-            if (selectedRating === 0) {
-                window.location.href = '/';
-            }
-        }, 30000);
+            window.location.href = '/';
+        }, 3000);
+    }, 500);
+}
+
+// Auto-redirect after 30 seconds if no interaction
+setTimeout(() => {
+    if (selectedRating === 0) {
+        // Still call the API even if user didn’t interact
+        fetch('/get-exit-license-plate/', {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Auto API call response:', data);
+        })
+        .catch(error => {
+            console.error('Auto API call error:', error);
+        });
+
+        window.location.href = '/';
+    }
+}, 30000);
+
+
+
+        // function submitFeedback() {
+        //     if (selectedRating === 0) {
+        //         alert('Please select a rating before submitting!');
+        //         return;
+        //     }
+
+        //     // Hide the current content
+        //     feedbackSection.style.opacity = '0';
+            
+        //     setTimeout(() => {
+        //         feedbackSection.style.display = 'none';
+        //         successMessage.classList.remove('hidden');
+        //         successMessage.style.opacity = '1';
+                
+        //         // Redirect after showing success message
+        //         setTimeout(() => {
+        //             window.location.href = '/'; // Redirect to home or dashboard
+        //         }, 3000);
+        //     }, 500);
+        // }
+
+        // // Auto-redirect after 30 seconds if no interaction
+        // setTimeout(() => {
+        //     if (selectedRating === 0) {
+        //         window.location.href = '/';
+        //     }
+        // }, 30000);
     </script>
 </body>
 </html>

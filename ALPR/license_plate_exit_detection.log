@@ -1,0 +1,66 @@
+2025-07-31 21:47:45,882 - INFO - 🔧 Checking Django server status...
+2025-07-31 21:47:45,882 - WARNING - Invalid duration: temp_frame_2_20250731_214743.jpg, using default: 60
+2025-07-31 21:47:46,713 - INFO - Camera 2 connection verified
+2025-07-31 21:47:46,713 - INFO - Loading license plate detection model...
+2025-07-31 21:47:46,739 - INFO - ✅ License plate model loaded and cached
+2025-07-31 21:47:46,739 - INFO - Initializing EasyOCR...
+2025-07-31 21:47:49,151 - INFO - ✅ EasyOCR initialized with GPU and cached
+2025-07-31 21:47:49,729 - INFO - 🚀 Starting enhanced 60-second license plate detection...
+2025-07-31 21:47:52,330 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.774)
+2025-07-31 21:47:54,086 - INFO - 🔧 Checking Django server status...
+2025-07-31 21:47:54,086 - WARNING - Invalid duration: temp_frame_2_20250731_214751.jpg, using default: 60
+2025-07-31 21:47:54,945 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.766)
+2025-07-31 21:47:54,988 - INFO - Camera 2 connection verified
+2025-07-31 21:47:54,988 - INFO - Loading license plate detection model...
+2025-07-31 21:47:55,005 - INFO - ✅ License plate model loaded and cached
+2025-07-31 21:47:55,006 - INFO - Initializing EasyOCR...
+2025-07-31 21:47:55,698 - INFO - 🎯 PLATE FINALIZED: MH20EE7602 reached 25 detections!
+2025-07-31 21:47:55,707 - INFO - ✅ License plate 'MH20EE7602' written to /Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/exitDetection.txt
+2025-07-31 21:47:55,884 - INFO - ✅ Opening dashboard page: http://127.0.0.1:8000/thankyou/
+2025-07-31 21:47:55,885 - INFO - Detection completed successfully. Final result: MH20EE7602
+2025-07-31 21:47:57,757 - INFO - ✅ EasyOCR initialized with GPU and cached
+2025-07-31 21:47:58,478 - INFO - 🚀 Starting enhanced 60-second license plate detection...
+2025-07-31 21:48:01,002 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.783)
+2025-07-31 21:48:03,103 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.794)
+2025-07-31 21:48:03,766 - INFO - 🎯 PLATE FINALIZED: MH20EE7602 reached 25 detections!
+2025-07-31 21:48:03,773 - INFO - ✅ License plate 'MH20EE7602' written to /Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/exitDetection.txt
+2025-07-31 21:48:03,907 - INFO - ✅ Opening dashboard page: http://127.0.0.1:8000/thankyou/
+2025-07-31 21:48:03,908 - INFO - Detection completed successfully. Final result: MH20EE7602
+2025-07-31 21:55:39,490 - INFO - 🔧 Checking Django server status...
+2025-07-31 21:55:39,491 - WARNING - Invalid duration: temp_frame_2_20250731_215537.jpg, using default: 60
+2025-07-31 21:55:40,350 - INFO - Camera 2 connection verified
+2025-07-31 21:55:40,351 - INFO - Loading license plate detection model...
+2025-07-31 21:55:40,367 - INFO - ✅ License plate model loaded and cached
+2025-07-31 21:55:40,367 - INFO - Initializing EasyOCR...
+2025-07-31 21:55:42,603 - INFO - ✅ EasyOCR initialized with GPU and cached
+2025-07-31 21:55:43,214 - INFO - 🚀 Starting enhanced 60-second license plate detection...
+2025-07-31 21:55:45,821 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.805)
+2025-07-31 21:55:47,196 - INFO - 🎯 PLATE FINALIZED: MH20EE7602 reached 25 detections!
+2025-07-31 21:55:47,203 - INFO - ✅ License plate 'MH20EE7602' written to /Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/exitDetection.txt
+2025-07-31 21:55:47,356 - INFO - ✅ Opening dashboard page: http://127.0.0.1:8000/thankyou/
+2025-07-31 21:55:47,357 - INFO - Detection completed successfully. Final result: MH20EE7602
+2025-07-31 21:58:49,354 - INFO - 🔧 Checking Django server status...
+2025-07-31 21:58:49,354 - WARNING - Invalid duration: temp_frame_2_20250731_215847.jpg, using default: 60
+2025-07-31 21:58:50,128 - INFO - Camera 2 connection verified
+2025-07-31 21:58:50,128 - INFO - Loading license plate detection model...
+2025-07-31 21:58:50,143 - INFO - ✅ License plate model loaded and cached
+2025-07-31 21:58:50,143 - INFO - Initializing EasyOCR...
+2025-07-31 21:58:52,463 - INFO - ✅ EasyOCR initialized with GPU and cached
+2025-07-31 21:58:53,068 - INFO - 🚀 Starting enhanced 60-second license plate detection...
+2025-07-31 21:58:55,193 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.806)
+2025-07-31 21:58:57,561 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.747)
+2025-07-31 21:58:57,615 - INFO - 🔧 Checking Django server status...
+2025-07-31 21:58:57,616 - WARNING - Invalid duration: temp_frame_2_20250731_215855.jpg, using default: 60
+2025-07-31 21:58:58,245 - INFO - 🎯 PLATE FINALIZED: MH20EE7602 reached 25 detections!
+2025-07-31 21:58:58,251 - INFO - ✅ License plate 'MH20EE7602' written to /Users/jainamdoshi/Desktop/Projects/Slotify/ALPR/exitDetection.txt
+2025-07-31 21:58:58,404 - INFO - ✅ Opening dashboard page: http://127.0.0.1:8000/thankyou/
+2025-07-31 21:58:58,404 - INFO - Detection completed successfully. Final result: MH20EE7602
+2025-07-31 21:58:58,552 - INFO - Camera 2 connection verified
+2025-07-31 21:58:58,552 - INFO - Loading license plate detection model...
+2025-07-31 21:58:58,577 - INFO - ✅ License plate model loaded and cached
+2025-07-31 21:58:58,577 - INFO - Initializing EasyOCR...
+2025-07-31 21:59:00,880 - INFO - ✅ EasyOCR initialized with GPU and cached
+2025-07-31 21:59:01,494 - INFO - 🚀 Starting enhanced 60-second license plate detection...
+2025-07-31 21:59:04,194 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.769)
+2025-07-31 21:59:06,232 - INFO - 🎯 CONFIRMED DETECTION: MH20EE7602 (Score: 0.795)
+2025-07-31 21:59:39,736 - INFO - Detection interrupted by user

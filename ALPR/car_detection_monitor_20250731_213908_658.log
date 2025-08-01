@@ -1,0 +1,35 @@
+2025-07-31 21:39:08,659 - INFO - Cleaned up temp file: temp_frame_0_20250731_213101_689.jpg
+2025-07-31 21:39:08,659 - INFO - 🔄 SUPER Camera initialization attempt 1/10
+2025-07-31 21:39:14,177 - INFO - ✅ Camera 1 opened with direct method
+2025-07-31 21:39:14,352 - INFO - ✅ Successful test read on attempt 1
+2025-07-31 21:39:16,903 - INFO - 📹 Camera configuration applied successfully
+2025-07-31 21:39:16,903 - INFO - ✅ Camera 1 SUPER initialized successfully
+2025-07-31 21:39:16,904 - INFO - 🔄 Loading YOLO model with enhanced error handling...
+2025-07-31 21:39:17,358 - INFO - ✅ Model loaded and warmed up successfully (attempt 1)
+2025-07-31 21:39:17,358 - INFO - 🔄 Car tracker reset
+2025-07-31 21:39:24,831 - INFO - 🛑 Received signal 2 - initiating graceful shutdown
+2025-07-31 21:39:24,832 - INFO - 🧹 Starting SUPER AGGRESSIVE resource cleanup...
+2025-07-31 21:39:25,370 - INFO - 📹 Nuclear camera release attempt 1/10
+2025-07-31 21:39:25,871 - INFO - 📹 Nuclear camera release attempt 2/10
+2025-07-31 21:39:26,372 - INFO - 📹 Nuclear camera release attempt 3/10
+2025-07-31 21:39:26,874 - INFO - 📹 Nuclear camera release attempt 4/10
+2025-07-31 21:39:27,375 - INFO - 📹 Nuclear camera release attempt 5/10
+2025-07-31 21:39:27,876 - INFO - 📹 Nuclear camera release attempt 6/10
+2025-07-31 21:39:28,377 - INFO - 📹 Nuclear camera release attempt 7/10
+2025-07-31 21:39:28,879 - INFO - 📹 Nuclear camera release attempt 8/10
+2025-07-31 21:39:29,380 - INFO - 📹 Nuclear camera release attempt 9/10
+2025-07-31 21:39:29,881 - INFO - 📹 Nuclear camera release attempt 10/10
+2025-07-31 21:39:34,883 - INFO - 📹 Nuclear camera cleanup completed
+2025-07-31 21:39:38,983 - INFO - 🖼️ Aggressive OpenCV cleanup completed
+2025-07-31 21:39:41,986 - INFO - 🗑️ Aggressive memory cleanup completed
+2025-07-31 21:39:44,987 - INFO - ✅ SUPER AGGRESSIVE cleanup completed
+2025-07-31 21:39:44,987 - INFO - 🏁 Detection session completed
+2025-07-31 21:39:44,987 - INFO - 🧹 Initiating enhanced cleanup...
+2025-07-31 21:39:44,987 - INFO - 🧹 Starting SUPER AGGRESSIVE resource cleanup...
+2025-07-31 21:39:49,090 - INFO - 🖼️ Aggressive OpenCV cleanup completed
+2025-07-31 21:39:51,811 - INFO - 🗑️ Aggressive memory cleanup completed
+2025-07-31 21:39:54,812 - INFO - ✅ SUPER AGGRESSIVE cleanup completed
+2025-07-31 21:39:54,814 - INFO - 🧹 Starting SUPER AGGRESSIVE resource cleanup...
+2025-07-31 21:39:58,903 - INFO - 🖼️ Aggressive OpenCV cleanup completed
+2025-07-31 21:40:01,584 - INFO - 🗑️ Aggressive memory cleanup completed
+2025-07-31 21:40:04,585 - INFO - ✅ SUPER AGGRESSIVE cleanup completed

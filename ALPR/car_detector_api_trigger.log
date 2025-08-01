@@ -1,0 +1,32 @@
+2025-08-01 13:13:33.045 python[14316:863865] WARNING: AVCaptureDeviceTypeExternal is deprecated for Continuity Cameras. Please use AVCaptureDeviceTypeContinuityCamera and add NSCameraUseContinuityCameraDeviceType to your Info.plist.
+🚗 OPTIMIZED Enhanced Car Detection Monitor - Script 1
+============================================================
+🚀 Performance Optimizations:
+  • Cached YOLO model in memory
+  • Frame skipping (every 2nd frame)
+  • Smaller input resolution (640x360)
+  • Pre-allocated memory buffers
+  • Optimized OpenCV operations
+  • Auto-termination after main2.py trigger + 5 seconds
+📹 Using camera ID: 0
+🔄 Testing camera 0 connection...
+✅ Camera 0 connection successful
+🔄 Initializing optimized car detector...
+🔄 Loading and caching YOLO model...
+✅ Model loaded and warmed up successfully
+
+🚀 Starting OPTIMIZED car detection on camera 0
+Optimization Features:
+  • Model cached in memory (no reload)
+  • Processing every 2nd frame only
+  • Smaller resolution inference (640x360)
+  • Pre-allocated memory buffers
+  • Optimized coordinate scaling
+  • Auto-termination after main2.py trigger + 5 seconds
+Controls:
+  • Press 'q' or ESC to quit
+  • Press 's' to show statistics
+  • Press 'r' to reset tracking
+  • Press 'p' to show performance stats
+
+⚡ System interrupted by user

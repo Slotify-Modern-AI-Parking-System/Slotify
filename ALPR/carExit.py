@@ -302,7 +302,7 @@ def main():
     print("  • Optimized OpenCV operations")
     
     try:
-        camera_id = 0
+        camera_id = 2
         print(f"📹 Using camera ID: {camera_id}")
         
         # Test camera connection
@@ -468,7 +468,7 @@ def main():
                     y_offset += 25
             
             # Show frame
-            cv2.imshow(f"OPTIMIZED Car Detection - Camera {camera_id}", display_frame)
+            cv2.imshow(f"OPTIMIZED Car EXIT Detection - Camera {camera_id}", display_frame)
             
             # Handle key presses
             key = cv2.waitKey(1) & 0xFF

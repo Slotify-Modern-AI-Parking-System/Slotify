@@ -1,0 +1,26 @@
+2025-07-31 21:41:27,864 - INFO - Cleaned up temp file: temp_frame_0_20250731_214026_915.jpg
+2025-07-31 21:41:27,864 - INFO - 🔄 Camera initialization attempt 1/5
+2025-07-31 21:41:29,330 - INFO - ✅ Camera 1 opened with direct method
+2025-07-31 21:41:29,396 - INFO - ✅ Camera 1 initialized successfully
+2025-07-31 21:41:29,397 - INFO - 🔄 Loading YOLO model with enhanced error handling...
+2025-07-31 21:41:29,808 - INFO - ✅ Model loaded and warmed up successfully (attempt 1)
+2025-07-31 21:41:29,808 - INFO - 🔄 Car tracker reset
+2025-07-31 21:41:37,884 - INFO - 🛑 Received signal 2 - initiating graceful shutdown
+2025-07-31 21:41:37,885 - INFO - 🧹 Starting comprehensive resource cleanup...
+2025-07-31 21:41:38,485 - INFO - 📹 Camera release attempt 1/3
+2025-07-31 21:41:38,987 - INFO - 📹 Camera release attempt 2/3
+2025-07-31 21:41:39,488 - INFO - 📹 Camera release attempt 3/3
+2025-07-31 21:41:39,488 - INFO - 📹 Camera released successfully
+2025-07-31 21:41:40,134 - INFO - 🖼️ OpenCV windows destroyed
+2025-07-31 21:41:40,763 - INFO - 🗑️ Memory cleaned up
+2025-07-31 21:41:41,764 - INFO - ✅ Enhanced resource cleanup completed
+2025-07-31 21:41:41,830 - INFO - 🏁 Detection session completed
+2025-07-31 21:41:41,830 - INFO - 🧹 Initiating enhanced cleanup...
+2025-07-31 21:41:41,830 - INFO - 🧹 Starting comprehensive resource cleanup...
+2025-07-31 21:41:42,471 - INFO - 🖼️ OpenCV windows destroyed
+2025-07-31 21:41:43,076 - INFO - 🗑️ Memory cleaned up
+2025-07-31 21:41:44,077 - INFO - ✅ Enhanced resource cleanup completed
+2025-07-31 21:41:44,079 - INFO - 🧹 Starting comprehensive resource cleanup...
+2025-07-31 21:41:44,722 - INFO - 🖼️ OpenCV windows destroyed
+2025-07-31 21:41:45,260 - INFO - 🗑️ Memory cleaned up
+2025-07-31 21:41:46,261 - INFO - ✅ Enhanced resource cleanup completed

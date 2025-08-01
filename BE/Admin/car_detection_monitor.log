@@ -1,0 +1,9 @@
+2025-07-31 21:44:15,377 - INFO - 🎯 Car ID 1 persistent for 16.3s - TRIGGERING MAIN.PY
+2025-07-31 21:44:15,378 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 0
+2025-07-31 21:44:15,378 - INFO - 🎯 Car ID 2 persistent for 15.3s - TRIGGERING MAIN.PY
+2025-07-31 21:44:15,378 - INFO - 🚨 TRIGGERING MAIN SCRIPT for camera 0
+2025-07-31 21:44:15,408 - INFO - ✅ Main script started with PID: 9173
+2025-07-31 21:44:15,408 - INFO - ⏰ Scheduling script termination in 5 seconds from main2.py start...
+2025-07-31 21:44:15,412 - INFO - ✅ Main script started with PID: 9174
+2025-07-31 21:44:15,412 - INFO - ⏰ Scheduling script termination in 5 seconds from main2.py start...
+2025-07-31 21:44:20,413 - INFO - ⏰ 5 seconds elapsed - Terminating script as requested

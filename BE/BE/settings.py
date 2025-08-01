@@ -156,3 +156,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 GOOGLE_APPLICATION_CREDENTIALS = '/Users/jainamdoshi/Desktop/Slotify/Slotify/decent-surf-448118-e5-3a45c35c5902.json'
 GOOGLE_CLOUD_BUCKET_NAME = 'slotifydocuments'
 
+ALLOWED_HOSTS = ['*']
+
+
