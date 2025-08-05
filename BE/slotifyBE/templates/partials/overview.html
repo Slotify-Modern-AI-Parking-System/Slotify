@@ -117,7 +117,14 @@
             <!-- Weekly Summary Chart -->
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-800">Hourly Occupancy Rate</h3>
+                <select id="timeView" class="border-gray-300 rounded p-2 text-sm">
+                    <option value="week">Weekly</option>
+                    <option value="year">Yearly</option>
+                </select>
+
+                <input type="date" id="calendarFilter" class="border p-2 rounded text-sm" />
+                <input type="number" id="yearFilter" class="border p-2 rounded text-sm hidden" min="2000" max="2099" step="1" />
+                <h3 class="text-lg font-bold text-gray-800">Reservation Overview</h3>
                 <div class="flex space-x-2 items-center">
                     <select id="lotSelect" class="border-gray-300 rounded p-2 text-sm">
                         <option value="">All Lots</option>
@@ -268,14 +275,32 @@ async function fetchOccupancyData(lotId = "") {
     return await response.json();
 }
 
-async function updateOccupancyChart(lotId = "") {
-    const data = await fetchOccupancyData(lotId);
-    renderChart(data);
+async function updateOccupancyChart() {
+    const view = document.getElementById("timeView").value;
+    const date = document.getElementById("calendarFilter").value;
+    const year = document.getElementById("yearFilter").value;
+    const lotId = document.getElementById("lotSelect").value;
+
+    let url = `/occupancy-reservation-data/?view=${view}&lot_id=${lotId}`;
+    if (view === "week") {
+        url += `&date=${date || new Date().toISOString().slice(0,10)}`;
+    }
+    if (view === "year") {
+        url += `&year=${year || new Date().getFullYear()}`;
+    }
+    const res = await fetch(url);
+    if (!res.ok) {
+        const err = await res.json();
+        console.error("API error:", err);
+        return;
+    }
+    const data = await res.json();
+    renderChart(data, view);
 }
 
-function renderChart(data) {
-    const canvas = document.getElementById("occupancyChart");
-    const ctx = canvas.getContext("2d");
+function renderChart(data, view) {
+    const ctx = document.getElementById("occupancyChart").getContext("2d");
+
     const labels = Object.keys(data);
     const values = Object.values(data);
 
@@ -286,7 +311,7 @@ function renderChart(data) {
         data: {
             labels: labels,
             datasets: [{
-                label: "Hourly Occupancy (Past 7 Days)",
+                label: view === "year" ? "Monthly Reservations" : "Daily Reservations",
                 data: values,
                 fill: false,
                 borderColor: "#3b82f6",
@@ -302,8 +327,12 @@ function renderChart(data) {
                     title: { display: true, text: "Reservations" }
                 },
                 x: {
-                    title: { display: true, text: "Hour of Day" }
+                    title: { display: true, text: view === "year" ? "Month" : "Date" }
                 }
+            },
+            plugins: {
+                legend: { display: true },
+                tooltip: { enabled: true }
             }
         }
     });
@@ -335,6 +364,28 @@ async function initOccupancyChart() {
     document.addEventListener("DOMContentLoaded", function () {
         document.dispatchEvent(new Event("overviewLoaded"));
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const viewSelect = document.getElementById("timeView");
+    const yearFilter = document.getElementById("yearFilter");
+    const dateFilter = document.getElementById("calendarFilter");
+
+    // Toggle filters
+    viewSelect.addEventListener("change", () => {
+        if (viewSelect.value === "week") {
+            dateFilter.classList.remove("hidden");
+            yearFilter.classList.add("hidden");
+        } else {
+            dateFilter.classList.add("hidden");
+            yearFilter.classList.remove("hidden");
+        }
+    });
+
+    document.getElementById("refreshChartBtn").addEventListener("click", updateOccupancyChart);
+
+    // Initial load
+    updateOccupancyChart();
+});
 </script>
 </body>
 </html>

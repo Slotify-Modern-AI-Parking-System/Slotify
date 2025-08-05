@@ -140,6 +140,18 @@
                 </div>
             </div>
 
+            <!-- Revenue Warning Modal -->
+            <div id="revenueWarningModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+                <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 text-center space-y-4">
+                    <div class="text-yellow-500 text-4xl"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h2 class="text-xl font-semibold text-gray-800">Data Not Available</h2>
+                    <p class="text-gray-600 text-sm">Not enough revenue data to display the chart for the selected range.</p>
+                    <button onclick="closeRevenueWarning()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
+                        Okay
+                    </button>
+                </div>
+            </div>
+
             <!-- Revenue Chart and Sidebar -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 <!-- Chart Section -->
@@ -345,7 +357,7 @@ function changeTimeRange(range) {
         console.log("📥 Fetched chart data:", data);
 
         if (!data || data.labels.length < 2 || data.data.length < 2) {
-            alert("Not enough data to display chart for this range.");
+            showRevenueWarning();
             return;
         }
 
@@ -398,6 +410,15 @@ function refreshData() {
     const range = active?.dataset.range || '30d';
     changeTimeRange(range);
 }
+
+function showRevenueWarning() {
+    document.getElementById('revenueWarningModal').classList.remove('hidden');
+}
+
+function closeRevenueWarning() {
+    document.getElementById('revenueWarningModal').classList.add('hidden');
+}
+
 </script>
 
 </body>

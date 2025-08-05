@@ -246,12 +246,12 @@
       <div class="mt-8 text-center stagger-5">
         <p class="text-gray-600 text-sm mb-4">Having trouble with verification?</p>
         <div class="space-y-2">
-          <button class="text-blue-600 font-medium hover:text-blue-700 transition-colors block mx-auto">
-            Check your spam folder
-          </button>
-          <button class="text-blue-600 font-medium hover:text-blue-700 transition-colors block mx-auto">
+            <span class="text-blue-600 font-medium block mx-auto">
+              Check your spam folder
+            </span>
+          <a href="/contact/" class="text-blue-600 font-medium hover:text-blue-700 transition-colors block mx-auto">
             Contact support
-          </button>
+          </a>
         </div>
       </div>
 
@@ -439,31 +439,24 @@ async function verifyOTP() {
     resendBtn.disabled = false;
   }, 60000);
 
-  resendBtn.addEventListener('click', async function () {
-    try {
-      const response = await fetch('/resend-otp/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email })
-      });
+resendBtn.addEventListener('click', async function () {
+  try {
+    await fetch('/resend-otp/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    });
 
-      if (response.ok) {
-        timeLeft = 300;
-        timerDisplay.classList.remove('text-red-600');
-        resendBtn.disabled = true;
+    // Reload the page with same query parameters
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('email', email);
+    newUrl.searchParams.set('context', context);
+    window.location.href = newUrl.toString();
 
-        const msg = document.createElement('div');
-        msg.className = 'text-green-600 text-sm text-center mt-2';
-        msg.textContent = 'Code sent again!';
-        resendBtn.parentNode.appendChild(msg);
-        setTimeout(() => msg.remove(), 3000);
-      } else {
-        showError('Failed to resend code.');
-      }
-    } catch (err) {
-      showError('Something went wrong.');
-    }
-  });
+  } catch (err) {
+    showError('Something went wrong.');
+  }
+});
 
   if (otpInputs.length > 0) otpInputs[0].focus();
 });

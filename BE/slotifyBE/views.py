@@ -8,7 +8,7 @@ import os
 import json
 from django.contrib.auth.hashers import make_password
 from google.oauth2 import service_account
-from datetime import timedelta
+from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 import logging
@@ -26,10 +26,10 @@ from django.core.cache import cache
 from django.db import models
 from User.models import ParkingReservation, LicensePlateDetection
 from django.utils import timezone
-from django.db.models.functions import ExtractHour, TruncDate
+from django.db.models.functions import ExtractHour, TruncDate, TruncDay, TruncHour, TruncMonth
 from django.db.models import Count, Sum, Avg
 from django.utils.timezone import now, timedelta
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from django.utils.decorators import method_decorator
 
 
@@ -249,37 +249,69 @@ def resend_otp(request):
     return JsonResponse({'error': 'Invalid request'}, status=405)
 
 @login_required
-def occupancy_rate_data(request):
+def occupancy_reservation_data(request):
+    view = request.GET.get("view", "week")  # "week" or "year"
+    date_str = request.GET.get("date")
+    year_str = request.GET.get("year")
     lot_id = request.GET.get("lot_id")
-    now = timezone.now()
-    start_time = now - timedelta(days=7)
 
-    lots = ParkingLot.objects.filter(registered_by=request.user)
+    user = request.user
+    lots = ParkingLot.objects.filter(registered_by=user)
     if lot_id:
         lots = lots.filter(id=lot_id)
 
-    total_spaces = lots.aggregate(total=Sum('total_spaces'))['total'] or 1
+    try:
+        if view == "week":
+            if not date_str:
+                base_date = timezone.localdate()
+            else:
+                base_date = datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    detections = LicensePlateDetection.objects.filter(
-        entry_time__lte=now,
-        exit_time__gte=start_time,
-        location__in=lots
-    )
+            start_date = base_date - timedelta(days=6)
+            date_range = [start_date + timedelta(days=i) for i in range(7)]
+            reservations = ParkingReservation.objects.filter(
+                parking_lot__in=lots,
+                created_at__date__range=(start_date, base_date)
+            ).annotate(day=TruncDay("created_at")) \
+             .values("day") \
+             .annotate(count=Count("id")) \
+             .order_by("day")
 
-    hourly_occupancy = defaultdict(int)
+            counts = {entry["day"].date(): entry["count"] for entry in reservations}
+            data = OrderedDict()
+            for date in date_range:
+                data[date.strftime("%Y-%m-%d")] = counts.get(date, 0)
 
-    # Build occupancy rate over past 7 days, hour by hour
-    for hour_offset in range(0, 7 * 24):
-        hour = start_time + timedelta(hours=hour_offset)
-        hour_key = hour.strftime("%Y-%m-%d %H:00")
-        count = 0
-        for detection in detections:
-            if detection.entry_time and detection.exit_time:
-                if detection.entry_time <= hour and detection.exit_time >= hour:
-                    count += 1
-        hourly_occupancy[hour_key] = round((count / total_spaces) * 100, 1)
+        elif view == "year":
+            if not year_str:
+                year = timezone.now().year
+            else:
+                try:
+                    year = int(year_str)
+                except ValueError:
+                    return JsonResponse({"error": "Invalid year format"}, status=400)
 
-    return JsonResponse(hourly_occupancy)
+            reservations = ParkingReservation.objects.filter(
+                parking_lot__in=lots,
+                created_at__year=year
+            ).annotate(month=TruncMonth("created_at")) \
+             .values("month") \
+             .annotate(count=Count("id")) \
+             .order_by("month")
+
+            counts = {entry["month"].month: entry["count"] for entry in reservations}
+            data = OrderedDict()
+            for month in range(1, 13):
+                key = datetime(year, month, 1).strftime("%Y-%m")
+                data[key] = counts.get(month, 0)
+
+        else:
+            return JsonResponse({"error": "Invalid view parameter"}, status=400)
+
+        return JsonResponse(data)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 @login_required
 def revenue_data(request):
