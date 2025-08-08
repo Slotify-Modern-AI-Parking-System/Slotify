@@ -13,14 +13,14 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+ 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             height: 100vh;
             overflow: hidden;
             position: relative;
         }
-
+ 
         /* Animated Background */
         .background {
             position: absolute;
@@ -31,7 +31,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             z-index: -3;
         }
-
+ 
         .background::before {
             content: '';
             position: absolute;
@@ -43,7 +43,7 @@
             opacity: 0.3;
             z-index: -2;
         }
-
+ 
         .background::after {
             content: '';
             position: absolute;
@@ -54,7 +54,7 @@
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.9) 100%);
             z-index: -1;
         }
-
+ 
         /* Floating particles */
         .particles {
             position: absolute;
@@ -63,28 +63,28 @@
             overflow: hidden;
             z-index: 0;
         }
-
+ 
         .particle {
             position: absolute;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             animation: float 6s ease-in-out infinite;
         }
-
+ 
         .particle:nth-child(1) { width: 8px; height: 8px; left: 10%; animation-delay: 0s; }
         .particle:nth-child(2) { width: 12px; height: 12px; left: 20%; animation-delay: 1s; }
         .particle:nth-child(3) { width: 6px; height: 6px; left: 30%; animation-delay: 2s; }
         .particle:nth-child(4) { width: 10px; height: 10px; left: 70%; animation-delay: 3s; }
         .particle:nth-child(5) { width: 14px; height: 14px; left: 80%; animation-delay: 4s; }
         .particle:nth-child(6) { width: 8px; height: 8px; left: 90%; animation-delay: 5s; }
-
+ 
         @keyframes float {
             0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
         }
-
+ 
         /* Navigation */
         .navbar {
             position: absolute;
@@ -100,7 +100,7 @@
             background: rgba(255, 255, 255, 0.1);
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
-
+ 
         .logo {
             font-size: 28px;
             font-weight: 800;
@@ -110,7 +110,7 @@
             align-items: center;
             gap: 10px;
         }
-
+ 
         .logo i {
             font-size: 32px;
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
@@ -118,13 +118,13 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
+ 
         .nav-links {
             display: flex;
             gap: 30px;
             align-items: center;
         }
-
+ 
         .nav-link {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
@@ -132,12 +132,12 @@
             transition: all 0.3s ease;
             position: relative;
         }
-
+ 
         .nav-link:hover {
             color: white;
             transform: translateY(-2px);
         }
-
+ 
         .nav-link::after {
             content: '';
             position: absolute;
@@ -148,11 +148,93 @@
             background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
             transition: width 0.3s ease;
         }
-
+ 
         .nav-link:hover::after {
             width: 100%;
         }
-
+ 
+        /* Login Options - Top Right */
+        .login-options {
+            position: absolute;
+            top: 120px;
+            right: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 50;
+            animation: slideInRight 1s ease-out 1.2s both;
+        }
+ 
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+ 
+        .login-option {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+ 
+        .login-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+ 
+        .login-option:hover::before {
+            left: 100%;
+        }
+ 
+        .login-option:hover {
+            transform: translateX(-5px) scale(1.05);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+ 
+        .login-option i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+ 
+        .login-option.customer i {
+            color: #4ecdc4;
+        }
+ 
+        .login-option.admin i {
+            color: #ff6b6b;
+        }
+ 
+        .login-option.parking i {
+            color: #ffd93d;
+        }
+ 
         /* Main Content */
         .container {
             display: flex;
@@ -163,14 +245,14 @@
             position: relative;
             z-index: 10;
         }
-
+ 
         .content {
             text-align: center;
             color: white;
             max-width: 800px;
             animation: slideUp 1s ease-out;
         }
-
+ 
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -181,7 +263,7 @@
                 transform: translateY(0);
             }
         }
-
+ 
         .content h1 {
             font-size: clamp(48px, 8vw, 96px);
             font-weight: 800;
@@ -194,12 +276,12 @@
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             animation: textGlow 2s ease-in-out infinite alternate;
         }
-
+ 
         @keyframes textGlow {
             from { text-shadow: 0 4px 20px rgba(255, 255, 255, 0.3); }
             to { text-shadow: 0 4px 40px rgba(255, 255, 255, 0.6); }
         }
-
+ 
         .content .subtitle {
             font-size: clamp(18px, 3vw, 28px);
             font-weight: 400;
@@ -208,12 +290,12 @@
             line-height: 1.6;
             animation: fadeIn 1s ease-out 0.5s both;
         }
-
+ 
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-
+ 
         .features {
             display: flex;
             justify-content: center;
@@ -222,7 +304,7 @@
             flex-wrap: wrap;
             animation: slideUp 1s ease-out 0.7s both;
         }
-
+ 
         .feature {
             display: flex;
             align-items: center;
@@ -230,12 +312,12 @@
             color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
         }
-
+ 
         .feature i {
             font-size: 20px;
             color: #4ecdc4;
         }
-
+ 
         /* Buttons */
         .buttons {
             display: flex;
@@ -244,7 +326,7 @@
             flex-wrap: wrap;
             animation: slideUp 1s ease-out 1s both;
         }
-
+ 
         .button {
             position: relative;
             padding: 18px 40px;
@@ -260,7 +342,7 @@
             justify-content: center;
             gap: 10px;
         }
-
+ 
         .button::before {
             content: '';
             position: absolute;
@@ -271,46 +353,46 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.6s;
         }
-
+ 
         .button:hover::before {
             left: 100%;
         }
-
+ 
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
-
+ 
         .btn-primary:hover {
             transform: translateY(-3px) scale(1.05);
             box-shadow: 0 20px 40px rgba(102, 126, 234, 0.6);
             border-color: rgba(255, 255, 255, 0.6);
         }
-
+ 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(10px);
         }
-
+ 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-3px) scale(1.05);
             border-color: rgba(255, 255, 255, 0.8);
             box-shadow: 0 15px 35px rgba(255, 255, 255, 0.2);
         }
-
+ 
         .button i {
             transition: transform 0.3s ease;
         }
-
+ 
         .button:hover i {
             transform: translateX(5px);
         }
-
+ 
         /* Stats Section */
         .stats {
             position: absolute;
@@ -322,25 +404,25 @@
             color: rgba(255, 255, 255, 0.8);
             animation: fadeIn 1s ease-out 1.5s both;
         }
-
+ 
         .stat {
             text-align: center;
         }
-
+ 
         .stat-number {
             font-size: 28px;
             font-weight: 700;
             color: white;
             display: block;
         }
-
+ 
         .stat-label {
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-top: 5px;
         }
-
+ 
         /* Responsive Design */
         @media (max-width: 768px) {
             .navbar {
@@ -348,33 +430,45 @@
                 flex-direction: column;
                 gap: 15px;
             }
-
+ 
             .nav-links {
                 gap: 20px;
             }
-
+ 
+            .login-options {
+                top: 140px;
+                right: 20px;
+                gap: 8px;
+            }
+ 
+            .login-option {
+                padding: 10px 16px;
+                font-size: 13px;
+                min-width: 140px;
+            }
+ 
             .container {
                 padding: 0 20px;
             }
-
+ 
             .features {
                 gap: 20px;
             }
-
+ 
             .feature {
                 font-size: 14px;
             }
-
+ 
             .buttons {
                 gap: 15px;
                 flex-direction: column;
                 align-items: center;
             }
-
+ 
             .button {
                 width: 200px;
             }
-
+ 
             .stats {
                 bottom: 30px;
                 gap: 30px;
@@ -382,31 +476,54 @@
                 justify-content: center;
             }
         }
-
+ 
         @media (max-width: 480px) {
             .navbar {
                 padding: 10px 15px;
             }
-
+ 
             .logo {
                 font-size: 24px;
             }
-
+ 
             .nav-links {
                 display: none;
             }
-
+ 
+            .login-options {
+                top: 80px;
+                right: 15px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+ 
+            .login-option {
+                padding: 8px 12px;
+                font-size: 12px;
+                min-width: 100px;
+                border-radius: 20px;
+            }
+ 
+            .login-option span {
+                display: none;
+            }
+ 
+            .login-option i {
+                font-size: 14px;
+            }
+ 
             .container {
                 padding: 0 15px;
             }
-
+ 
             .features {
                 flex-direction: column;
                 align-items: center;
                 gap: 15px;
             }
         }
-
+ 
         /* Loading Animation */
         .loading {
             position: fixed;
@@ -421,7 +538,7 @@
             z-index: 9999;
             animation: fadeOut 0.5s ease-out 2s both;
         }
-
+ 
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -430,12 +547,12 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
+ 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
+ 
         @keyframes fadeOut {
             to {
                 opacity: 0;
@@ -449,10 +566,10 @@
     <div class="loading">
         <div class="loading-spinner"></div>
     </div>
-
+ 
     <!-- Animated Background -->
     <div class="background"></div>
-    
+   
     <!-- Floating Particles -->
     <div class="particles">
         <div class="particle"></div>
@@ -462,7 +579,7 @@
         <div class="particle"></div>
         <div class="particle"></div>
     </div>
-
+ 
     <!-- Navigation -->
     <nav class="navbar">
         <a href="#" class="logo">
@@ -476,13 +593,29 @@
             <a href="/contact/" class="nav-link">Contact</a>
         </div>
     </nav>
-
+ 
+    <!-- Login Options -->
+    <div class="login-options">
+        <a href="/customerLogin/" class="login-option customer">
+            <i class="fas fa-user"></i>
+            <span>Customer Login</span>
+        </a>
+        <a href="/adminLoginPage/" class="login-option admin">
+            <i class="fas fa-user-shield"></i>
+            <span>Admin Login</span>
+        </a>
+        <a href="/entry/" class="login-option parking">
+            <i class="fas fa-car"></i>
+            <span>Parking Lot Login</span>
+        </a>
+    </div>
+ 
     <!-- Main Content -->
     <div class="container">
         <div class="content">
             <h1>Slotify</h1>
             <p class="subtitle">Easily find available free parking spots with our smart parking solution</p>
-            
+           
             <div class="features">
                 <div class="feature">
                     <i class="fas fa-search"></i>
@@ -497,7 +630,7 @@
                     <span>Secure Booking</span>
                 </div>
             </div>
-
+ 
             <div class="buttons">
                 <a href="{% url 'userRegister' %}" class="button btn-primary">
                     <i class="fas fa-user-plus"></i>
@@ -510,7 +643,7 @@
             </div>
         </div>
     </div>
-
+ 
     <!-- Stats Section -->
     <div class="stats">
         <div class="stat">
@@ -526,12 +659,12 @@
             <span class="stat-label">Support</span>
         </div>
     </div>
-
-
+ 
+ 
     <script>
 document.addEventListener('DOMContentLoaded', function () {
     const statNumbers = document.querySelectorAll('.stat-number');
-
+ 
     // Particle animation enhancement
     const particles = document.querySelectorAll('.particle');
     particles.forEach(particle => {
@@ -539,9 +672,9 @@ document.addEventListener('DOMContentLoaded', function () {
         particle.style.animationDelay = randomDelay + 's';
         particle.style.top = '100vh';
     });
-
+ 
     // Button click effects
-    const buttons = document.querySelectorAll('.button');
+    const buttons = document.querySelectorAll('.button, .login-option');
     buttons.forEach(button => {
         button.addEventListener('click', function (e) {
             const ripple = document.createElement('span');
@@ -549,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const size = Math.max(rect.width, rect.height);
             const x = e.clientX - rect.left - size / 2;
             const y = e.clientY - rect.top - size / 2;
-
+ 
             ripple.style.cssText = `
                 position: absolute;
                 width: ${size}px;
@@ -562,17 +695,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 animation: ripple 0.6s linear;
                 pointer-events: none;
             `;
-
+ 
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         });
     });
-
+ 
     // Parallax effect on mouse move
     document.addEventListener('mousemove', function (e) {
         const mouseX = e.clientX / window.innerWidth;
         const mouseY = e.clientY / window.innerHeight;
-
+ 
         particles.forEach((particle, index) => {
             const speed = (index + 1) * 0.5;
             const x = (mouseX - 0.5) * speed;
@@ -580,13 +713,13 @@ document.addEventListener('DOMContentLoaded', function () {
             particle.style.transform = `translate(${x}px, ${y}px)`;
         });
     });
-
+ 
     // Animate Number Helper
     const animateNumber = (element, start, end, suffix) => {
         const duration = 2000;
         const increment = (end - start) / (duration / 16);
         let current = start;
-
+ 
         const timer = setInterval(() => {
             current += increment;
             if (current >= end) {
@@ -596,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function () {
             element.textContent = Math.floor(current) + suffix;
         }, 16);
     };
-
+ 
     // Fetch stats and animate with real data
     fetch('/getLandingPageStats/')
         .then(response => {
@@ -609,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Animate with real values
             const ownersElement = document.getElementById('ownersCount');
             const parkingElement = document.getElementById('parkingLotCount');
-
+ 
             // Delay animation start for smooth page load
             setTimeout(() => {
                 animateNumber(ownersElement, 0, data.owners_count, '+');
@@ -621,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('ownersCount').textContent = 'N/A';
             document.getElementById('parkingLotCount').textContent = 'N/A';
         });
-
+ 
     // Inject ripple animation CSS
     const style = document.createElement('style');
     style.textContent = `
