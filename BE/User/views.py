@@ -44,6 +44,8 @@ from django.db.models.functions import TruncMonth
 from datetime import datetime, timedelta
 
 
+
+
 from .models import *
 # Global variables to manage detection state
 detection_status = {
